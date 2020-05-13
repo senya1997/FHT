@@ -58,23 +58,26 @@ initial begin
 	repeat(`NUM_OF_RPT_4DOT)
 		begin
 			data[0] = $signed($random)%(`MAX_D);
+			data[0] = $signed($random)%(`MAX_W);
 			GET_COMP_NUM(x_re[0], x_im[0]);
 			GET_COMP_NUM(x_re[1], x_im[1]);
 			GET_COMP_NUM(x_re[2], x_im[2]);
 			GET_COMP_NUM(x_re[3], x_im[3]);
 			
-			DISP_INPUT_SIGN;
+			$display("\n\tinput signals, time: %t", $time);
+			$display("\t\tDATA: x0 = %6d", data[0], "\tx1 = %6d", data[1], "\tx2 = %6d", data[2]);
+			$display("\t\tCOEF: sin = %6d", sin, "\tcos = %6d", cos);
 			
 			#(`TACT);
 			
-			assert(MATCH_4DOT) $display("\tOK output signals:");
+			assert(MATCH_2DOT) $display("\tOK output signals:");
 			else
 				begin
 					$display("\tERROR reference/output signals:");
 					$display("\t\tRE: y0 = %6d", Y0_RE_4DOT[`D_SIZE + 1 : 2], "\ty1 = %6d", Y1_RE_4DOT[`D_SIZE + 1 : 2], "\ty2 = %6d", Y2_RE_4DOT[`D_SIZE + 1 : 2], "\ty3 = %6d", Y3_RE_4DOT[`D_SIZE + 1 : 2]);
 					$display("\t\tIM: y0 = %6d", Y0_IM_4DOT[`D_SIZE + 1 : 2], "\ty1 = %6d", Y1_IM_4DOT[`D_SIZE + 1 : 2], "\ty2 = %6d", Y2_IM_4DOT[`D_SIZE + 1 : 2], "\ty3 = %6d", Y3_IM_4DOT[`D_SIZE + 1 : 2]);
 				end
-			DISP_OUTPUT_SIGN;
+			$display("\t\tRES: y0 = %6d", RESULT[0], "\ty1 = %6d", RESULT[1]);
 		end
 		
 	#(5*`TACT);
@@ -97,16 +100,6 @@ task GET_COMP_NUM(
 		// im = temp - 1; // for avoid overflow 
 		oIM = temp;	
 	end
-endtask;
-
-task DISP_INPUT_SIGN;
-	$display("\n\tinput signals, time: %t", $time);
-	$display("\t\tDATA: x0 = %6d", data[0], "\tx1 = %6d", data[1], "\tx2 = %6d", data[2]);
-	$display("\t\tCOEF: sin = %6d", sin, "\tcos = %6d", cos);
-endtask;
-
-task DISP_OUTPUT_SIGN;
-	$display("\t\tRES: y0 = %6d", RESULT[0], "\ty1 = %6d", RESULT[1]);
 endtask;
 
 fht_but #(.D_BIT(`D_SIZE), .W_BIT(`W_SIZE), .W_HALF(`HALF_W)) BUT(
