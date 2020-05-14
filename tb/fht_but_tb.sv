@@ -55,10 +55,16 @@ initial begin
 	#(5*`TACT); // pause before start
 	
 	$display("\n\n\t\t\tSTART TEST ONE '2 DOT' BUTTERFLY\n");
+	
 	repeat(`NUM_OF_RPT_4DOT)
 		begin
 			data[0] = $signed($random)%(`MAX_D);
-			data[0] = $signed($random)%(`MAX_W);
+			data[1] = $signed($random)%(`MAX_D);
+			data[2] = $signed($random)%(`MAX_D);
+			
+			sin = $signed($random)%(`MAX_W);
+			
+			
 			GET_COMP_NUM(x_re[0], x_im[0]);
 			GET_COMP_NUM(x_re[1], x_im[1]);
 			GET_COMP_NUM(x_re[2], x_im[2]);
@@ -78,6 +84,36 @@ initial begin
 					$display("\t\tIM: y0 = %6d", Y0_IM_4DOT[`D_SIZE + 1 : 2], "\ty1 = %6d", Y1_IM_4DOT[`D_SIZE + 1 : 2], "\ty2 = %6d", Y2_IM_4DOT[`D_SIZE + 1 : 2], "\ty3 = %6d", Y3_IM_4DOT[`D_SIZE + 1 : 2]);
 				end
 			$display("\t\tRES: y0 = %6d", RESULT[0], "\ty1 = %6d", RESULT[1]);
+		end
+	
+	$display("\n\t\tTEST ON SPEC ANGLES\n");
+	for(i = 0; i < 8; i++)
+		begin
+			for(j = 0; j < 8; j++)
+				begin
+					GET_SPEC_ANG(i, `MAX_D, re_buf, im_buf);
+						re = re_buf;
+						im = im_buf;
+			
+					GET_SPEC_ANG(j, `MAX_W, w_re_buf, w_im_buf);
+						w_re = w_re_buf;
+						w_im = w_im_buf;
+					
+					d_ang = GET_ANG(re_buf, im_buf, `MAX_D);
+					w_ang = GET_ANG(w_re_buf, w_im_buf, `MAX_W);
+					
+					res_ang = d_ang + w_ang;
+					if(res_ang >= 360) res_ang = res_ang - 360;
+					
+					#(`TACT);
+						re_buf = RE;
+						im_buf = IM;
+					mult_ang = GET_ANG(re_buf, im_buf, `MAX_D);
+					
+					$display("\n\td_ang = %6.2f", d_ang, "\t\tw_ang = %6.2f", w_ang, "\t\ttime = %t", $time,
+					 "\n\t\tres_ang =  \t%6.2f", res_ang,
+					 "\n\t\tmult_ang = \t%6.2f\n", mult_ang);
+				end 
 		end
 		
 	#(5*`TACT);
@@ -101,6 +137,48 @@ task GET_COMP_NUM(
 		oIM = temp;	
 	end
 endtask;
+
+task GET_SPEC_ANG(
+	input shortint i,
+	input int hypo,
+	output real re,
+	output real im
+);
+	case(i)
+		0:	begin
+				re = hypo;
+				im = 0;
+			end
+		1:	begin
+				re = hypo/$sqrt(2);
+				im = hypo/$sqrt(2);
+			end			
+		2:	begin
+				re = 0;
+				im = hypo;
+			end	
+		3:	begin
+				re = -hypo/$sqrt(2);
+				im = hypo/$sqrt(2);
+			end	
+		4:	begin
+				re = -hypo;
+				im = 0;
+			end	
+		5:	begin
+				re = -hypo/$sqrt(2);
+				im = -hypo/$sqrt(2);
+			end	
+		6:	begin
+				re = 0;
+				im = -hypo;
+			end	
+		7:	begin
+				re = hypo/$sqrt(2);
+				im = -hypo/$sqrt(2);
+			end	
+	endcase
+endtask
 
 fht_but #(.D_BIT(`D_SIZE), .W_BIT(`W_SIZE), .W_HALF(`HALF_W)) BUT(
 	.iCLK(iCLK),
