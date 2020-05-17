@@ -1,5 +1,4 @@
-module fht_but_block #(parameter D_BIT = 17, SEC_BIT = 4,
-											W_BIT = 12, W_HALF = 11'sd512)(
+module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, SEC_BIT = 4)(
 	input iCLK,
 	input iRESET,
 	
@@ -100,7 +99,7 @@ fht_in_mix #(.D_BIT(D_BIT), .SEC_BIT(SEC_BIT)) MIX_1(
 	.oY_2(MIX_TO_BUT_1[2])
 );
 
-fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT), .W_HALF(W_HALF)) BUT_0(
+fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_0(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
@@ -115,7 +114,7 @@ fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT), .W_HALF(W_HALF)) BUT_0(
 	.oY_1(BUT_TO_MIX[1])
 );
 
-fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT), .W_HALF(W_HALF)) BUT_1(
+fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_1(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
