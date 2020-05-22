@@ -188,7 +188,7 @@ task GET_SPEC_ANG(
 	endcase
 endtask
 
-fht_but #(.D_BIT(`D_SIZE), .W_BIT(`W_SIZE)) BUT(
+fht_but BUT(
 	.iCLK(clk),
 	.iRESET(reset),
 	

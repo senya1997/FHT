@@ -1,4 +1,4 @@
-module fht_in_mix #(parameter D_BIT = 17, SEC_BIT = 9)(
+module fht_in_mix #(parameter D_BIT = 17, SEC_BIT = 9)( 
 	input iCLK,
 	input iRESET,
 	

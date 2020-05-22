@@ -36,6 +36,7 @@ wire signed [D_BIT - 1 : 0] MIX_TO_BUT_1 [0 : 3];
 
 wire signed [D_BIT - 1 : 0] BUT_TO_MIX [0 : 3];
 
+// output bank mixer:
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET)
 		begin
@@ -65,6 +66,7 @@ always@(posedge iCLK or negedge iRESET)begin
 		end
 end
 
+// input bank mixers:
 fht_in_mix #(.D_BIT(D_BIT), .SEC_BIT(SEC_BIT)) MIX_0(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
@@ -99,6 +101,7 @@ fht_in_mix #(.D_BIT(D_BIT), .SEC_BIT(SEC_BIT)) MIX_1(
 	.oY_2(MIX_TO_BUT_1[2])
 );
 
+// butterflyes:
 fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_0(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
