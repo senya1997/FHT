@@ -25,13 +25,14 @@ module fht_control #(parameter A_BIT = 8, SEC_BIT = 4)(
 	output oRDY
 );
 
-reg [3 : 0] stage_num; // = log(N)/log(2) - 1
-reg [8 : 0] sector_num;
-reg [8 : 0] subsector_num;
+reg [3 : 0] stage; // = log(N)/log(2) - 1
+reg [8 : 0] div;
+reg [8 : 0] sector;
+reg [] subsector_size;
 
 reg [9 : 0] cnt_stage_time; // length of bank RAM * 2 (because butterfly performed in 2 tact) + reserve (for wait time end of writing in RAM)
-
-reg [7 : 0] div;
+reg [] cnt_sector_time;
+reg [] cnt_subsector_time;
 
 reg [A_BIT - 1 : 0] addr_rd;
 reg [A_BIT - 1 : 0] addr_rd_bias;
@@ -46,13 +47,43 @@ reg we_b;
 
 reg rdy;
 
-wire EOF_STAGE = (cnt_stage_time == 8'd511);
+wire EOF_STAGE = (cnt_stage_time == 10'd517);
 
-wire LAST_STAGE = (stage_num == 4'd10);
+wire AFTER_ZERO_STAGE = (stage > 4'd0);
+wire LAST_STAGE = (stage == 4'd10);
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) cnt_stage_time <= 9'd0;
-	else if(!rdy) cnt_stage_time <= cnt_stage_time + 1'b1;
+	if(!iRESET)
+		begin
+			div <= 8'128; // required to add in defines div = N/(2*N_bank)
+			sector <= 9'd1;
+		end
+	else if(rdy) 
+		begin
+			div <= 8'd128;
+			sector <= 9'd1;
+		end
+	else if(EOF_STAGE & AFTER_ZERO_STAGE) 
+		begin
+			div <= (div >> 1);
+			sector <= (sector << 1);
+		end
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) stage <= 4'd0;
+	else if(rdy) stage <= 4'd0;
+	else if(EOF_STAGE) stage <= stage + 1'b1;
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) cnt_stage_time <= 10'd0;
+	else if(!rdy) 
+		begin
+			if(EOF_STAGE) cnt_stage_time <= 10'd0;
+			else cnt_stage_time <= cnt_stage_time + 1'b1;
+		end
+	else cnt_stage_time <= 10'd0;
 end
 
 /*

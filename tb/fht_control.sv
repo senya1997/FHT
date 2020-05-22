@@ -13,10 +13,6 @@ wire [`A_BIT - 1 : 0] ADDR_RD_DUT [0 : 3];
 wire [`A_BIT - 1 : 0] ADDR_WR_DUT;
 wire [`A_BIT - 1 : 0] ADDR_COEF;
 
-wire [8 : 0] ADDR_RD_VHDL [0 : 3];
-wire [8 : 0] ADDR_WR_VHDL [0 : 3]; // 0..3 addr write is match
-wire [8 : 0] ADDR_COEF_VHDL;
-
 int f_addr_rd;
 
 // wire WE_A,
@@ -61,8 +57,8 @@ initial begin
 	
 	#(100*`TACT);
 		
-	$display("\n\t\t\t\tCOMPLETE\n");
-	mti_fli::mti_Cmd("stop -sync");
+	// $display("\n\t\t\t\tCOMPLETE\n");
+	// mti_fli::mti_Cmd("stop -sync");
 end
 
 always@(CONTROL.stage_num)begin

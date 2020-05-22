@@ -10,8 +10,9 @@ add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/cnt_stage_time
 add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/sector_num
 add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/stage_num
 add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/subsector_num
+add wave -noupdate /fht_control_tb/CONTROL/rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {64 ns} 0}
+WaveRestoreCursors {{Cursor 1} {412 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 188
 configure wave -valuecolwidth 100
@@ -27,4 +28,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ns} {977 ns}
+WaveRestoreZoom {0 ns} {4221 ns}
