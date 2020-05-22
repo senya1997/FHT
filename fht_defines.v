@@ -1,6 +1,6 @@
-//`define MIF_1 "./matlab/rom_1.mif"
-//`define MIF_2 "./matlab/rom_2.mif"
-//`define MIF_3 "./matlab/rom_3.mif"
+`define MIF_1 "./matlab/rom_1.mif"
+`define MIF_2 "./matlab/rom_2.mif"
+`define MIF_3 "./matlab/rom_3.mif"
 
 //`define MIF_1 "D:/SS/fpga/fht/matlab/rom_1.mif"
 //`define MIF_2 "D:/SS/fpga/fht/matlab/rom_2.mif"

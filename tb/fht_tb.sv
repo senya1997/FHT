@@ -1,8 +1,8 @@
 `timescale 1ns/1ns
-`include "../fft_defines.v"
-`include "../fft_defines_tb.v"
+`include "../fht_defines.v"
+`include "../fht_defines_tb.v"
 
-`define N 4096
+`define N 1024
 `define N_bank (`N/4) // cause Radix-4 
 
 `ifdef TEST_MIXER
@@ -44,7 +44,7 @@
 	`define CONST 100
 `endif
 
-module fft_tb;
+module fht_tb;
 
 bit clk;
 bit reset;
@@ -256,7 +256,7 @@ function real GET_SIN(input real time_s);
 endfunction
 */
 
-fft_top FFT(
+fht_top FHT(
 	.iCLK(clk),
 	.iRESET(reset),
 	

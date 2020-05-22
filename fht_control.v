@@ -29,13 +29,17 @@ reg [3 : 0] stage_num; // = log(N)/log(2) - 1
 reg [8 : 0] sector_num;
 reg [8 : 0] subsector_num;
 
-reg [8 : 0] cnt_stage_time;
+reg [9 : 0] cnt_stage_time; // length of bank RAM * 2 (because butterfly performed in 2 tact) + reserve (for wait time end of writing in RAM)
 
 reg [7 : 0] div;
 
 reg [A_BIT - 1 : 0] addr_rd;
-reg [A_BIT - 1 : 0] addr_coef;
+reg [A_BIT - 1 : 0] addr_rd_bias;
+
 reg [A_BIT - 1 : 0] addr_wr;
+reg [A_BIT - 1 : 0] addr_wr_bias;
+
+reg [A_BIT - 1 : 0] addr_coef;
 
 reg we_a;
 reg we_b;
@@ -51,18 +55,22 @@ always@(posedge iCLK or negedge iRESET)begin
 	else if(!rdy) cnt_stage_time <= cnt_stage_time + 1'b1;
 end
 
-always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) rdy <= 1'b1;
-	else if(iSTART) rdy <= 1'b0;
-	else if(LAST_STAGE & EOF_STAGE) rdy <= 1'b1;
-end
-
+/*
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET)
 		begin
 			addr_rd <= 0;
+			addr_rd_bias <= 0;
 		end
 	else if()
+	
+end
+*/
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) rdy <= 1'b1;
+	else if(iSTART) rdy <= 1'b0;
+	else if(LAST_STAGE & EOF_STAGE) rdy <= 1'b1;
 end
 
 endmodule 
