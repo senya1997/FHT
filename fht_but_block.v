@@ -4,7 +4,7 @@ module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, SEC_BIT = 4)(
 	
 	input iST_ZERO,
 	input iST_LAST,
-	input i2ND_PART_SUBSECTOR,
+	input i2ND_PART_SUBSEC,
 	input [SEC_BIT - 1 : 0] iSECTOR,
 	
 	input signed [D_BIT - 1 : 0] iBANK_0, 
@@ -50,7 +50,7 @@ always@(posedge iCLK or negedge iRESET)begin
 			mux_buf[2] <= BUT_TO_MIX[2];
 			mux_buf[3] <= BUT_TO_MIX[3];
 		end
-	else if(i2ND_PART_SUBSECTOR)
+	else if(i2ND_PART_SUBSEC)
 		begin
 			mux_buf[0] <= BUT_TO_MIX[2];
 			mux_buf[1] <= BUT_TO_MIX[0];

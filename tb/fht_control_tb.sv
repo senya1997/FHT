@@ -61,13 +61,13 @@ initial begin
 	// mti_fli::mti_Cmd("stop -sync");
 end
 
-always@(CONTROL.stage_num)begin
+always@(CONTROL.stage)begin
 	if(!RDY)
 		begin
-			$display("\t%d stage FHT, time: %t", CONTROL.stage_num, $time);
+			$display("\t%d stage FHT, time: %t", CONTROL.stage, $time);
 			
 			f_addr_rd = $fopen("addr_rd.txt", "a");
-			$fwrite(f_addr_rd, "\t\tSTAGE: %d\n", CONTROL.stage_num);
+			$fwrite(f_addr_rd, "\t\tSTAGE: %d\n", CONTROL.stage);
 			$fclose(f_addr_rd);
 		end
 end
@@ -91,7 +91,7 @@ fht_control CONTROL(
 	
 	.oST_ZERO(), 
 	.oST_LAST(),
-	.o2ND_PART_SUBSECTOR(),
+	.o2ND_PART_SUBSEC(),
 	.oSECTOR(), 
 	
 	.oADDR_RD_0(),

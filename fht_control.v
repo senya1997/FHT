@@ -6,7 +6,7 @@ module fht_control #(parameter A_BIT = 8, SEC_BIT = 4)(
 	
 	output oST_ZERO, // "0" stage - without multipliers
 	output oST_LAST, // on last stage output bank mixer save data in direct order
-	output o2ND_PART_SUBSECTOR, // on 1st and 2nd part of subsector point save in different bank order on output bank mixer
+	output o2ND_PART_SUBSEC, // on 1st and 2nd part of subsector point save in different bank order on output bank mixer
 	output [SEC_BIT - 1 : 0] oSECTOR, // defines read order of input data in input bank mixer
 	
 	output [A_BIT - 1 : 0] oADDR_RD_0,
@@ -25,14 +25,20 @@ module fht_control #(parameter A_BIT = 8, SEC_BIT = 4)(
 	output oRDY
 );
 
-reg [3 : 0] stage; // = log(N)/log(2) - 1
-reg [8 : 0] div;
-reg [8 : 0] sector;
-reg [] subsector_size;
+reg clk_2;
 
+reg [3 : 0] stage; // = log(N)/log(2) - 1
 reg [9 : 0] cnt_stage_time; // length of bank RAM * 2 (because butterfly performed in 2 tact) + reserve (for wait time end of writing in RAM)
-reg [] cnt_sector_time;
-reg [] cnt_subsector_time;
+
+reg [8 : 0] div; // this "div" = "2*div" from matlab
+
+reg [8 : 0] sector;
+reg [8 : 0] cnt_sector;
+reg [8 : 0] cnt_sector_time;
+
+reg [8 : 0] sector_size;
+
+reg [8 : 0] cnt_addr;
 
 reg [A_BIT - 1 : 0] addr_rd;
 reg [A_BIT - 1 : 0] addr_rd_bias;
@@ -48,19 +54,27 @@ reg we_b;
 reg rdy;
 
 wire EOF_STAGE = (cnt_stage_time == 10'd517);
+wire EOF_SECTOR = (cnt_sector_time == div);
+wire SEC_PART_SUBSEC = (cnt_sector_time == (div >> 1));
 
 wire AFTER_ZERO_STAGE = (stage > 4'd0);
-wire LAST_STAGE = (stage == 4'd10);
+wire ZERO_STAGE =			(stage == 4'd0);
+wire LAST_STAGE =			(stage == 4'd10);
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) clk_2 <= 1'b0;
+	else clk_2 <= clk_2 + 1'b1;
+end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET)
 		begin
-			div <= 8'128; // required to add in defines div = N/(2*N_bank)
+			div <= 9'd256; // required to add in defines div = N/N_bank
 			sector <= 9'd1;
 		end
 	else if(rdy) 
 		begin
-			div <= 8'd128;
+			div <= 9'd256;
 			sector <= 9'd1;
 		end
 	else if(EOF_STAGE & AFTER_ZERO_STAGE) 
@@ -78,12 +92,44 @@ end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_stage_time <= 10'd0;
+	else if(rdy | EOF_STAGE) cnt_stage_time <= 10'd0;
+	else cnt_stage_time <= cnt_stage_time + 1'b1;
+end
+/*
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) cnt_stage_time <= 10'd0;
 	else if(!rdy) 
 		begin
 			if(EOF_STAGE) cnt_stage_time <= 10'd0;
 			else cnt_stage_time <= cnt_stage_time + 1'b1;
 		end
 	else cnt_stage_time <= 10'd0;
+end
+*/
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) cnt_sector <= 9'd0;
+	else if(!rdy) 
+		begin
+			if(EOF_STAGE) cnt_sector <= 9'd0;
+			else if(EOF_SECTOR) cnt_sector <= cnt_sector + 1'b1;
+		end
+	else cnt_sector <= 9'd0;
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) cnt_sector_time <= 9'd0;
+	else if(!rdy) 
+		begin
+			if(EOF_SECTOR) cnt_sector_time <= 9'd0;
+			else if(clk_2) cnt_sector_time <= cnt_sector_time + 1'b1;
+		end
+	else cnt_sector <= 9'd0;
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) cnt_addr <= 9'd0;
+	else if(rdy | EOF_STAGE) cnt_addr <= 9'd0;
+	else cnt_addr <= (cnt_stage_time >> 1);
 end
 
 /*
@@ -93,15 +139,28 @@ always@(posedge iCLK or negedge iRESET)begin
 			addr_rd <= 0;
 			addr_rd_bias <= 0;
 		end
-	else if()
-	
+	else
+		case(cnt_sector)
+			0:
+			1:
+			
+		endcase
 end
 */
-
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) rdy <= 1'b1;
 	else if(iSTART) rdy <= 1'b0;
 	else if(LAST_STAGE & EOF_STAGE) rdy <= 1'b1;
 end
+
+assign oST_ZERO =				ZERO_STAGE; // mb required reg
+assign oST_LAST = 			LAST_STAGE;
+assign o2ND_PART_SUBSEC =	SEC_PART_SUBSEC;
+
+assign oSECTOR = cnt_sector_time;
+
+assign oADDR_RD_0 = cnt_addr; // temp stub
+
+assign oRDY = rdy;
 
 endmodule 
