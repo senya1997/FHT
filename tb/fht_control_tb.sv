@@ -39,32 +39,34 @@ initial begin
 	start = 1'b0;
 	
 	#(100*`TACT);
-	$display("\n\n\t\t\tSTART TEST CONTROL FHT\n");
-	$display("\t\t'addr_rd' save like array in 'txt' file\n");
+	$display("\n\n\t\tSTART TEST CONTROL FHT\n");
+	$display("\t'addr_rd' save like array in 'txt' file\n");
 	
-		//#1; // if "sdf" is turn off
+		#1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
-		
-	$display("\t0 stage FFT, time: %t", $time);
+	
+	wait(!RDY);	
+	$display("\t 0 stage FFT, time: %t", $time);
 	
 	f_addr_rd = $fopen("addr_rd.txt", "w");
 	$fwrite(f_addr_rd, "\t\tSTAGE: 0\n");
 	$fclose(f_addr_rd);
-	
-	while(!RDY);
+		
+		#(`TACT);
+	wait(RDY);
 	
 	#(100*`TACT);
 		
-	// $display("\n\t\t\t\tCOMPLETE\n");
-	// mti_fli::mti_Cmd("stop -sync");
+	$display("\n\t\t\tCOMPLETE\n");
+	mti_fli::mti_Cmd("stop -sync");
 end
 
 always@(CONTROL.stage)begin
 	if(!RDY)
 		begin
-			$display("\t%d stage FHT, time: %t", CONTROL.stage, $time);
+			$display("\t%2d stage FHT, time: %t", CONTROL.stage, $time);
 			
 			f_addr_rd = $fopen("addr_rd.txt", "a");
 			$fwrite(f_addr_rd, "\t\tSTAGE: %d\n", CONTROL.stage);

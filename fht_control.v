@@ -38,7 +38,7 @@ reg [8 : 0] cnt_sector_time;
 
 reg [8 : 0] sector_size;
 
-reg [8 : 0] cnt_addr;
+reg [7 : 0] cnt_addr;
 
 reg [A_BIT - 1 : 0] addr_rd;
 reg [A_BIT - 1 : 0] addr_rd_bias;
@@ -54,16 +54,16 @@ reg we_b;
 reg rdy;
 
 wire EOF_STAGE = (cnt_stage_time == 10'd517);
+wire EOF_READ = (cnt_stage_time >= 10'd512);
 wire EOF_SECTOR = (cnt_sector_time == div);
-wire SEC_PART_SUBSEC = (cnt_sector_time == (div >> 1));
+wire SEC_PART_SUBSEC = (cnt_sector_time >= (div >> 1));
 
-wire AFTER_ZERO_STAGE = (stage > 4'd0);
-wire ZERO_STAGE =			(stage == 4'd0);
+wire ZERO_STAGE =			(stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
 wire LAST_STAGE =			(stage == 4'd10);
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) clk_2 <= 1'b0;
-	else clk_2 <= clk_2 + 1'b1;
+	else clk_2 <= ~clk_2;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -77,7 +77,7 @@ always@(posedge iCLK or negedge iRESET)begin
 			div <= 9'd256;
 			sector <= 9'd1;
 		end
-	else if(EOF_STAGE & AFTER_ZERO_STAGE) 
+	else if(EOF_STAGE & (!ZERO_STAGE)) 
 		begin
 			div <= (div >> 1);
 			sector <= (sector << 1);
@@ -95,58 +95,45 @@ always@(posedge iCLK or negedge iRESET)begin
 	else if(rdy | EOF_STAGE) cnt_stage_time <= 10'd0;
 	else cnt_stage_time <= cnt_stage_time + 1'b1;
 end
-/*
-always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) cnt_stage_time <= 10'd0;
-	else if(!rdy) 
-		begin
-			if(EOF_STAGE) cnt_stage_time <= 10'd0;
-			else cnt_stage_time <= cnt_stage_time + 1'b1;
-		end
-	else cnt_stage_time <= 10'd0;
-end
-*/
+
+wire RESET_CNT = (rdy | EOF_READ);
+
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_sector <= 9'd0;
-	else if(!rdy) 
-		begin
-			if(EOF_STAGE) cnt_sector <= 9'd0;
-			else if(EOF_SECTOR) cnt_sector <= cnt_sector + 1'b1;
-		end
-	else cnt_sector <= 9'd0;
+	else if(RESET_CNT | EOF_STAGE ) cnt_sector <= 9'd0;
+	else if(EOF_SECTOR) cnt_sector <= cnt_sector + 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_sector_time <= 9'd0;
-	else if(!rdy) 
-		begin
-			if(EOF_SECTOR) cnt_sector_time <= 9'd0;
-			else if(clk_2) cnt_sector_time <= cnt_sector_time + 1'b1;
-		end
-	else cnt_sector <= 9'd0;
+	else if(RESET_CNT | EOF_SECTOR ) cnt_sector_time <= 9'd0;
+	else if(!clk_2) cnt_sector_time <= cnt_sector_time + 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) cnt_addr <= 9'd0;
-	else if(rdy | EOF_STAGE) cnt_addr <= 9'd0;
-	else cnt_addr <= (cnt_stage_time >> 1);
+	if(!iRESET) cnt_addr <= 8'd0;
+	else if(RESET_CNT) cnt_addr <= 8'd0;
+	else if(!clk_2) cnt_addr <= cnt_addr + 1'b1;
 end
 
-/*
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET)
 		begin
 			addr_rd <= 0;
 			addr_rd_bias <= 0;
 		end
+	else if((cnt_sector == 9'd0) | (cnt_sector == 9'd1))
+		begin
+			addr_rd <= cnt_addr;
+			addr_rd_bias <= cnt_addr;
+		end
 	else
-		case(cnt_sector)
-			0:
-			1:
-			
-		endcase
+		begin
+			addr_rd <= 0;
+			addr_rd_bias <= 0;
+		end
 end
-*/
+
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) rdy <= 1'b1;
 	else if(iSTART) rdy <= 1'b0;
@@ -158,8 +145,6 @@ assign oST_LAST = 			LAST_STAGE;
 assign o2ND_PART_SUBSEC =	SEC_PART_SUBSEC;
 
 assign oSECTOR = cnt_sector_time;
-
-assign oADDR_RD_0 = cnt_addr; // temp stub
 
 assign oRDY = rdy;
 
