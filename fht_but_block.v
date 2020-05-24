@@ -1,4 +1,4 @@
-module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, SEC_BIT = 4)(
+module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, SEC_BIT = 9)(
 	input iCLK,
 	input iRESET,
 	
