@@ -34,6 +34,7 @@ reg [3 : 0] stage; // = log(N)/log(2) - 1
 reg [9 : 0] cnt_stage_time; // length of bank RAM * 2 (because butterfly performed in 2 tact) + reserve (for wait time end of writing in RAM)
 
 reg [8 : 0] div; // this "div" = "2*div" from matlab
+reg [3 : 0] div_2; // replacement mult on 'div' in calc bias by shift
 
 reg [8 : 0] cnt_sector;
 reg [8 : 0] cnt_sector_time;
@@ -59,9 +60,11 @@ reg source_cont;
 
 reg rdy;
 
-wire EOF_STAGE =			(cnt_stage_time == 10'd517);
-wire EOF_READ =			(cnt_stage_time >= 10'd512);
-wire EOF_SECTOR =			(cnt_sector_time == div);
+wire EOF_STAGE =				(cnt_stage_time == 10'd517);
+wire EOF_READ =				(cnt_stage_time >= 10'd512);
+wire EOF_SECTOR =				(cnt_sector_time == div);
+wire EOF_SECTOR_BEHIND_POS =	((cnt_sector_time == div - 9'd1) & clk_2);
+wire EOF_SECTOR_BEHIND_NEG =	((cnt_sector_time == div - 9'd1) & (~clk_2));
 
 wire SEC_PART_SUBSEC =	(cnt_sector_time >= (div >> 1));
 
@@ -90,9 +93,21 @@ end
 // *********** sector counters: *********** //
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) div <= 9'd256; // required to add in defines div = N/N_bank
-	else if(rdy) div <= 9'd256;
-	else if(EOF_STAGE & (!ZERO_STAGE)) div <= (div >> 1);
+	if(!iRESET) 
+		begin
+			div <= 9'd256; // required to add in defines div = N/N_bank
+			div_2 <= 4'd8;
+		end
+	else if(rdy) 
+		begin
+			div <= 9'd256;
+			div_2 <= 4'd8;
+		end
+	else if(EOF_STAGE & (!ZERO_STAGE)) 
+		begin
+			div <= (div >> 1);
+			div_2 <= div_2 - 1'b1;
+		end
 end
 
 wire RESET_CNT = (rdy | EOF_READ);
@@ -113,17 +128,18 @@ end
 
 // read:
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (cnt_sector >= 9'd1));
+wire [9 : 0] BIAS_RD = (addr_rd + 1'b1 + (cnt_bias_rd << div_2));
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 9'd0;
 	else if(EOF_STAGE) size_bias_rd <= 9'd1;
-	else if(EOF_SECTOR & NEW_BIAS_RD) size_bias_rd = (size_bias_rd << 1);
+	else if(EOF_SECTOR_BEHIND_POS & NEW_BIAS_RD) size_bias_rd = (size_bias_rd << 1);
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_bias_rd <= 9'd0;
 	else if(EOF_STAGE) cnt_bias_rd <= 9'd2;
-	else if(EOF_SECTOR) 
+	else if(EOF_SECTOR_BEHIND_POS) 
 		begin
 			if(NEW_BIAS_RD) cnt_bias_rd = size_bias_rd - 1'b1;
 			else cnt_bias_rd = cnt_bias_rd - 9'd2;
@@ -141,8 +157,8 @@ always@(posedge iCLK or negedge iRESET)begin
 	else if(RESET_CNT) addr_rd_bias <= 0;
 	else if(!clk_2)
 		begin
-			if(cnt_sector > 9'd1) addr_rd_bias <= addr_rd_bias + 1'b1; 
-			else addr_rd_bias <= addr_rd_bias + 1'b1 + cnt_bias_rd*div; // attention - mult
+			if((cnt_sector > 9'd1) | ((cnt_sector == 9'd1) & EOF_SECTOR_BEHIND_NEG)) addr_rd_bias <= BIAS_RD[7 : 0];
+			else  addr_rd_bias <= addr_rd_bias + 1'b1;
 		end
 end
 

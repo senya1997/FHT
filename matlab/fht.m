@@ -160,7 +160,7 @@ im = imag(ram_buf);
   
 % fht:
 file_addr = fopen('addr_rd.txt', 'w'); % for compare with rtl
-fprintf(file_addr, '\n\t1st column - addr, 2nd column - addr with bias');
+fprintf(file_addr, '\n\t1st column - addr, 2nd - addr with bias\n\t3rd - div');
 fprintf(file_addr, '\n\n\tstage:  0\n\n');
 
 for i = 1:row % 0 stage (only butterfly)
@@ -168,7 +168,7 @@ for i = 1:row % 0 stage (only butterfly)
                          [ram(i, 3), ram(i, 4), 0], 0, 0, 1);
    ram(i, :) = [temp(1), temp(3), temp(2), temp(4)];
    
-   fprintf(file_addr, '%4d\t%4d\n', i-1, 0);
+   fprintf(file_addr, '%4d\t%4d\t%4d\n', i-1, 0, 0);
 end
 
 last_stage = log(N)/log(2) - 1; % numbers start from zero
@@ -211,9 +211,9 @@ for stage = 1:last_stage % without 0 stage
             end
             
 			if(j <= 2)
-                fprintf(file_addr, '%4d\t%4d\n', i-1, i-1);
+                fprintf(file_addr, '%4d\t%4d\t%4d\n', i-1, i-1, 2*div);
             else
-                fprintf(file_addr, '%4d\t%4d\n', i-1, i + sector_cnt*2*div-1);
+                fprintf(file_addr, '%4d\t%4d\t%4d\n', i-1, i + sector_cnt*2*div-1, 2*div);
             end
             
 			if(stage == last_stage)

@@ -109,6 +109,9 @@ fht_control CONTROL(
 	.oWE_A(),
 	.oWE_B(),
 	
+	.oSOURCE_DATA(),
+	.oSOURCE_CONT(),
+	
 	.oRDY(RDY)
 );
 
