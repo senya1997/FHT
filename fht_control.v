@@ -39,10 +39,8 @@ reg [3 : 0] div_2; // replacement mult on 'div' in calc bias by shift
 reg [8 : 0] cnt_sector;
 reg [8 : 0] cnt_sector_time;
 
-reg [8 : 0] sector_size;
-
 reg [8 : 0] size_bias_rd;
-reg [8 : 0] cnt_bias_rd; // required to go [7 : 0], beacuse max 'size_bias_rd' = 256 => max 'cnt_bias_rd' = 255
+reg signed [8 : 0] cnt_bias_rd; // required to go [7 : 0], beacuse max 'size_bias_rd' = 256 => max 'cnt_bias_rd' = 255
 
 reg [A_BIT - 1 : 0] addr_rd;
 reg [A_BIT - 1 : 0] addr_rd_bias;
@@ -60,16 +58,16 @@ reg source_cont;
 
 reg rdy;
 
+wire ZERO_STAGE =	(stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
+wire LAST_STAGE =	(stage == 4'd9);
+
 wire EOF_STAGE =				(cnt_stage_time == 10'd517);
 wire EOF_READ =				(cnt_stage_time >= 10'd511);
 wire EOF_SECTOR =				(cnt_sector_time == div);
-wire EOF_SECTOR_BEHIND_POS =	((cnt_sector_time == div - 9'd1) & clk_2);
+wire EOF_SECTOR_BEHIND_POS =	LAST_STAGE ? EOF_SECTOR : ((cnt_sector_time == div - 9'd1) & clk_2);
 wire EOF_SECTOR_BEHIND_NEG =	((cnt_sector_time == div - 9'd1) & (~clk_2));
 
 wire SEC_PART_SUBSEC =	(cnt_sector_time >= (div >> 1));
-
-wire ZERO_STAGE =	(stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
-wire LAST_STAGE =	(stage == 4'd10);
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) clk_2 <= 1'b0;
@@ -128,7 +126,7 @@ end
 
 // read:
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (cnt_sector >= 9'd1));
-wire [9 : 0] BIAS_RD = (addr_rd + 1'b1 + (cnt_bias_rd << div_2));
+wire signed [9 : 0] BIAS_RD = (addr_rd + 1'b1 + (cnt_bias_rd << div_2));
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 9'd0;
