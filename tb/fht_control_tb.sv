@@ -15,6 +15,11 @@ wire [`A_BIT - 1 : 0] ADDR_COEF;
 
 int f_addr_rd;
 
+int addr_rd_file;
+int addr_rd_bias_file;
+
+string str_temp;
+
 // wire WE_A,
 // wire WE_B,
 
@@ -39,8 +44,8 @@ initial begin
 	start = 1'b0;
 	
 	#(100*`TACT);
-	$display("\n\n\t\tSTART TEST CONTROL FHT\n");
-	$display("\t'addr_rd' save like array in 'txt' file\n");
+	$display("\n\n\t\t\t\tSTART TEST CONTROL FHT\n");
+	$display("\t'addr_rd' compare with 'txt' file from matlab, error marking by '***'\n");
 	
 		#1; // if "sdf" is turn off
 	start = 1'b1;
@@ -48,40 +53,47 @@ initial begin
 	start = 1'b0;
 	
 	wait(!RDY);	
-	$display("\t 0 stage FFT, time: %t", $time);
+	$display("\t 0 stage FHT, time: %t", $time);
 	
-	f_addr_rd = $fopen("addr_rd.txt", "w");
-	$fwrite(f_addr_rd, "\t\tSTAGE: 0\n");
-	$fclose(f_addr_rd);
-		
-		#(`TACT);
+	// open and 1st read matlab file:
+	f_addr_rd = $fopen("D:/SS/fpga/fht/matlab/addr_rd.txt", "r");
+	$fscanf (f_addr_rd, "%4d\t%4d\n", addr_rd_file, addr_rd_bias_file);
+	if((addr_rd_file == CONTROL.addr_rd) & (addr_rd_bias_file == CONTROL.addr_rd_bias))
+		$display("\t\taddr_rd: %4d, addr_rd_bias: %4d, time: %t", 
+					CONTROL.addr_rd, CONTROL.addr_rd_bias, $time);
+	else
+		$display(" ***\tREF:\taddr_rd: %4d, addr_rd_bias: %4d, time: %t\n ***\t\taddr_rd: %4d, addr_rd_bias: %4d", 
+					addr_rd_file, addr_rd_bias_file, $time, CONTROL.addr_rd, CONTROL.addr_rd_bias);
+	
+	// wait end conversion:
 	wait(RDY);
 	
+	$fclose(f_addr_rd);
 	#(100*`TACT);
-		
 	$display("\n\t\t\tCOMPLETE\n");
 	mti_fli::mti_Cmd("stop -sync");
+end
+
+always@(CONTROL.addr_rd or negedge CONTROL.EOF_READ)begin
+	if(!RDY & !CONTROL.EOF_READ)
+		begin
+			$fscanf (f_addr_rd, "%4d\t%4d\n", addr_rd_file, addr_rd_bias_file);
+			
+			if((addr_rd_file == CONTROL.addr_rd) & (addr_rd_bias_file == CONTROL.addr_rd_bias))
+				$display("\t\taddr_rd: %4d, addr_rd_bias: %4d, time: %t", 
+							CONTROL.addr_rd, CONTROL.addr_rd_bias, $time);
+			else
+				$display(" ***\tREF:\taddr_rd: %4d, addr_rd_bias: %4d, time: %t\n ***\t\taddr_rd: %4d, addr_rd_bias: %4d", 
+							addr_rd_file, addr_rd_bias_file, $time, CONTROL.addr_rd, CONTROL.addr_rd_bias);
+		end
 end
 
 always@(CONTROL.stage)begin
 	if(!RDY)
 		begin
-			$display("\t%2d stage FHT, time: %t", CONTROL.stage, $time);
-			
-			f_addr_rd = $fopen("addr_rd.txt", "a");
-			$fwrite(f_addr_rd, "\t\tSTAGE: %d\n", CONTROL.stage);
-			$fclose(f_addr_rd);
-		end
-end
-
-always@(posedge clk)begin
-	if(!RDY & (CONTROL.cnt_stage_time <= 512))
-		begin
-			#(`TACT);
-			
-			f_addr_rd = $fopen("addr_rd.txt", "a");
-			$fwrite(f_addr_rd, "%d\t%d\t%d\t%d\n", ADDR_RD_DUT[0], ADDR_RD_DUT[1], ADDR_RD_DUT[2], ADDR_RD_DUT[3]);
-			$fclose(f_addr_rd);
+			$display("\n\t\tpress 'run' to continue\n");
+			$stop;
+			$display("\n\t%2d stage FHT, time: %t", CONTROL.stage, $time);
 		end
 end
 

@@ -160,15 +160,13 @@ im = imag(ram_buf);
   
 % fht:
 file_addr = fopen('addr_rd.txt', 'w'); % for compare with rtl
-fprintf(file_addr, '\n\t1st column - addr, 2nd - addr with bias\n\t3rd - div');
-fprintf(file_addr, '\n\n\tstage:  0\n\n');
 
 for i = 1:row % 0 stage (only butterfly)
    temp = fht_double_but([ram(i, 1), ram(i, 2), 0],...
                          [ram(i, 3), ram(i, 4), 0], 0, 0, 1);
    ram(i, :) = [temp(1), temp(3), temp(2), temp(4)];
    
-   fprintf(file_addr, '%4d\t%4d\t%4d\n', i-1, 0, 0);
+   fprintf(file_addr, '%4d\t%4d\n', i-1, i-1);
 end
 
 last_stage = log(N)/log(2) - 1; % numbers start from zero
@@ -181,9 +179,7 @@ coef_cos = 4;
 for stage = 1:last_stage % without 0 stage
 	ram_buf(1:row, 1:N_bank) = zeros;
 
-    fprintf(file_addr, '\n\tstage: %2d\n\n', stage);
-    
-	sector_size = 1;
+    sector_size = 1;
 	sector_cnt = 2;
 
 	cos_cnt = 0;
@@ -211,9 +207,9 @@ for stage = 1:last_stage % without 0 stage
             end
             
 			if(j <= 2)
-                fprintf(file_addr, '%4d\t%4d\t%4d\n', i-1, i-1, 2*div);
+                fprintf(file_addr, '%4d\t%4d\n', i-1, i-1);
             else
-                fprintf(file_addr, '%4d\t%4d\t%4d\n', i-1, i + sector_cnt*2*div-1, 2*div);
+                fprintf(file_addr, '%4d\t%4d\n', i-1, i + sector_cnt*2*div-1);
             end
             
 			if(stage == last_stage)

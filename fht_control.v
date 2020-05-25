@@ -61,7 +61,7 @@ reg source_cont;
 reg rdy;
 
 wire EOF_STAGE =				(cnt_stage_time == 10'd517);
-wire EOF_READ =				(cnt_stage_time >= 10'd512);
+wire EOF_READ =				(cnt_stage_time >= 10'd511);
 wire EOF_SECTOR =				(cnt_sector_time == div);
 wire EOF_SECTOR_BEHIND_POS =	((cnt_sector_time == div - 9'd1) & clk_2);
 wire EOF_SECTOR_BEHIND_NEG =	((cnt_sector_time == div - 9'd1) & (~clk_2));
