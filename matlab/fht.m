@@ -189,6 +189,9 @@ for stage = 1:last_stage % without 0 stage
 		cur_cos_0 = bin2dec(fliplr(dec2bin(cos_cnt, bit_depth)));
 		cur_cos_1 = bin2dec(fliplr(dec2bin(cos_cnt + 1, bit_depth)));
 		
+        temp_cnt(j, 1) = sector_cnt;
+        temp_cnt(j, 2) = sector_size;
+        
 		for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div) 
 			if(j == 1)
 				temp = fht_double_but([ram(i, 1), ram(i, 2), ram(i, 2)],...
@@ -236,9 +239,6 @@ for stage = 1:last_stage % without 0 stage
 		else
 			sector_cnt = sector_cnt - 2;
         end
-        
-        temp_cnt(j, 1) = sector_cnt;
-        temp_cnt(j, 2) = sector_size;
         
         cos_cnt = cos_cnt + 2;
 	end

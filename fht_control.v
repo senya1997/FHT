@@ -127,8 +127,11 @@ end
 // ************* choose addr: ************* //
 
 // read:
+wire [A_BIT - 1 : 0] INC_ADDR_RD = (addr_rd + 1'b1);
+
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (cnt_sector >= 9'd1));
-wire signed [9 : 0] BIAS_RD = (addr_rd + 1'b1 + (cnt_bias_rd << div_2));
+wire signed [9 : 0] BIAS_RD = LAST_STAGE ? (addr_rd + cnt_bias_rd) : 
+														 (INC_ADDR_RD + (cnt_bias_rd << div_2));
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 9'd0;
@@ -149,10 +152,8 @@ end
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_rd <= 0;
 	else if(RESET_CNT) addr_rd <= 0;
-	else if(N_CLK_2) addr_rd <= addr_rd + 1'b1;
+	else if(N_CLK_2) addr_rd <= INC_ADDR_RD;
 end
-
-wire BIAS_RD_TEMP = ((cnt_sector > 9'd1) | ((cnt_sector == 9'd1) & EOF_SECTOR_BEHIND_NEG));
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_rd_bias <= 0;
