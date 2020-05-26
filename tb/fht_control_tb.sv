@@ -18,6 +18,8 @@ int f_addr_rd;
 int addr_rd_file;
 int addr_rd_bias_file;
 
+int cnt_er;
+
 string str_temp;
 
 // wire WE_A,
@@ -42,6 +44,7 @@ end
 
 initial begin
 	start = 1'b0;
+	cnt_er = 0;
 	
 	#(100*`TACT);
 	$display("\n\n\t\t\t\tSTART TEST CONTROL FHT\n");
@@ -56,7 +59,7 @@ initial begin
 	$display("\t 0 stage FHT, time: %t", $time);
 	
 	// open and 1st read matlab file:
-	f_addr_rd = $fopen("D:/SS/fpga/fht/matlab/addr_rd.txt", "r");
+	f_addr_rd = $fopen("../../fht/matlab/addr_rd.txt", "r");
 	$fscanf (f_addr_rd, "%4d\t%4d\n", addr_rd_file, addr_rd_bias_file);
 	if((addr_rd_file == CONTROL.addr_rd) & (addr_rd_bias_file == CONTROL.addr_rd_bias))
 		$display("\t\taddr_rd: %4d, addr_rd_bias: %4d, time: %t", 
@@ -68,6 +71,9 @@ initial begin
 	// wait end conversion:
 	wait(RDY);
 	
+	$display("\n\t\tnumber of errors in this stage: %d\n", cnt_er);
+	cnt_er = 0;
+			
 	$fclose(f_addr_rd);
 	#(100*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
@@ -83,15 +89,21 @@ always@(CONTROL.addr_rd or negedge CONTROL.EOF_READ)begin
 				$display("\t\taddr_rd: %4d, addr_rd_bias: %4d, time: %t", 
 							CONTROL.addr_rd, CONTROL.addr_rd_bias, $time);
 			else
-				$display(" ***\tREF:\taddr_rd: %4d, addr_rd_bias: %4d, time: %t\n ***\t\taddr_rd: %4d, addr_rd_bias: %4d", 
-							addr_rd_file, addr_rd_bias_file, $time, CONTROL.addr_rd, CONTROL.addr_rd_bias);
+				begin
+					cnt_er = cnt_er + 1;
+					$display(" ***\tREF:\taddr_rd: %4d, addr_rd_bias: %4d, time: %t\n ***\t\taddr_rd: %4d, addr_rd_bias: %4d", 
+								addr_rd_file, addr_rd_bias_file, $time, CONTROL.addr_rd, CONTROL.addr_rd_bias);
+				end
 		end
 end
 
 always@(CONTROL.stage)begin
 	if(!RDY)
 		begin
-			$display("\n\t\tpress 'run' to continue\n");
+			$display("\n\t\tnumber of errors in this stage: %d\n", cnt_er);
+			cnt_er = 0;
+			
+			$display("\n\t\t\tpress 'run' to continue\n");
 			$stop;
 			$display("\n\t%2d stage FHT, time: %t", CONTROL.stage, $time);
 		end

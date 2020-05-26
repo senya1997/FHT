@@ -11,8 +11,6 @@ set path_wave		./tb/wave
 set path_script	./tb/scripts
 set path_modelsim ../modelsim/fht/
 
-set test_mixer_str_num 189
-
 if {$compile} {
 	puts "compiling..."
 	execute_flow -compile;

@@ -175,7 +175,7 @@ coef_cos = 4;
 % init coef for 1st stage:
 	div = N/(2*N_bank);
 	sector = 1;
- 
+    
 for stage = 1:last_stage % without 0 stage
 	ram_buf(1:row, 1:N_bank) = zeros;
 
@@ -235,7 +235,10 @@ for stage = 1:last_stage % without 0 stage
 			sector_cnt = sector_size - 1;
 		else
 			sector_cnt = sector_cnt - 2;
-		end
+        end
+        
+        temp_cnt(j, 1) = sector_cnt;
+        temp_cnt(j, 2) = sector_size;
         
         cos_cnt = cos_cnt + 2;
 	end
