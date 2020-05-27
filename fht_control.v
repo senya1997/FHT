@@ -66,10 +66,9 @@ wire LAST_STAGE =	(stage == 4'd9);
 wire EOF_STAGE =				(cnt_stage_time == 10'd517);
 wire EOF_READ =				(cnt_stage_time >= 10'd511);
 
-wire EOF_SECTOR =				(cnt_sector_time == div);
-wire EOF_SECTOR_BEHIND_POS =	LAST_STAGE ? EOF_SECTOR : ((cnt_sector_time == div - 9'd1) & clk_2);
+wire EOF_SECTOR =					 (cnt_sector_time == div);
+wire EOF_SECTOR_BEHIND_POS =	((cnt_sector_time == div - 9'd1) & clk_2);
 wire EOF_SECTOR_BEHIND_NEG =	((cnt_sector_time == div - 9'd1) & N_CLK_2);
-wire EOF_SECTOR_BEHIND_BEH =	(((cnt_sector_time == 9'd0) & clk_2) | EOF_SECTOR_BEHIND_POS);
 
 wire SEC_PART_SUBSEC =	(cnt_sector_time >= (div >> 1));
 
@@ -129,21 +128,22 @@ end
 // ************* choose addr: ************* //
 
 // read:
-wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? cnt_sector >= 9'd0 : cnt_sector >= 9'd1));
+wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 9'd1)));
+wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? clk_2 : EOF_SECTOR_BEHIND_POS);
 
 wire [A_BIT - 1 : 0] INC_ADDR_RD = (addr_rd + 1'b1);
-wire signed [9 : 0] BIAS_RD = LAST_STAGE ? (INC_ADDR_RD + cnt_bias_rd) : (INC_ADDR_RD + (cnt_bias_rd << div_2));
+wire signed [9 : 0] BIAS_RD = INC_ADDR_RD + (cnt_bias_rd << div_2);
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 9'd0;
 	else if(EOF_STAGE) size_bias_rd <= 9'd1;
-	else if((LAST_STAGE ? EOF_SECTOR_BEHIND_BEH : EOF_SECTOR_BEHIND_POS) & NEW_BIAS_RD) size_bias_rd = (size_bias_rd << 1);
+	else if(CHOOSE_EN_NEW_BIAS_RD & NEW_BIAS_RD) size_bias_rd = (size_bias_rd << 1);
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_bias_rd <= 9'd0;
 	else if(EOF_STAGE) cnt_bias_rd <= 9'd2;
-	else if(LAST_STAGE ? EOF_SECTOR_BEHIND_BEH : EOF_SECTOR_BEHIND_POS)
+	else if(CHOOSE_EN_NEW_BIAS_RD)
 		begin
 			if(NEW_BIAS_RD) cnt_bias_rd = size_bias_rd - 1'b1;
 			else cnt_bias_rd = cnt_bias_rd - 9'd2;
