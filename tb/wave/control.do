@@ -2,7 +2,6 @@ onerror {resume}
 quietly virtual signal -install /fht_control_tb/CONTROL { /fht_control_tb/CONTROL/BIAS_RD[7:0]} BIAS_RD_BYTE
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /fht_control_tb/CONTROL/iCLK
-add wave -noupdate /fht_control_tb/CONTROL/clk_2
 add wave -noupdate /fht_control_tb/CONTROL/iSTART
 add wave -noupdate /fht_control_tb/CONTROL/ZERO_STAGE
 add wave -noupdate /fht_control_tb/CONTROL/LAST_STAGE
@@ -19,15 +18,17 @@ add wave -noupdate -color {Slate Blue} -radix unsigned /fht_control_tb/CONTROL/c
 add wave -noupdate -color {Slate Blue} -radix unsigned /fht_control_tb/CONTROL/cnt_sector_time
 add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/div
 add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/div_2
-add wave -noupdate -color Gold -radix unsigned /fht_control_tb/CONTROL/addr_rd
+add wave -noupdate -color Gold -radix unsigned /fht_control_tb/CONTROL/addr_rd_cnt
 add wave -noupdate -color Gold -radix unsigned /fht_control_tb/CONTROL/addr_rd_bias
 add wave -noupdate /fht_control_tb/CONTROL/rdy
 add wave -noupdate -radix decimal /fht_control_tb/CONTROL/cnt_bias_rd
 add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/size_bias_rd
-add wave -noupdate /fht_control_tb/CONTROL/BIAS_RD_BYTE
-add wave -noupdate -radix decimal -childformat {{{/fht_control_tb/CONTROL/BIAS_RD[9]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[8]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[7]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[6]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[5]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[4]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[3]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[2]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[1]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[0]} -radix decimal}} -subitemconfig {{/fht_control_tb/CONTROL/BIAS_RD[9]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[8]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[7]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[6]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[5]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[4]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[3]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[2]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[1]} {-radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[0]} {-radix decimal}} /fht_control_tb/CONTROL/BIAS_RD
+add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/BIAS_RD_BYTE
+add wave -noupdate -radix decimal -childformat {{{/fht_control_tb/CONTROL/BIAS_RD[9]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[8]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[7]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[6]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[5]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[4]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[3]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[2]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[1]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[0]} -radix decimal}} -subitemconfig {{/fht_control_tb/CONTROL/BIAS_RD[9]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[8]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[7]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[6]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[5]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[4]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[3]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[2]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[1]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[0]} {-height 15 -radix decimal}} /fht_control_tb/CONTROL/BIAS_RD
+add wave -noupdate /fht_control_tb/CONTROL/addr_wr_sw_0
+add wave -noupdate /fht_control_tb/CONTROL/addr_wr_sw_1
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {95638 ns} 0}
+WaveRestoreCursors {{Cursor 1} {17671 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 100
@@ -43,4 +44,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {95099 ns} {95756 ns}
+WaveRestoreZoom {17416 ns} {18003 ns}

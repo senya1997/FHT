@@ -9,24 +9,24 @@ reg reset;
 
 reg start;
 
-wire [`A_BIT - 1 : 0] ADDR_RD_DUT [0 : 3];
-wire [`A_BIT - 1 : 0] ADDR_WR_DUT;
+wire [`A_BIT - 1 : 0] ADDR_RD [0 : 3];
+wire [`A_BIT - 1 : 0] ADDR_WR [0 : 3];
 wire [`A_BIT - 1 : 0] ADDR_COEF;
 
-int f_addr_rd;
+int f_addr_rd, f_addr_wr;
 
 int addr_rd_file;
 int addr_rd_bias_file;
 
-int cnt_er;
+int cnt_er_rd, cnt_er_wr;
 
 string str_temp;
 
-// wire WE_A,
-// wire WE_B,
+wire WE_A;
+wire WE_B;
 
-// wire SOURCE_DATA,
-// wire SOURCE_CONT,
+wire SOURCE_DATA;
+wire SOURCE_CONT;
 	
 wire RDY;
 
@@ -44,11 +44,13 @@ end
 
 initial begin
 	start = 1'b0;
-	cnt_er = 0;
+	cnt_er_rd = 0;
+	cnt_er_wr = 0;
 	
 	#(100*`TACT);
 	$display("\n\n\t\t\t\tSTART TEST CONTROL FHT\n");
-	$display("\t'addr_rd' compare with 'txt' file from matlab, error marking by '***'\n");
+	$display("\t'addr_rd' compare with 'txt' file from matlab");
+	$display("\terror marking by '***', r/w = 0 => addr_rd, r/w = 1 => addr_wr\n");
 	
 		#1; // if "sdf" is turn off
 	start = 1'b1;
@@ -58,56 +60,83 @@ initial begin
 	wait(!RDY);	
 	$display("\t 0 stage FHT, time: %t", $time);
 	
-	// open and 1st read matlab file:
+// open and 1st read matlab files:
 	f_addr_rd = $fopen("../../fht/matlab/addr_rd.txt", "r");
-	$fscanf (f_addr_rd, "%4d\t%4d\n", addr_rd_file, addr_rd_bias_file);
-	if((addr_rd_file == CONTROL.addr_rd) & (addr_rd_bias_file == CONTROL.addr_rd_bias))
-		$display("\t\taddr_rd: %4d, addr_rd_bias: %4d, time: %t", 
-					CONTROL.addr_rd, CONTROL.addr_rd_bias, $time);
-	else
-		$display(" ***\tREF:\taddr_rd: %4d, addr_rd_bias: %4d, time: %t\n ***\t\taddr_rd: %4d, addr_rd_bias: %4d", 
-					addr_rd_file, addr_rd_bias_file, $time, CONTROL.addr_rd, CONTROL.addr_rd_bias);
+	f_addr_wr = $fopen("../../fht/matlab/addr_wr.txt", "r");
 	
-	// wait end conversion:
+	CHECK_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
+	CHECK_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
+	
+// wait end conversion:
 	wait(RDY);
 	
-	$display("\n\t\tnumber of errors in this stage: %d\n", cnt_er);
-	cnt_er = 0;
-			
+	$display("\n\t\tnumber of errors in addr_rd this stage: %d", cnt_er_rd);
+	$display("\t\tnumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
+		cnt_er_rd = 0;
+		cnt_er_wr = 0;
+	
 	$fclose(f_addr_rd);
+	$fclose(f_addr_wr);
+	
 	#(100*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
 	mti_fli::mti_Cmd("stop -sync");
 end
 
-always@(CONTROL.addr_rd or negedge CONTROL.EOF_READ)begin
+always@(ADDR_RD[0] or ADDR_RD[1] or ADDR_RD[2] or ADDR_RD[3] or negedge CONTROL.EOF_READ)begin
 	if(!RDY & !CONTROL.EOF_READ)
-		begin
-			$fscanf (f_addr_rd, "%4d\t%4d\n", addr_rd_file, addr_rd_bias_file);
-			
-			if((addr_rd_file == CONTROL.addr_rd) & (addr_rd_bias_file == CONTROL.addr_rd_bias))
-				$display("\t\taddr_rd: %4d, addr_rd_bias: %4d, time: %t", 
-							CONTROL.addr_rd, CONTROL.addr_rd_bias, $time);
-			else
-				begin
-					cnt_er = cnt_er + 1;
-					$display(" ***\tREF:\taddr_rd: %4d, addr_rd_bias: %4d, time: %t\n ***\t\taddr_rd: %4d, addr_rd_bias: %4d", 
-								addr_rd_file, addr_rd_bias_file, $time, CONTROL.addr_rd, CONTROL.addr_rd_bias);
-				end
-		end
+		CHECK_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
+end
+
+always@(ADDR_WR[0] or ADDR_WR[1] or ADDR_WR[2] or ADDR_WR[3])begin
+	if(!RDY)
+		CHECK_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 end
 
 always@(CONTROL.stage)begin
 	if(!RDY)
 		begin
-			$display("\n\t\tnumber of errors in this stage: %d\n", cnt_er);
-			cnt_er = 0;
+			$display("\n\t\tnumber of errors in addr_rd this stage: %d", cnt_er_rd);
+			$display("\t\tnumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
+				cnt_er_rd = 0;
+				cnt_er_wr = 0;
 			
 			$display("\n\t\t\tpress 'run' to continue\n");
-			$stop;
+				$stop;
 			$display("\n\t%2d stage FHT, time: %t", CONTROL.stage, $time);
 		end
 end
+
+task CHECK_ADDR(
+	input int file,
+	
+	input bit rd_wr, // '0' - addr_rd, '1' - addr_wr
+	
+	input [`A_BIT - 1 : 0] iADDR_0,
+	input [`A_BIT - 1 : 0] iADDR_1,
+	input [`A_BIT - 1 : 0] iADDR_2,
+	input [`A_BIT - 1 : 0] iADDR_3
+);
+	int temp_ref [4];
+
+	$fscanf (file, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+			
+	if((temp_ref[0] === iADDR_0) & (temp_ref[1] === iADDR_1) & 
+	   (temp_ref[2] === iADDR_2) & (temp_ref[3] === iADDR_3))
+		$display("\t\tr/w: %1d, addr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d, time: %t", 
+					rd_wr, iADDR_0, iADDR_1, iADDR_2, iADDR_3, $time);
+	else
+		begin
+			if(rd_wr) cnt_er_wr = cnt_er_wr + 1;
+			else cnt_er_rd = cnt_er_rd + 1;
+			
+			$display(" ***\tREF:\tr/w: %1d,\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d, time: %t", 
+									rd_wr, temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3], $time);
+			$display(" ***\t\t\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d", 
+									iADDR_0, iADDR_1, iADDR_2, iADDR_3);
+		end
+
+endtask
 
 fht_control CONTROL(
 	.iCLK(clk),
@@ -120,21 +149,23 @@ fht_control CONTROL(
 	.o2ND_PART_SUBSEC(),
 	.oSECTOR(), 
 	
-	.oADDR_RD_0(),
-	.oADDR_RD_1(),
-	.oADDR_RD_2(),
-	.oADDR_RD_3(),
+	.oADDR_RD_0(ADDR_RD[0]),
+	.oADDR_RD_1(ADDR_RD[1]),
+	.oADDR_RD_2(ADDR_RD[2]),
+	.oADDR_RD_3(ADDR_RD[3]),
 	
-	.oADDR_WR(),
-	.oADDR_WR_BIAS(),
+	.oADDR_WR_0(ADDR_WR[0]),
+	.oADDR_WR_1(ADDR_WR[1]),
+	.oADDR_WR_2(ADDR_WR[2]),
+	.oADDR_WR_3(ADDR_WR[3]),
 	
 	.oADDR_COEF(),
 	
-	.oWE_A(),
-	.oWE_B(),
+	.oWE_A(WE_A),
+	.oWE_B(WE_B),
 	
-	.oSOURCE_DATA(),
-	.oSOURCE_CONT(),
+	.oSOURCE_DATA(SOURCE_DATA),
+	.oSOURCE_CONT(SOURCE_CONT),
 	
 	.oRDY(RDY)
 );

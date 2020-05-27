@@ -159,14 +159,16 @@ im = imag(ram_buf);
 %}
   
 % fht:
-file_addr = fopen('addr_rd.txt', 'w'); % for compare with rtl
+file_addr_rd = fopen('addr_rd.txt', 'w'); % for compare with rtl
+file_addr_wr = fopen('addr_wr.txt', 'w');
 
 for i = 1:row % 0 stage (only butterfly)
    temp = fht_double_but([ram(i, 1), ram(i, 2), 0],...
                          [ram(i, 3), ram(i, 4), 0], 0, 0, 1);
    ram(i, :) = [temp(1), temp(3), temp(2), temp(4)];
    
-   fprintf(file_addr, '%4d\t%4d\n', i-1, i-1);
+   fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+   fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 end
 
 last_stage = log(N)/log(2) - 1; % numbers start from zero
@@ -188,9 +190,6 @@ for stage = 1:last_stage % without 0 stage
 	for j = 1:sector
 		cur_cos_0 = bin2dec(fliplr(dec2bin(cos_cnt, bit_depth)));
 		cur_cos_1 = bin2dec(fliplr(dec2bin(cos_cnt + 1, bit_depth)));
-		
-        temp_cnt(j, 1) = sector_cnt;
-        temp_cnt(j, 2) = sector_size;
         
 		for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div) 
 			if(j == 1)
@@ -210,9 +209,9 @@ for stage = 1:last_stage % without 0 stage
             end
             
 			if(j <= 2)
-                fprintf(file_addr, '%4d\t%4d\n', i-1, i-1);
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
             else
-                fprintf(file_addr, '%4d\t%4d\n', i-1, i + sector_cnt*2*div-1);
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i + sector_cnt*2*div-1, i-1, i + sector_cnt*2*div-1);
             end
             
 			if(stage == last_stage)
@@ -220,16 +219,22 @@ for stage = 1:last_stage % without 0 stage
 				ram_buf(i, 2) = temp(2);
 				ram_buf(i, 3) = temp(3);
 				ram_buf(i, 4) = temp(4);
+                
+                fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			elseif(i > (div + (j-1)*2*div))
 				ram_buf(i - div, 2) = temp(1);
 				ram_buf(i - div, 4) = temp(2);
 				ram_buf(i, 1) = temp(3);
-				ram_buf(i, 3) = temp(4); 
+				ram_buf(i, 3) = temp(4);
+                
+                fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i - div - 1, i - div - 1, i-1, i-1);
 			else
 				ram_buf(i, 1) = temp(1);
 				ram_buf(i, 3) = temp(2);
 				ram_buf(i + div, 2) = temp(3);
 				ram_buf(i + div, 4) = temp(4);
+                
+                fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i + div - 1, i + div - 1);
             end
 		end
         
@@ -249,9 +254,10 @@ for stage = 1:last_stage % without 0 stage
     
 	ram = ram_buf;
 end
-
-fclose(file_addr); 
 clear temp;
+
+fclose(file_addr_rd); 
+fclose(file_addr_wr); 
 
 % from matrix to row:
 cnt = 1;
