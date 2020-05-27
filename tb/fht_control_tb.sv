@@ -84,7 +84,7 @@ initial begin
 end
 
 always@(ADDR_RD[0] or ADDR_RD[1] or ADDR_RD[2] or ADDR_RD[3] or negedge CONTROL.EOF_READ)begin
-	if(!RDY & !CONTROL.EOF_READ)
+	if(!RDY & (CONTROL.cnt_stage_time < 256))
 		CHECK_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
 end
 

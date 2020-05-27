@@ -61,15 +61,13 @@ reg rdy;
 wire ZERO_STAGE =	(stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
 wire LAST_STAGE =	(stage == 4'd9);
 
-wire EOF_STAGE =				(cnt_stage_time == 10'd261);
-wire EOF_READ =				(cnt_stage_time > 10'd255);
+wire EOF_READ =		(cnt_stage_time >= 10'd255);
+
+wire EOF_STAGE =		(cnt_stage_time == 10'd261);
+wire EOF_STAGE_1 =	(cnt_stage_time == 10'd260);
 
 wire EOF_SECTOR =		(cnt_sector_time == div - 9'd1);
 wire EOF_SECTOR_1 =	(cnt_sector_time == div - 9'd2);
-wire EOF_SECTOR_2 =	(cnt_sector_time == div - 9'd3);
-wire EOF_SECTOR_3 =	(cnt_sector_time == div - 9'd4);
-wire EOF_SECTOR_4 =	(cnt_sector_time == div - 9'd5);
-wire EOF_SECTOR_5 =	(cnt_sector_time == div - 9'd6);
 
 wire SEC_PART_SUBSEC =	(cnt_sector_time >= (div >> 1));
 
@@ -125,20 +123,21 @@ end
 
 // read:
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 9'd1)));
+wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? 1'b1 : EOF_SECTOR_1);
 
 wire [A_BIT - 1 : 0] INC_ADDR_RD = (addr_rd_cnt + 1'b1);
 wire signed [9 : 0] BIAS_RD = INC_ADDR_RD + (cnt_bias_rd << div_2);
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 9'd0;
-	else if(EOF_STAGE) size_bias_rd <= 9'd1;
-	else if(EOF_SECTOR_1 & NEW_BIAS_RD) size_bias_rd = (size_bias_rd << 1);
+	else if(EOF_STAGE_1) size_bias_rd <= 9'd1;
+	else if(CHOOSE_EN_NEW_BIAS_RD & NEW_BIAS_RD) size_bias_rd = (size_bias_rd << 1);
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_bias_rd <= 9'd0;
-	else if(EOF_STAGE) cnt_bias_rd <= 9'd2;
-	else if(EOF_SECTOR_1)
+	else if(EOF_STAGE_1) cnt_bias_rd <= 9'd2;
+	else if(CHOOSE_EN_NEW_BIAS_RD)
 		begin
 			if(NEW_BIAS_RD) cnt_bias_rd = size_bias_rd - 1'b1;
 			else cnt_bias_rd = cnt_bias_rd - 9'd2;
