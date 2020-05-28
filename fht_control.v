@@ -51,6 +51,8 @@ reg [A_BIT - 1 : 0] addr_wr_sw_1;
 
 reg [A_BIT - 1 : 0] addr_coef;
 
+reg [4 : 0] sec_part_subsec_d;
+
 reg we_a;
 reg we_b;
 
@@ -72,7 +74,8 @@ wire EOF_STAGE_1 =	(cnt_stage_time == 10'd260); // behind 'EOF_STAGE'
 wire EOF_SECTOR =		(cnt_sector_time == div - 9'd1);
 wire EOF_SECTOR_1 =	(cnt_sector_time == div - 9'd2); // behind 'EOF_SECTOR'
 
-wire SEC_PART_SUBSEC =	(cnt_sector_time >= ((div >> 1) - 9'd1));
+wire SEC_PART_SUBSEC =		(cnt_sector_time >= (div >> 1));
+wire SEC_PART_SUBSEC_D =	(sec_part_subsec_d[4]); // delayed
 
 wire RESET_CNT_RD = (rdy | EOF_READ);
 wire RESET_CNT_WR = (rdy | EOF_STAGE);
@@ -168,6 +171,11 @@ end
 
 // write:
 always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) sec_part_subsec_d <= 5'd0;
+	else sec_part_subsec_d <= {sec_part_subsec_d[3 : 0], SEC_PART_SUBSEC};
+end
+
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_wr_cnt <= 0;
 	else if(RESET_CNT_WR) addr_wr_cnt <= 0;
 	else if(WE_EN) addr_wr_cnt <= addr_wr_cnt + 1'b1;
@@ -177,7 +185,7 @@ always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_wr_sw_0 <= 0;
 	else if(WE_EN)
 		begin
-			if(ZERO_STAGE | LAST_STAGE | (~SEC_PART_SUBSEC)) addr_wr_sw_0 <= addr_wr_cnt;
+			if(ZERO_STAGE | LAST_STAGE | (~SEC_PART_SUBSEC_D)) addr_wr_sw_0 <= addr_wr_cnt;
 			else addr_wr_sw_0 <= addr_wr_cnt - (div >> 1); // attention overflow
 		end
 	else addr_wr_sw_0 <= 0;
@@ -187,7 +195,7 @@ always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_wr_sw_1 <= 0;
 	else if(WE_EN)
 		begin
-			if(ZERO_STAGE | LAST_STAGE | SEC_PART_SUBSEC) addr_wr_sw_1 <= addr_wr_cnt;
+			if(ZERO_STAGE | LAST_STAGE | SEC_PART_SUBSEC_D) addr_wr_sw_1 <= addr_wr_cnt;
 			else addr_wr_sw_1 <= addr_wr_cnt + (div >> 1); // attention overflow
 		end
 	else addr_wr_sw_1 <= 0;

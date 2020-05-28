@@ -24,7 +24,8 @@ string str_temp;
 
 wire SOURCE_DATA;
 wire SOURCE_CONT;
-	
+
+wire WE_A, WE_B;
 wire RDY;
 
 initial begin
@@ -48,45 +49,41 @@ initial begin
 	$display("\n\n\t\t\t\tSTART TEST CONTROL FHT\n");
 	$display("\t'addr_rd' compare with 'txt' file from matlab");
 	$display("\terror marking by '***', r/w = 0 => addr_rd, r/w = 1 => addr_wr\n");
+
+	f_addr_rd = $fopen("../../fht/matlab/addr_rd.txt", "r");
+	f_addr_wr = $fopen("../../fht/matlab/addr_wr.txt", "r");
 	
 		#1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
-	
+		// #(`TACT - 1);
+		
 	wait(!RDY);	
 	$display("\t 0 stage FHT, time: %t", $time);
 	
-// open and 1st read matlab files:
-	f_addr_rd = $fopen("../../fht/matlab/addr_rd.txt", "r");
-	f_addr_wr = $fopen("../../fht/matlab/addr_wr.txt", "r");
-	
-	CHECK_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
-	CHECK_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
-	
-// wait end conversion:
+// wait the end of conversion:
 	wait(RDY);
+	$fclose(f_addr_rd);
+	$fclose(f_addr_wr);
 	
 	$display("\n\t\tnumber of errors in addr_rd this stage: %d", cnt_er_rd);
 	$display("\t\tnumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
 		cnt_er_rd = 0;
 		cnt_er_wr = 0;
-	
-	$fclose(f_addr_rd);
-	$fclose(f_addr_wr);
-	
+		
 	#(100*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
 	mti_fli::mti_Cmd("stop -sync");
 end
 
-always@(ADDR_RD[0] or ADDR_RD[1] or ADDR_RD[2] or ADDR_RD[3] or negedge CONTROL.EOF_READ)begin
+always@(posedge clk)begin
 	if(!RDY & (CONTROL.cnt_stage_time < 256))
 		CHECK_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
 end
 
-always@(ADDR_WR[0] or ADDR_WR[1] or ADDR_WR[2] or ADDR_WR[3])begin
-	if(!RDY & CONTROL.WE_EN)
+always@(posedge clk)begin
+	if(!RDY & (WE_A | WE_B))
 		CHECK_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 end
 
@@ -158,8 +155,8 @@ fht_control CONTROL(
 	
 	.oADDR_COEF(),
 	
-	.oWE_A(),
-	.oWE_B(),
+	.oWE_A(WE_A),
+	.oWE_B(WE_B),
 	
 	.oSOURCE_DATA(SOURCE_DATA),
 	.oSOURCE_CONT(SOURCE_CONT),

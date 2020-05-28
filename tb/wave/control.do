@@ -8,6 +8,7 @@ add wave -noupdate /fht_control_tb/CONTROL/LAST_STAGE
 add wave -noupdate /fht_control_tb/CONTROL/EOF_STAGE
 add wave -noupdate /fht_control_tb/CONTROL/EOF_READ
 add wave -noupdate /fht_control_tb/CONTROL/SEC_PART_SUBSEC
+add wave -noupdate -expand /fht_control_tb/CONTROL/sec_part_subsec_d
 add wave -noupdate /fht_control_tb/CONTROL/EOF_SECTOR
 add wave -noupdate -color Tan /fht_control_tb/CONTROL/NEW_BIAS_RD
 add wave -noupdate /fht_control_tb/CONTROL/RESET_CNT_RD
@@ -31,7 +32,7 @@ add wave -noupdate -expand -group addr_wr -color {Slate Blue} /fht_control_tb/CO
 add wave -noupdate -expand -group addr_wr -color {Slate Blue} /fht_control_tb/CONTROL/we_b
 add wave -noupdate /fht_control_tb/CONTROL/rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {7120 ns} 0}
+WaveRestoreCursors {{Cursor 1} {48990 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 100
@@ -47,4 +48,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {6786 ns} {7285 ns}
+WaveRestoreZoom {0 ns} {51639 ns}
