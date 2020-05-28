@@ -30,11 +30,11 @@ module fht_control #(parameter A_BIT = 8, SEC_BIT = 9)(
 	output oRDY
 );
 
-reg [3 : 0] stage; // = log(N)/log(2) - 1
-reg [9 : 0] cnt_stage_time; // length of bank RAM * 2 (because butterfly performed in 2 tact) + reserve (for wait time end of writing in RAM)
+reg [3 : 0] cnt_stage; // max = log(N)/log(2) - 1
+reg [9 : 0] cnt_stage_time; // length of bank + reserve (for wait time end of writing in RAM)
 
-reg [8 : 0] div; // this "div" = "2*div" from matlab
-reg [3 : 0] div_2; // replacement mult on 'div' in calc bias by shift
+reg [8 : 0] div; // this 'div' = '2*div' from matlab model
+reg [3 : 0] div_2; // replacement mult on 'div' in calc bias by shift on 'div_2'
 
 reg [8 : 0] cnt_sector;
 reg [8 : 0] cnt_sector_time;
@@ -42,9 +42,10 @@ reg [8 : 0] cnt_sector_time;
 reg [8 : 0] size_bias_rd;
 reg signed [8 : 0] cnt_bias_rd; // required to go [7 : 0], beacuse max 'size_bias_rd' = 256 => max 'cnt_bias_rd' = 255
 
-reg [A_BIT - 1 : 0] addr_rd_cnt; // addr_rd never swap, this always 0-255 counter
+reg [A_BIT - 1 : 0] addr_rd_cnt; // addr_rd never swap, this reg is always 0-255 counter
 reg [A_BIT - 1 : 0] addr_rd_bias; // 0-255 on 0,1 sector, after - is added bias
 
+reg [A_BIT - 1 : 0] addr_wr_cnt; // analog 'addr_rd_cnt'
 reg [A_BIT - 1 : 0] addr_wr_sw_0; // bias on write addr swap every half subsector from this reg on another
 reg [A_BIT - 1 : 0] addr_wr_sw_1;
 
@@ -58,25 +59,30 @@ reg source_cont;
 
 reg rdy;
 
-wire ZERO_STAGE =	(stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
-wire LAST_STAGE =	(stage == 4'd9);
+wire ZERO_STAGE =	(cnt_stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
+wire LAST_STAGE =	(cnt_stage == 4'd9);
+
+wire WE_EN =			(cnt_stage_time >= 10'd5);
 
 wire EOF_READ =		(cnt_stage_time >= 10'd255);
 
 wire EOF_STAGE =		(cnt_stage_time == 10'd261);
-wire EOF_STAGE_1 =	(cnt_stage_time == 10'd260);
+wire EOF_STAGE_1 =	(cnt_stage_time == 10'd260); // behind 'EOF_STAGE'
 
 wire EOF_SECTOR =		(cnt_sector_time == div - 9'd1);
-wire EOF_SECTOR_1 =	(cnt_sector_time == div - 9'd2);
+wire EOF_SECTOR_1 =	(cnt_sector_time == div - 9'd2); // behind 'EOF_SECTOR'
 
-wire SEC_PART_SUBSEC =	(cnt_sector_time >= (div >> 1));
+wire SEC_PART_SUBSEC =	(cnt_sector_time >= ((div >> 1) - 9'd1));
+
+wire RESET_CNT_RD = (rdy | EOF_READ);
+wire RESET_CNT_WR = (rdy | EOF_STAGE);
 
 // *********** stage counters: *********** //
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) stage <= 4'd0;
-	else if(rdy) stage <= 4'd0;
-	else if(EOF_STAGE) stage <= stage + 1'b1;
+	if(!iRESET) cnt_stage <= 4'd0;
+	else if(rdy) cnt_stage <= 4'd0;
+	else if(EOF_STAGE) cnt_stage <= cnt_stage + 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -105,29 +111,29 @@ always@(posedge iCLK or negedge iRESET)begin
 		end
 end
 
-wire RESET_CNT = (rdy | EOF_READ);
-
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_sector <= 9'd0;
-	else if(RESET_CNT | EOF_STAGE ) cnt_sector <= 9'd0;
+	else if(RESET_CNT_RD | EOF_STAGE ) cnt_sector <= 9'd0;
 	else if(EOF_SECTOR) cnt_sector <= cnt_sector + 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_sector_time <= 9'd0;
-	else if(RESET_CNT | EOF_SECTOR ) cnt_sector_time <= 9'd0;
+	else if(RESET_CNT_RD | EOF_SECTOR ) cnt_sector_time <= 9'd0;
 	else cnt_sector_time <= cnt_sector_time + 1'b1;
 end
 
 // ************* choose addr: ************* //
+wire STAGE_ODD	=	(cnt_stage[0] == 1'b1);
+wire STAGE_EVEN = (cnt_stage[0] == 1'b0);
 
-// read:
+wire [A_BIT - 1 : 0] INC_ADDR_RD = (addr_rd_cnt + 1'b1);
+
+wire signed [9 : 0] BIAS_RD = INC_ADDR_RD + (cnt_bias_rd << div_2);
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 9'd1)));
 wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? 1'b1 : EOF_SECTOR_1);
 
-wire [A_BIT - 1 : 0] INC_ADDR_RD = (addr_rd_cnt + 1'b1);
-wire signed [9 : 0] BIAS_RD = INC_ADDR_RD + (cnt_bias_rd << div_2);
-
+// read:
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 9'd0;
 	else if(EOF_STAGE_1) size_bias_rd <= 9'd1;
@@ -146,13 +152,13 @@ end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_rd_cnt <= 0;
-	else if(RESET_CNT) addr_rd_cnt <= 0;
+	else if(RESET_CNT_RD) addr_rd_cnt <= 0;
 	else addr_rd_cnt <= INC_ADDR_RD;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_rd_bias <= 0;
-	else if(RESET_CNT) addr_rd_bias <= 0;
+	else if(RESET_CNT_RD) addr_rd_bias <= 0;
 	else
 		begin
 			if((cnt_sector > 9'd1) | ((cnt_sector == 9'd1) & EOF_SECTOR)) addr_rd_bias <= BIAS_RD[7 : 0];
@@ -161,13 +167,44 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 // write:
-/*
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) addr_wr_cnt <= 0;
+	else if(RESET_CNT_WR) addr_wr_cnt <= 0;
+	else if(WE_EN) addr_wr_cnt <= addr_wr_cnt + 1'b1;
+end
+
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_wr_sw_0 <= 0;
-	else if(RESET_CNT) addr_rd_cnt <= 0;
-	else if(N_CLK_2) addr_rd_cnt <= INC_ADDR_RD;
+	else if(WE_EN)
+		begin
+			if(ZERO_STAGE | LAST_STAGE | (~SEC_PART_SUBSEC)) addr_wr_sw_0 <= addr_wr_cnt;
+			else addr_wr_sw_0 <= addr_wr_cnt - (div >> 1); // attention overflow
+		end
+	else addr_wr_sw_0 <= 0;
 end
-*/
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) addr_wr_sw_1 <= 0;
+	else if(WE_EN)
+		begin
+			if(ZERO_STAGE | LAST_STAGE | SEC_PART_SUBSEC) addr_wr_sw_1 <= addr_wr_cnt;
+			else addr_wr_sw_1 <= addr_wr_cnt + (div >> 1); // attention overflow
+		end
+	else addr_wr_sw_1 <= 0;
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) we_a <= 1'b0;
+	else if(RESET_CNT_WR) we_a <= 1'b0;
+	else if(WE_EN & STAGE_ODD) we_a <= 1'b1;
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) we_b <= 1'b0;
+	else if(RESET_CNT_WR) we_b <= 1'b0;
+	else if(WE_EN & STAGE_EVEN) we_b <= 1'b1;
+end
+
 // coef:
 
 // ************** others: ************** //
@@ -210,6 +247,9 @@ assign oADDR_WR_3 = addr_wr_sw_1;
 
 assign oSOURCE_DATA = source_data;
 assign oSOURCE_CONT = source_cont;
+
+assign oWE_A = we_a;
+assign oWE_B = we_b;
 
 assign oRDY = rdy;
 

@@ -22,9 +22,6 @@ int cnt_er_rd, cnt_er_wr;
 
 string str_temp;
 
-wire WE_A;
-wire WE_B;
-
 wire SOURCE_DATA;
 wire SOURCE_CONT;
 	
@@ -89,11 +86,11 @@ always@(ADDR_RD[0] or ADDR_RD[1] or ADDR_RD[2] or ADDR_RD[3] or negedge CONTROL.
 end
 
 always@(ADDR_WR[0] or ADDR_WR[1] or ADDR_WR[2] or ADDR_WR[3])begin
-	if(!RDY)
+	if(!RDY & CONTROL.WE_EN)
 		CHECK_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 end
 
-always@(CONTROL.stage)begin
+always@(CONTROL.cnt_stage)begin
 	if(!RDY)
 		begin
 			$display("\n\t\tnumber of errors in addr_rd this stage: %d", cnt_er_rd);
@@ -103,7 +100,7 @@ always@(CONTROL.stage)begin
 			
 			$display("\n\t\t\tpress 'run' to continue\n");
 				$stop;
-			$display("\n\t%2d stage FHT, time: %t", CONTROL.stage, $time);
+			$display("\n\t%2d stage FHT, time: %t", CONTROL.cnt_stage, $time);
 		end
 end
 
@@ -161,8 +158,8 @@ fht_control CONTROL(
 	
 	.oADDR_COEF(),
 	
-	.oWE_A(WE_A),
-	.oWE_B(WE_B),
+	.oWE_A(),
+	.oWE_B(),
 	
 	.oSOURCE_DATA(SOURCE_DATA),
 	.oSOURCE_CONT(SOURCE_CONT),
