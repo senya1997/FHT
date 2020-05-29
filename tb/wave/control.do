@@ -8,7 +8,7 @@ add wave -noupdate /fht_control_tb/CONTROL/LAST_STAGE
 add wave -noupdate /fht_control_tb/CONTROL/EOF_STAGE
 add wave -noupdate /fht_control_tb/CONTROL/EOF_READ
 add wave -noupdate /fht_control_tb/CONTROL/SEC_PART_SUBSEC
-add wave -noupdate -expand /fht_control_tb/CONTROL/sec_part_subsec_d
+add wave -noupdate -radix binary -childformat {{{/fht_control_tb/CONTROL/sec_part_subsec_d[4]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[3]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[2]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[1]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[0]} -radix binary}} -expand -subitemconfig {{/fht_control_tb/CONTROL/sec_part_subsec_d[4]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[3]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[2]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[1]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[0]} {-height 15 -radix binary}} /fht_control_tb/CONTROL/sec_part_subsec_d
 add wave -noupdate /fht_control_tb/CONTROL/EOF_SECTOR
 add wave -noupdate -color Tan /fht_control_tb/CONTROL/NEW_BIAS_RD
 add wave -noupdate /fht_control_tb/CONTROL/RESET_CNT_RD
@@ -30,9 +30,10 @@ add wave -noupdate -expand -group addr_wr -color Gold -radix unsigned /fht_contr
 add wave -noupdate -expand -group addr_wr -color Gold -radix unsigned /fht_control_tb/CONTROL/addr_wr_sw_1
 add wave -noupdate -expand -group addr_wr -color {Slate Blue} /fht_control_tb/CONTROL/we_a
 add wave -noupdate -expand -group addr_wr -color {Slate Blue} /fht_control_tb/CONTROL/we_b
+add wave -noupdate -expand -group addr_wr /fht_control_tb/CONTROL/WE_EN
 add wave -noupdate /fht_control_tb/CONTROL/rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {48990 ns} 0}
+WaveRestoreCursors {{Cursor 1} {57028 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 100
@@ -48,4 +49,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ns} {51639 ns}
+WaveRestoreZoom {141 ns} {59382 ns}

@@ -208,6 +208,12 @@ for stage = 1:last_stage % without 0 stage
 									   cur_cos_0, cur_cos_1, coef_cos);
             end
             
+            coef(i, 1) = round(sin(cur_cos_0*(2*pi/coef_cos))*1024);
+            coef(i, 2) = round(cos(cur_cos_0*(2*pi/coef_cos))*1024);
+            
+            coef(i, 3) = round(sin(cur_cos_1*(2*pi/coef_cos))*1024);
+            coef(i, 4) = round(cos(cur_cos_1*(2*pi/coef_cos))*1024);
+            
 			if(j <= 2)
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
             else

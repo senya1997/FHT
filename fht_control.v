@@ -49,9 +49,11 @@ reg [A_BIT - 1 : 0] addr_wr_cnt; // analog 'addr_rd_cnt'
 reg [A_BIT - 1 : 0] addr_wr_sw_0; // bias on write addr swap every half subsector from this reg on another
 reg [A_BIT - 1 : 0] addr_wr_sw_1;
 
+reg [A_BIT - 1 : 0] addr_coef_cnt;
 reg [A_BIT - 1 : 0] addr_coef;
 
 reg [4 : 0] sec_part_subsec_d;
+reg [2 : 0] eof_sector_d;
 
 reg we_a;
 reg we_b;
@@ -65,20 +67,24 @@ wire ZERO_STAGE =	(cnt_stage == 4'd0 & !rdy); // to aviod "1" on output when FHT
 wire LAST_STAGE =	(cnt_stage == 4'd9);
 
 wire WE_EN =			(cnt_stage_time >= 10'd5);
+wire COEF_EN =			(cnt_stage_time >= 10'd3);
 
 wire EOF_READ =		(cnt_stage_time >= 10'd255);
+wire EOF_COEF =		(cnt_stage_time >= 10'd258);
 
 wire EOF_STAGE =		(cnt_stage_time == 10'd261);
 wire EOF_STAGE_1 =	(cnt_stage_time == 10'd260); // behind 'EOF_STAGE'
 
 wire EOF_SECTOR =		(cnt_sector_time == div - 9'd1);
 wire EOF_SECTOR_1 =	(cnt_sector_time == div - 9'd2); // behind 'EOF_SECTOR'
+wire EOF_SECTOR_D =	(eof_sector_d[2]);
 
 wire SEC_PART_SUBSEC =		(cnt_sector_time >= (div >> 1));
 wire SEC_PART_SUBSEC_D =	(sec_part_subsec_d[4]); // delayed
 
-wire RESET_CNT_RD = (rdy | EOF_READ);
-wire RESET_CNT_WR = (rdy | EOF_STAGE);
+wire RESET_CNT_RD = 	 (rdy | EOF_READ);
+wire RESET_CNT_WR = 	 (rdy | EOF_STAGE);
+wire RESET_CNT_COEF = (rdy | EOF_COEF);
 
 // *********** stage counters: *********** //
 
@@ -185,7 +191,7 @@ always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_wr_sw_0 <= 0;
 	else if(WE_EN)
 		begin
-			if(ZERO_STAGE | LAST_STAGE | (~SEC_PART_SUBSEC_D)) addr_wr_sw_0 <= addr_wr_cnt;
+			if(ZERO_STAGE | LAST_STAGE | !SEC_PART_SUBSEC_D) addr_wr_sw_0 <= addr_wr_cnt;
 			else addr_wr_sw_0 <= addr_wr_cnt - (div >> 1); // attention overflow
 		end
 	else addr_wr_sw_0 <= 0;
@@ -214,6 +220,23 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 // coef:
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) eof_sector_d <= 3'd0;
+	else eof_sector_d <= {eof_sector_d[1 : 0], EOF_SECTOR};
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) addr_coef_cnt <= 0;
+	else if(RESET_CNT_COEF) addr_coef_cnt <= 0;
+	else if(EOF_SECTOR_D) addr_coef_cnt <= addr_coef_cnt + 1'b1;
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) addr_coef <= 0;
+	else if(RESET_CNT_COEF) addr_coef <= 0;
+	else if(COEF_EN) addr_coef <= {addr_coef_cnt[0], addr_coef_cnt[1], addr_coef_cnt[2], addr_coef_cnt[3], 
+											 addr_coef_cnt[4], addr_coef_cnt[5], addr_coef_cnt[6], addr_coef_cnt[7]};
+end
 
 // ************** others: ************** //
 
@@ -252,6 +275,8 @@ assign oADDR_WR_0 = addr_wr_sw_0;
 assign oADDR_WR_1 = addr_wr_sw_0;
 assign oADDR_WR_2 = addr_wr_sw_1;
 assign oADDR_WR_3 = addr_wr_sw_1;
+
+assign oADDR_COEF = addr_coef;
 
 assign oSOURCE_DATA = source_data;
 assign oSOURCE_CONT = source_cont;
