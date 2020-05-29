@@ -31,9 +31,13 @@ add wave -noupdate -expand -group addr_wr -color Gold -radix unsigned /fht_contr
 add wave -noupdate -expand -group addr_wr -color {Slate Blue} /fht_control_tb/CONTROL/we_a
 add wave -noupdate -expand -group addr_wr -color {Slate Blue} /fht_control_tb/CONTROL/we_b
 add wave -noupdate -expand -group addr_wr /fht_control_tb/CONTROL/WE_EN
+add wave -noupdate /fht_control_tb/CONTROL/EOF_SECTOR_D
+add wave -noupdate -color Gold -radix unsigned /fht_control_tb/CONTROL/addr_coef
+add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/addr_coef_cnt
+add wave -noupdate /fht_control_tb/CONTROL/COEF_EN
 add wave -noupdate /fht_control_tb/CONTROL/rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {57028 ns} 0}
+WaveRestoreCursors {{Cursor 1} {49199 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 100
@@ -49,4 +53,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {141 ns} {59382 ns}
+WaveRestoreZoom {0 ns} {59241 ns}
