@@ -1,4 +1,6 @@
-module fht_rom_block #(parameter W_BIT = 12, A_BIT = 8)(
+module fht_rom_block #(parameter W_BIT = 12, A_BIT = 10, 
+											MIF_SIN = "./matlab/sin.mif", 
+											MIF_COS = "./matlab/cos.mif")(
 	input iCLK,
 	input iRESET,
 	
@@ -14,13 +16,13 @@ module fht_rom_block #(parameter W_BIT = 12, A_BIT = 8)(
 wire signed [W_BIT - 1 : 0] OUT_SIN;
 wire signed [W_BIT - 1 : 0] OUT_COS;
 
-fht_rom #(.MIF("./matlab/sin.mif")) ROM_SIN(
+fht_rom #(.MIF(MIF_SIN)) ROM_SIN(
 	.address(iADDR),
 	.clock(iCLK),
 	.q(OUT_SIN)
 );
 
-fht_rom #(.MIF("./matlab/cos.mif")) ROM_COS(
+fht_rom #(.MIF(MIF_COS)) ROM_COS(
 	.address(iADDR),
 	.clock(iCLK),
 	.q(OUT_COS)
