@@ -2,7 +2,7 @@ clear;
 clc;
 
 width = 12;
-depth = 1024;
+depth = 256;
 
 fprintf('\n\tBegin\n');
 
