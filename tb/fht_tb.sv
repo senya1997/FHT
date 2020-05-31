@@ -89,9 +89,9 @@ end
 
 initial begin
 	`ifdef TEST_MIXER
-		$display("\n\n\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
+		$display("\n\n\t\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
 	`else
-		$display("\n\n\t\t\tSTART TEST FHT\n");
+		$display("\n\n\t\t\t\tSTART TEST FHT\n");
 	`endif
 	
 	start = 1'b0;
@@ -147,17 +147,19 @@ initial begin
 	ram_sel = 1'b1;
 	
 	$display("\n\tstart FHT, time: %t\n", $time);
+		#1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
-		#(`TACT);
+		// #(`TACT - 1);
 	wait(RDY);
+	$display("\n\tfinish FHT, time: %t\n", $time);
 	
-	#(10*`TACT);
+	#(100*`TACT);
 	SAVE_RAM_DATA("ram_a.txt", 0); // name must not change, this use in matlab 'analys'
 	SAVE_RAM_DATA("ram_b.txt", 1);
 	
-	$display("\n\t\t\tCOMPLETE\n");
+	$display("\n\t\t\t\tCOMPLETE\n");
 	mti_fli::mti_Cmd("stop -sync");
 end
 
@@ -182,7 +184,7 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 	int f_ram;
 	shortint cnt_bank, cnt_data;
 	
-	$display("\t##### save data from RAM in files: '%s', time: %t", name, $time);
+	$display("\t\tsave RAM in files: '%s', time: %t", name, $time);
 	
 	f_ram = $fopen(name, "w");
 	

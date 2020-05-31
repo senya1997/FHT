@@ -1,3 +1,5 @@
+`include "fht_defines_tb.v"
+
 module fht_but #(parameter D_BIT = 17, W_BIT = 12)(
 	input iCLK,
 	input iRESET,

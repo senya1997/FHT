@@ -1,5 +1,4 @@
 `include "fht_defines.v"
-`include "fht_defines_tb.v"
 
 module fht_top(
 	input iCLK,
