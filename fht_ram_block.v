@@ -47,7 +47,9 @@ wire [A_BIT - 1 : 0] ADDR_WR [0 : 3];
 	assign ADDR_WR[3] = iADDR_WR_3;
 
 wire [3 : 0] WE = {iWE_3, iWE_2, iWE_1, iWE_0};
-	
+
+wire [D_BIT - 1 : 0] DATA_OUT [0 : 3];
+
 genvar k;
 generate 
 	for(k = 0; k < 4; k = k + 1)
@@ -63,10 +65,9 @@ generate
 		end
 endgenerate
 
-wire [D_BIT - 1 : 0] DATA_OUT [0 : 3];
-	assign oDATA_0 = DATA_OUT[0];
-	assign oDATA_1 = DATA_OUT[1];
-	assign oDATA_2 = DATA_OUT[2];
-	assign oDATA_3 = DATA_OUT[3];
+assign oDATA_0 = DATA_OUT[0];
+assign oDATA_1 = DATA_OUT[1];
+assign oDATA_2 = DATA_OUT[2];
+assign oDATA_3 = DATA_OUT[3];
 	
 endmodule 

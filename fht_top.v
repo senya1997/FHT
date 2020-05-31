@@ -1,4 +1,5 @@
 `include "fht_defines.v"
+`include "fht_defines_tb.v"
 
 module fht_top(
 	input iCLK,
@@ -74,7 +75,7 @@ wire RDY;
 
 wire ST_ZERO, ST_LAST;
 wire SEC_PART_SUBSEC;
-wire SECTOR;
+wire [`SEC_BIT - 1: 0] SECTOR;
 
 wire [`A_BIT - 1 : 0] ADDR_COEF;
 

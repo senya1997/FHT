@@ -1,7 +1,7 @@
 #This file contains the commands to create libraries and compile the library file into those libraries.
 
-set path_to_quartus "C:/altera/13.1/quartus"
-set type_of_sim cycloneiv
+set path_to_quartus "D:/Program Files/altera/14.1/quartus"
+set type_of_sim compile_all
 
 # The type_of_sim should be one of the following values
 # compile_all: Compiles all Altera libraries 

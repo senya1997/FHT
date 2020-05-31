@@ -3,7 +3,7 @@
 `include "../fht_defines_tb.v"
 
 `define N 1024
-`define N_bank (`N/4) // cause Radix-4 
+`define BANK_SIZE (`N/4) // cause Radix-4 
 
 `ifdef TEST_MIXER
 	`define NUM
@@ -37,7 +37,7 @@
 	`undef BIAS
 	`undef NUM
 	
-	`define AUDIO_PATH "../../fрt/matlab/impulses/g.wav"
+	`define AUDIO_PATH "../../fht/matlab/impulses/g.wav"
 `elsif BIAS
 	`undef NUM
 	
@@ -49,10 +49,13 @@ module fht_tb;
 bit clk;
 bit reset;
 
-shortint i, j;
+bit [2 : 0] i;
+shortint j;
+
 real temp;
 
 bit start;
+bit ram_sel;
 
 `ifdef SIN
 	real time_s = 0;
@@ -65,7 +68,7 @@ bit start;
 	
 bit signed [`D_BIT - 2 : 0] data_adc; // '-2' because data from ADC don't have bit expansion
 bit [`A_BIT - 1 : 0] addr_rd [0 : 3];
-bit [`A_BIT - 1 : 0] addr_wr [0 : 3];
+bit [`A_BIT - 1 : 0] addr_wr;
 bit [3 : 0] we;
 
 wire RDY;
@@ -85,13 +88,14 @@ initial begin
 end
 
 initial begin
-	`ifdef TEST_FFT
-		$display("\n\n\t\t\tSTART TEST FFT\n");
-	`elsif TEST_MIXER
+	`ifdef TEST_MIXER
 		$display("\n\n\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
+	`else
+		$display("\n\n\t\t\tSTART TEST FHT\n");
 	`endif
 	
 	start = 1'b0;
+	
 	#(10*`TACT);
 	
 	`ifdef SIN
@@ -108,8 +112,8 @@ initial begin
 	
 	$display("\twrite ADC data point in RAM, time: %t\n", $time);
 	
-	for(i = 0; i <= 3; i = i + 1)
-		for(j = 0; j < `N_bank; j = j + 1)
+	for(i = 0; i < 4; i = i + 1)
+		for(j = 0; j < `BANK_SIZE; j = j + 1) 
 			begin
 				`ifdef SIN
 					noise = $unsigned($random)%(`AMP_NOISE);
@@ -131,16 +135,18 @@ initial begin
 				
 				addr_wr = j;
 				
-				we[i] = 1'b1;
+			// save input data from ADC required bitreverse bank counter
+				we[{i[0], i[1]}] = 1'b1;
 					#(`TACT);
-				we[i] = 1'b0;
+				we[{i[0], i[1]}] = 1'b0;
 			end
 		
 	#(10*`TACT);
 	
-	SAVE_RAM_DATA("start_ram_a_re.txt", "start_ram_a_im.txt", 0);
+	SAVE_RAM_DATA("init_ram_a.txt", 0);
+	ram_sel = 1'b1;
 	
-	$display("\n\tlaunch FFT, time: %t\n", $time);
+	$display("\n\tstart FHT, time: %t\n", $time);
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
@@ -148,54 +154,63 @@ initial begin
 	wait(RDY);
 	
 	#(10*`TACT);
-	SAVE_RAM_DATA("ram_a_re.txt", "ram_a_im.txt", 0); // name must not change, this use in matlab 'analys'
-	SAVE_RAM_DATA("ram_b_re.txt", "ram_b_im.txt", 0);
+	SAVE_RAM_DATA("ram_a.txt", 0); // name must not change, this use in matlab 'analys'
+	SAVE_RAM_DATA("ram_b.txt", 1);
 	
 	$display("\n\t\t\tCOMPLETE\n");
 	mti_fli::mti_Cmd("stop -sync");
 end
 
-always@(FHT.CONTROL.cnt_stage) begin
-	case(FHT.CONTROL.cnt_stage)
-		1: #(2*`TACT) SAVE_RAM_DATA("before_2st_ram_a_re.txt", "before_2st_ram_a_im.txt", 0);
-		2: #(2*`TACT) SAVE_RAM_DATA("before_3st_ram_b_re.txt", "before_3st_ram_b_im.txt", 1);
-		3: #(2*`TACT) SAVE_RAM_DATA("before_4st_ram_a_re.txt", "before_4st_ram_a_im.txt", 0);
-		4: #(2*`TACT) SAVE_RAM_DATA("before_5st_ram_b_re.txt", "before_5st_ram_b_im.txt", 1);
-		5: #(2*`TACT) SAVE_RAM_DATA("before_6st_ram_a_re.txt", "before_6st_ram_a_im.txt", 0);
-	endcase	
+always@(FHT.CONTROL.cnt_stage)begin
+	string str_temp, str_stage;
+	integer int_stage;
+	
+	if(!RDY)
+		begin
+			int_stage = FHT.CONTROL.cnt_stage;
+			str_stage.itoa(int_stage);
+			
+			str_temp = {"before_", str_stage, "st_ram_a.txt"};
+			
+			#(2*`TACT) SAVE_RAM_DATA(str_temp, ram_sel);
+			ram_sel = ~ram_sel;		
+		end
 end
 
 task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 	bit signed [`D_BIT - 1 : 0] buf_signed [0 : 3];
 	int f_ram;
+	shortint cnt_bank, cnt_data;
 	
-	$display("\t *** save data from RAM in files: '%s', time: %t", name, $time);
+	$display("\t##### save data from RAM in files: '%s', time: %t", name, $time);
 	
 	f_ram = $fopen(name, "w");
 	
-	for(j = 0; j < `N_bank; j = j + 1)
+	for(cnt_data = 0; cnt_data < `BANK_SIZE; cnt_data = cnt_data + 1)
 		begin
 		// cycle 'for' impossible to use because expression
-		// '...RAM_A.ram_bank[i].RAM_BANK...' provide to error in modelsim
+		// '...FHT_RAM_A.ram_bank[i].RAM_BANK...' provide to error in modelsim
 		// number of bank memory must be the 'integer number', not a 'variable'
 			if(ram_sel == 0)
 				begin
-					buf_signed[0] = FHT.RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					buf_signed[1] = FHT.RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					buf_signed[2] = FHT.RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					buf_signed[3] = FHT.RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					buf_signed[0] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					buf_signed[1] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					buf_signed[2] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					buf_signed[3] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
 				end
 			else if(ram_sel == 1)
 				begin
-					buf_signed[0] = FHT.RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					buf_signed[1] = FHT.RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					buf_signed[2] = FHT.RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					buf_signed[3] = FHT.RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					buf_signed[0] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					buf_signed[1] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					buf_signed[2] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					buf_signed[3] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
 				end
 			
-			for(i = 0; i < 4; i = i + 1) 
-				$fwrite(f_ram, "%d", buf_signed[i], "\t\t");
-			
+			for(cnt_bank = 0; cnt_bank < 4; cnt_bank = cnt_bank + 1) 
+				begin
+					$fwrite(f_ram, "%d", buf_signed[cnt_bank], "\t\t");
+				end
+				
 			$fwrite(f_ram, "\n");
 		end
 		
@@ -246,7 +261,7 @@ fht_top FHT(
 	.iSTART(start),
 	
 	.iDATA(data_adc),
-	.iADDR_WR_0(addr_wr),
+	.iADDR_WR(addr_wr),
 	
 	.iWE_0(we[0]),
 	.iWE_1(we[1]),
@@ -258,10 +273,10 @@ fht_top FHT(
 	.iADDR_RD_2(addr_rd[2]),
 	.iADDR_RD_3(addr_rd[3]),
 	
-	.oDATA_RE_0(),
-	.oDATA_RE_1(),
-	.oDATA_RE_2(),
-	.oDATA_RE_3(),
+	.oDATA_0(),
+	.oDATA_1(),
+	.oDATA_2(),
+	.oDATA_3(),
 	
 	.oRDY(RDY)
 );
