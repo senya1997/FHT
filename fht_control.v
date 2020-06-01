@@ -54,7 +54,7 @@ reg [A_BIT - 1 : 0] addr_wr_sw_1;
 reg [A_BIT - 1 : 0] addr_coef_cnt;
 reg [A_BIT - 1 : 0] addr_coef;
 
-reg [2 : 0] sec_part_subsec_d;
+reg [4 : 0] sec_part_subsec_d;
 reg [2 : 0] eof_sector_d;
 
 reg we_a;
@@ -81,8 +81,8 @@ wire EOF_SECTOR =		(cnt_sector_time == div - 9'd1);
 wire EOF_SECTOR_1 =	(cnt_sector_time == div - 9'd2); // behind 'EOF_SECTOR'
 wire EOF_SECTOR_D =	(eof_sector_d[2]);
 
-wire SEC_PART_SUBSEC =		((cnt_stage > 4'd1) & (cnt_sector_time >= (div >> 1)));
-wire SEC_PART_SUBSEC_D =	(sec_part_subsec_d[2]); // delayed
+wire SEC_PART_SUBSEC =		(cnt_sector_time >= (div >> 1));
+wire SEC_PART_SUBSEC_D =	(sec_part_subsec_d[4]); // delayed
 
 wire RESET_CNT_RD = 	 (rdy | EOF_READ);
 wire RESET_CNT_WR = 	 (rdy | EOF_STAGE);
@@ -179,9 +179,9 @@ always@(posedge iCLK_2 or negedge iRESET)begin
 end
 
 // write:
-always@(posedge iCLK_2 or negedge iRESET)begin
-	if(!iRESET) sec_part_subsec_d <= 3'd0;
-	else sec_part_subsec_d <= {sec_part_subsec_d[1 : 0], SEC_PART_SUBSEC};
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) sec_part_subsec_d <= 5'd0;
+	else sec_part_subsec_d <= {sec_part_subsec_d[3 : 0], SEC_PART_SUBSEC};
 end
 
 always@(posedge iCLK_2 or negedge iRESET)begin

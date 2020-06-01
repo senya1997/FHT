@@ -87,7 +87,7 @@ always@(posedge clk_2)begin
 		CHECK_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
 end
 
-always@(posedge clk_2)begin
+always@(negedge clk_2)begin
 	if(!RDY & (WE_A | WE_B))
 		CHECK_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 end
@@ -138,7 +138,8 @@ task CHECK_ADDR(
 endtask
 
 fht_control CONTROL(
-	.iCLK(clk_2),
+	.iCLK(clk),
+	.iCLK_2(clk_2),
 	
 	.iRESET(reset),
 	
