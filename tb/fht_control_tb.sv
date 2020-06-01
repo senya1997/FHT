@@ -4,7 +4,7 @@
 
 module fht_control_tb;
  
-reg clk;
+reg clk, clk_2;
 reg reset;
 
 reg start;
@@ -35,6 +35,11 @@ initial begin
 end
 
 initial begin
+	clk_2 = 1;
+	forever	#(`TACT) clk_2 = ~clk_2;
+end
+
+initial begin
 	reset = 1'b1; #(2*`TACT);
 	reset = 1'b0; #(`TACT);
 	reset = 1'b1;
@@ -55,7 +60,7 @@ initial begin
 	
 		#1; // if "sdf" is turn off
 	start = 1'b1;
-		#(`TACT);
+		#(2*`TACT);
 	start = 1'b0;
 		// #(`TACT - 1);
 		
@@ -77,12 +82,12 @@ initial begin
 	mti_fli::mti_Cmd("stop -sync");
 end
 
-always@(posedge clk)begin
+always@(posedge clk_2)begin
 	if(!RDY & (CONTROL.cnt_stage_time < 256))
 		CHECK_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
 end
 
-always@(posedge clk)begin
+always@(posedge clk_2)begin
 	if(!RDY & (WE_A | WE_B))
 		CHECK_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 end
@@ -133,7 +138,8 @@ task CHECK_ADDR(
 endtask
 
 fht_control CONTROL(
-	.iCLK(clk),
+	.iCLK(clk_2),
+	
 	.iRESET(reset),
 	
 	.iSTART(start),

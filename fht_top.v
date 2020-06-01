@@ -2,6 +2,8 @@
 
 module fht_top(
 	input iCLK,
+	input iCLK_2, // half freq of 'iCLK'
+	
 	input iRESET,
 	
 	input iSTART, // after load point in RAM(A) required issue strobe on 'iSTART'
@@ -31,6 +33,8 @@ module fht_top(
 wire SOURCE_DATA;
 wire SOURCE_CONT;
 
+wire RDY;
+
 wire signed [`D_BIT - 1 : 0] DATA_RAM_A [0 : 3]; // RAM(A) gives input and issue output points
 wire signed [`D_BIT - 1 : 0] DATA_BUT [0 : 3];
 
@@ -45,6 +49,15 @@ wire [`A_BIT - 1 : 0] ADDR_WR [0 : 3];
 	wire signed [`D_BIT - 1 : 0] DATA_RAM_B_BUT [0 : 3];
 	wire signed [`D_BIT - 1 : 0] DATA_BUT_RAM [0 : 3];
 
+`ifdef MODEL_TECH
+	reg rdy_d;
+	
+	always@(posedge iCLK or negedge iRESET)begin
+		if(!iRESET) rdy_d <= 1'b1;
+		else rdy_d <= RDY;
+	end
+`endif
+	
 genvar k;
 generate
 	for(k = 0; k < 4; k = k + 1)
@@ -52,14 +65,13 @@ generate
 			assign DATA_RAM_A[k] =	SOURCE_CONT ? {iDATA[15], iDATA} : DATA_BUT_RAM[k];
 			assign ADDR_WR[k] = 		SOURCE_CONT ? iADDR_WR : ADDR_WR_CTRL[k];
 			
-			assign DATA_BUT[k] = SOURCE_CONT ? 0 : (SOURCE_DATA ? DATA_RAM_B_BUT[k] : DATA_RAM_A_BUT[k]);
+		`ifdef MODEL_TECH
+			assign DATA_BUT[k] = rdy_d ? 0 : (SOURCE_DATA ? DATA_RAM_B_BUT[k] : DATA_RAM_A_BUT[k]);
+		`else
+			assign DATA_BUT[k] = SOURCE_DATA ? DATA_RAM_B_BUT[k] : DATA_RAM_A_BUT[k];
+		`endif
 		end
 endgenerate
-
-assign ADDR_RD[0] = SOURCE_CONT ? iADDR_RD_0 : ADDR_RD_CTRL[0];
-assign ADDR_RD[1] = SOURCE_CONT ? iADDR_RD_1 : ADDR_RD_CTRL[1];
-assign ADDR_RD[2] = SOURCE_CONT ? iADDR_RD_2 : ADDR_RD_CTRL[2];
-assign ADDR_RD[3] = SOURCE_CONT ? iADDR_RD_3 : ADDR_RD_CTRL[3];
 
 wire WE_A, WE_B;
 wire [3 : 0] WE;
@@ -68,9 +80,13 @@ wire [3 : 0] WE;
 	assign WE[2] = SOURCE_CONT ? iWE_2 : WE_A;
 	assign WE[3] = SOURCE_CONT ? iWE_3 : WE_A;
 	
-wire RDY;
+assign ADDR_RD[0] = SOURCE_CONT ? iADDR_RD_0 : ADDR_RD_CTRL[0];
+assign ADDR_RD[1] = SOURCE_CONT ? iADDR_RD_1 : ADDR_RD_CTRL[1];
+assign ADDR_RD[2] = SOURCE_CONT ? iADDR_RD_2 : ADDR_RD_CTRL[2];
+assign ADDR_RD[3] = SOURCE_CONT ? iADDR_RD_3 : ADDR_RD_CTRL[3];
 
 // ======================= control: ===========================
+reg start_d;
 
 wire ST_ZERO, ST_LAST;
 wire SEC_PART_SUBSEC;
@@ -78,11 +94,17 @@ wire [`SEC_BIT - 1: 0] SECTOR;
 
 wire [`A_BIT - 1 : 0] ADDR_COEF;
 
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) start_d <= 1'b0;
+	else start_d <= iSTART;
+end
+	
 fht_control #(.A_BIT(`A_BIT), .SEC_BIT(`SEC_BIT)) CONTROL(
-	.iCLK(iCLK),
+	.iCLK(iCLK_2),
+	
 	.iRESET(iRESET),
 	
-	.iSTART(iSTART),
+	.iSTART(iSTART | start_d),
 	
 	.oST_ZERO(ST_ZERO),
 	.oST_LAST(ST_LAST), 

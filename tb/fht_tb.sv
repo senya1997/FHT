@@ -46,7 +46,7 @@
 
 module fht_tb;
 
-bit clk;
+bit clk, clk_2;
 bit reset;
 
 bit [2 : 0] i;
@@ -63,7 +63,8 @@ bit ram_sel;
 `endif
 
 `ifdef NUM
-	shortint k = 0;
+	// shortint k = 0;
+	shortint k = 1;
 `endif
 	
 bit signed [`D_BIT - 2 : 0] data_adc; // '-2' because data from ADC don't have bit expansion
@@ -79,6 +80,11 @@ initial begin
 	$timeformat(-6, 3, " us", 6);
 	clk = 1;
 	forever	#(`HALF_TACT) clk = ~clk;
+end
+
+initial begin
+	clk_2 = 1;
+	forever	#(`TACT) clk_2 = ~clk_2;
 end
 
 initial begin
@@ -151,7 +157,7 @@ initial begin
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
-		// #(`TACT - 1);
+		#(2*`TACT);
 	wait(RDY);
 	$display("\n\tfinish FHT, time: %t\n", $time);
 	
@@ -258,6 +264,8 @@ endfunction
 
 fht_top FHT(
 	.iCLK(clk),
+	.iCLK_2(clk_2),
+	
 	.iRESET(reset),
 	
 	.iSTART(start),
