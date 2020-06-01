@@ -100,7 +100,8 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 	
 fht_control #(.A_BIT(`A_BIT), .SEC_BIT(`SEC_BIT)) CONTROL(
-	.iCLK(iCLK_2),
+	.iCLK(iCLK),
+	.iCLK_2(iCLK_2),
 	
 	.iRESET(iRESET),
 	
