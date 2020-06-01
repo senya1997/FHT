@@ -74,8 +74,8 @@ wire COEF_EN =			(cnt_stage_time >= 10'd1);
 wire EOF_READ =		(cnt_stage_time >= 10'd255);
 wire EOF_COEF =		(cnt_stage_time >= 10'd256);
 
-wire EOF_STAGE =		(cnt_stage_time == 10'd259);
-wire EOF_STAGE_1 =	(cnt_stage_time == 10'd258); // behind 'EOF_STAGE'
+wire EOF_STAGE =		(cnt_stage_time == 10'd258);
+wire EOF_STAGE_1 =	(cnt_stage_time == 10'd257); // behind 'EOF_STAGE'
 
 wire EOF_SECTOR =		(cnt_sector_time == div - 9'd1);
 wire EOF_SECTOR_1 =	(cnt_sector_time == div - 9'd2); // behind 'EOF_SECTOR'
@@ -85,7 +85,7 @@ wire SEC_PART_SUBSEC =		((cnt_stage > 4'd1) & (cnt_sector_time >= (div >> 1)));
 wire SEC_PART_SUBSEC_D =	(sec_part_subsec_d[2]); // delayed
 
 wire RESET_CNT_RD = 	 (rdy | EOF_READ);
-wire RESET_CNT_WR = 	 (rdy | EOF_STAGE_1);
+wire RESET_CNT_WR = 	 (rdy | EOF_STAGE);
 wire RESET_CNT_COEF = (rdy | EOF_COEF);
 
 // *********** stage counters: *********** //
@@ -135,6 +135,7 @@ always@(posedge iCLK_2 or negedge iRESET)begin
 end
 
 // ************* choose addr: ************* //
+
 wire STAGE_ODD	=	(cnt_stage[0] == 1'b1);
 wire STAGE_EVEN = (cnt_stage[0] == 1'b0);
 

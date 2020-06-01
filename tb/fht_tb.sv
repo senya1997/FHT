@@ -63,8 +63,8 @@ bit ram_sel;
 `endif
 
 `ifdef NUM
-	// shortint k = 0;
-	shortint k = 1;
+	shortint k = 0;
+	// shortint k = 1;
 `endif
 	
 bit signed [`D_BIT - 2 : 0] data_adc; // '-2' because data from ADC don't have bit expansion

@@ -30,6 +30,7 @@ module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, SEC_BIT = 9)(
 // on 2nd tact this block gets remaining point 'X1' and it going on summator in butterfly
 
 reg signed [D_BIT - 1: 0] mux_buf [0 : 3];
+reg signed [D_BIT - 1: 0] mux_buf_d [0 : 1];
 
 wire signed [D_BIT - 1 : 0] MIX_TO_BUT_0 [0 : 3];
 wire signed [D_BIT - 1 : 0] MIX_TO_BUT_1 [0 : 3];
@@ -63,6 +64,19 @@ always@(posedge iCLK or negedge iRESET)begin
 			mux_buf[1] <= BUT_TO_MIX[2];
 			mux_buf[2] <= BUT_TO_MIX[1];
 			mux_buf[3] <= BUT_TO_MIX[3];
+		end
+end
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET)
+		begin
+			mux_buf_d[0] <= 0;
+			mux_buf_d[1] <= 0;
+		end
+	else
+		begin
+			mux_buf_d[0] <= mux_buf[0];
+			mux_buf_d[1] <= mux_buf[1];
 		end
 end
 
@@ -132,8 +146,8 @@ fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_1(
 	.oY_1(BUT_TO_MIX[3])
 );
 
-assign oY_0 = mux_buf[0];
-assign oY_1 = mux_buf[1];
+assign oY_0 = mux_buf_d[0];
+assign oY_1 = mux_buf_d[1];
 assign oY_2 = mux_buf[2];
 assign oY_3 = mux_buf[3];
 
