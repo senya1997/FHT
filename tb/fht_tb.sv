@@ -178,8 +178,11 @@ always@(FHT.CONTROL.cnt_stage)begin
 			int_stage = FHT.CONTROL.cnt_stage;
 			str_stage.itoa(int_stage);
 			
-			str_temp = {"before_", str_stage, "st_ram_a.txt"};
-			
+			if(ram_sel == 0)
+				str_temp = {"before_", str_stage, "st_ram_a.txt"};
+			else if(ram_sel)
+				str_temp = {"before_", str_stage, "st_ram_b.txt"};
+				
 			#(2*`TACT) SAVE_RAM_DATA(str_temp, ram_sel);
 			ram_sel = ~ram_sel;		
 		end

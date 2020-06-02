@@ -47,9 +47,8 @@ reg signed [8 : 0] cnt_bias_rd; // required to go [7 : 0], beacuse max 'size_bia
 reg [A_BIT - 1 : 0] addr_rd_cnt; // addr_rd never swap, this reg is always 0-255 counter
 reg [A_BIT - 1 : 0] addr_rd_bias; // 0-255 on 0,1 sector, after - is added bias
 
-reg [A_BIT - 1 : 0] addr_wr_cnt; // analog 'addr_rd_cnt'
-reg [A_BIT - 1 : 0] addr_wr_sw_0; // bias on write addr swap every half subsector from this reg on another
-reg [A_BIT - 1 : 0] addr_wr_sw_1;
+reg [A_BIT - 1 : 0] addr_wr_cnt, addr_wr_cnt_d; // analog 'addr_rd_cnt'
+reg [A_BIT - 1 : 0] addr_wr_bias; // bias on write addr swap every half subsector from this reg on another
 
 reg [A_BIT - 1 : 0] addr_coef_cnt;
 reg [A_BIT - 1 : 0] addr_coef;
@@ -142,6 +141,8 @@ wire STAGE_EVEN = (cnt_stage[0] == 1'b0);
 wire [A_BIT - 1 : 0] INC_ADDR_RD = (addr_rd_cnt + 1'b1);
 
 wire signed [9 : 0] BIAS_RD = INC_ADDR_RD + (cnt_bias_rd << div_2);
+wire signed [A_BIT - 1 : 0] BIAS_WR = SEC_PART_SUBSEC_D ? addr_wr_cnt + (div >> 1) : addr_wr_cnt - (div >> 1);
+
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 9'd1)));
 wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? 1'b1 : EOF_SECTOR_1);
 
@@ -191,23 +192,18 @@ always@(posedge iCLK_2 or negedge iRESET)begin
 end
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) addr_wr_sw_0 <= 0;
-	else if(WE_EN)
-		begin
-			if(ZERO_STAGE | LAST_STAGE | !SEC_PART_SUBSEC_D) addr_wr_sw_0 <= addr_wr_cnt;
-			else addr_wr_sw_0 <= addr_wr_cnt - (div >> 1); // attention overflow
-		end
-	else addr_wr_sw_0 <= 0;
+	if(!iRESET) addr_wr_cnt_d <= 0;
+	else addr_wr_cnt_d <= addr_wr_cnt;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) addr_wr_sw_1 <= 0;
+	if(!iRESET) addr_wr_bias <= 0;
 	else if(WE_EN)
 		begin
-			if(ZERO_STAGE | LAST_STAGE | SEC_PART_SUBSEC_D) addr_wr_sw_1 <= addr_wr_cnt;
-			else addr_wr_sw_1 <= addr_wr_cnt + (div >> 1); // attention overflow
+			if(ZERO_STAGE | LAST_STAGE) addr_wr_bias <= addr_wr_cnt;
+			else addr_wr_bias <= BIAS_WR; // attention overflow
 		end
-	else addr_wr_sw_1 <= 0;
+	else addr_wr_bias <= 0;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -265,7 +261,7 @@ end
 
 assign oST_ZERO =				ZERO_STAGE; // mb required reg
 assign oST_LAST = 			LAST_STAGE;
-assign o2ND_PART_SUBSEC =	SEC_PART_SUBSEC;
+assign o2ND_PART_SUBSEC =	sec_part_subsec_d[3] & !ZERO_STAGE;
 
 assign oSECTOR = cnt_sector;
 
@@ -274,10 +270,10 @@ assign oADDR_RD_1 = addr_rd_bias;
 assign oADDR_RD_2 = addr_rd_cnt;
 assign oADDR_RD_3 = addr_rd_bias;
 
-assign oADDR_WR_0 = addr_wr_sw_0;
-assign oADDR_WR_1 = addr_wr_sw_0;
-assign oADDR_WR_2 = addr_wr_sw_1;
-assign oADDR_WR_3 = addr_wr_sw_1;
+assign oADDR_WR_0 = addr_wr_cnt_d;
+assign oADDR_WR_1 = addr_wr_bias;
+assign oADDR_WR_2 = addr_wr_cnt_d;
+assign oADDR_WR_3 = addr_wr_bias;
 
 assign oADDR_COEF = addr_coef;
 

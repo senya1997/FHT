@@ -2,7 +2,7 @@
 
 module fht_top(
 	input iCLK,
-	input iCLK_2, // half freq of 'iCLK'
+	input iCLK_2, // half freq of 'iCLK' from PLL
 	
 	input iRESET,
 	
