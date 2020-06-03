@@ -2,14 +2,6 @@
 `include "../fht_defines.v"
 `include "../fht_defines_tb.v"
 
-`define D_SIZE 17 // data - signed 
-`define W_SIZE 12 // rotation coefficients - signed 
-
-`define MAX_D 32768 // or 32768 ?
-`define MAX_W 1024
-
-`define NUM_OF_RPT 10 // number of repeat test 
-
 module fht_but_tb;
 
 bit clk;

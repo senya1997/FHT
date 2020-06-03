@@ -2,48 +2,6 @@
 `include "../fht_defines.v"
 `include "../fht_defines_tb.v"
 
-`define N 1024
-`define BANK_SIZE (`N/4) // cause Radix-4 
-
-`ifdef TEST_MIXER
-	`define NUM
-`else
-// choose test signal:
-	// `define SIN
-	// `define AUDIO // from '.wav' file 
-	// `define BIAS // integer const 
-	`define NUM // default test signal, numbers 0..N (function 'y = x', x > 0)
-`endif
-
-`ifdef SIN
-	`undef AUDIO
-	`undef BIAS
-	`undef NUM
-	
-	// SIN spec:
-		`define AMP_1 10000 // integer [`D_BIT - 2 : 0]
-		`define AMP_2 5000
-		`define AMP_NOISE 15000
-		
-		`define FREQ_D 44100
-		`define FREQ_1 9000 // integer Hz
-		`define FREQ_2 4500
-		
-		`define PHASE_1 0 // float Rad
-		`define PHASE_2 0.645
-		
-		`define BIAS 0 // integer ~ MAX_AMP/2 if use unsigned (by default - decimal format)
-`elsif AUDIO
-	`undef BIAS
-	`undef NUM
-	
-	`define AUDIO_PATH "../../fht/matlab/impulses/g.wav"
-`elsif BIAS
-	`undef NUM
-	
-	`define CONST 100
-`endif
-
 module fht_tb;
 
 bit clk, clk_2;
@@ -51,6 +9,7 @@ bit reset;
 
 bit [2 : 0] i;
 shortint j;
+int cnt_er;
 
 real temp;
 
@@ -100,20 +59,24 @@ initial begin
 		$display("\n\n\t\t\t\tSTART TEST FHT\n");
 	`endif
 	
+	`ifdef COMPARE_WITH_MATLAB
+		$display("\t\tRAM compare with 'txt' file from matlab");
+	`endif
+	
 	start = 1'b0;
 	
 	#(10*`TACT);
 	
 	`ifdef SIN
-		$display("\ttest signal: sine wave with next config:");
-		$display("\t  amp\t=\t%6d, %6d\n\t  freq\t=\t%6d, %6d Hz\n\t  phase\t=\t%6.3f, %6.3f Rad\n\t  bias\t=\t%6d\n\t  noise\t=\t%6d\n", 
+		$display("\t\ttest signal: sine wave with next config:");
+		$display("\t\t  amp\t=\t%6d, %6d\n\t  freq\t=\t%6d, %6d Hz\n\t  phase\t=\t%6.3f, %6.3f Rad\n\t  bias\t=\t%6d\n\t  noise\t=\t%6d\n", 
 				 `AMP_1, `AMP_2, `FREQ_1, `FREQ_2, `PHASE_1, `PHASE_2, `BIAS, `AMP_NOISE);
 	`elsif AUDIO
-		$display("\ttest signal: audio from path - ", `AUDIO_PATH, "\n");
+		$display("\t\ttest signal: audio from path - ", `AUDIO_PATH, "\n");
 	`elsif BIAS
-		$display("\ttest signal: const = %d\n", `CONST);
+		$display("\t\ttest signal: const = %d\n", `CONST);
 	`elsif NUM
-		$display("\ttest signal: numbers (function 'y = x')\n");
+		$display("\t\ttest signal: numbers (function 'y = x')\n");
 	`endif
 	
 	$display("\twrite ADC data point in RAM, time: %t\n", $time);
@@ -170,11 +133,14 @@ initial begin
 end
 
 always@(FHT.CONTROL.cnt_stage)begin
-	string str_temp, str_stage;
+	string str_temp, str_temp_ref;
+	string str_stage;
 	integer int_stage;
 	
 	if(!RDY)
 		begin
+			$display("\n\t\t\t\t%2d stage FHT\n", FHT.CONTROL.cnt_stage);
+			
 			int_stage = FHT.CONTROL.cnt_stage;
 			str_stage.itoa(int_stage);
 			
@@ -184,7 +150,16 @@ always@(FHT.CONTROL.cnt_stage)begin
 				str_temp = {"before_", str_stage, "st_ram_b.txt"};
 				
 			#(2*`TACT) SAVE_RAM_DATA(str_temp, ram_sel);
-			ram_sel = ~ram_sel;		
+			ram_sel = ~ram_sel;
+			
+			`ifdef COMPARE_WITH_MATLAB
+				str_temp_ref = {"../../fht/matlab/before_", str_stage, "st_ram.txt"};
+		
+				COMPARE_MATLAB_RAM(str_temp_ref, str_temp);
+			`endif
+	
+			$display("\n\t\t\tpress 'run' to continue\n");
+			$stop;
 		end
 end
 
@@ -193,7 +168,7 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 	int f_ram;
 	shortint cnt_bank, cnt_data;
 	
-	$display("\t\tsave RAM in files: '%s', time: %t", name, $time);
+	$display("\tsave RAM in files: '%s'\n", name);
 	
 	f_ram = $fopen(name, "w");
 	
@@ -226,6 +201,38 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 		end
 		
 	$fclose(f_ram);
+endtask
+
+task COMPARE_MATLAB_RAM(input string name_ref, name);
+	int file_ref, file;
+	int temp_ref [4];
+	int temp [4];
+	
+	file_ref =	$fopen(name_ref, "r");
+	file = 		$fopen(name, "r");
+	
+	for(j = 0; j < `BANK_SIZE; j = j + 1)
+		begin
+			$fscanf(file_ref, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+			$fscanf(file, "%4d\t%4d\t%4d\t%4d\n", temp[0], temp[1], temp[2], temp[3]);
+			
+			if((temp_ref[0] == temp[0]) & (temp_ref[1] == temp[1]) & 
+			   (temp_ref[2] == temp[2]) & (temp_ref[3] == temp[3]))
+				$display("\t\tdata_0: %4d, data_1: %4d, data_2: %4d, data_3: %4d", 
+							temp[0], temp[1], temp[2], temp[3]);
+			else
+				begin
+					cnt_er = cnt_er + 1;
+					
+					$display(" ***\tREF:\tdata_0: %4d, data_1: %4d, data_2: %4d, data_3: %4d", 
+											temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+					$display(" ***\t\t\tdata_0: %4d, data_1: %4d, data_2: %4d, data_3: %4d", 
+											temp[0], temp[1], temp[2], temp[3]);
+				end			
+		end
+	
+	$display("\n\tnumber of errors compare RAM with matlab in this stage: %4d, time: %t", cnt_er, $time);
+	cnt_er = 0;
 endtask
 
 /*

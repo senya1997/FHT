@@ -159,6 +159,11 @@ im = imag(ram_buf);
 %}
   
 % fht:
+file_ram = fopen('init_ram.txt', 'w');
+for i = 1 : row;
+    fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
+end
+    
 file_addr_rd = fopen('addr_rd.txt', 'w'); % for compare with rtl
 file_addr_wr = fopen('addr_wr.txt', 'w');
 
@@ -177,9 +182,17 @@ coef_cos = 4;
 % init coef for 1st stage:
 	div = N/(2*N_bank);
 	sector = 1;
-    
+ 
 for stage = 1:last_stage % without 0 stage
-	ram_buf(1:row, 1:N_bank) = zeros;
+	name = 'before_xst_ram.txt';
+    name(8) = mat2str(stage);
+    
+    file_ram = fopen(name, 'w');
+    for i = 1 : row;
+        fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
+    end
+
+    ram_buf(1:row, 1:N_bank) = zeros;
 
     sector_size = 1;
 	sector_cnt = 2;

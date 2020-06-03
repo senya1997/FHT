@@ -46,7 +46,7 @@ always@(posedge iCLK or negedge iRESET)begin
 				end
 			default:
 				begin
-					if(iSECTOR[0] == 1'b0)
+					if(iSECTOR[0] == 1'b1)
 						begin
 							mux_buf[0] <= iBANK_0;
 							mux_buf[1] <= iBANK_1;

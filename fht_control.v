@@ -38,8 +38,8 @@ reg [9 : 0] cnt_stage_time; // length of bank + reserve (for wait time end of wr
 reg [8 : 0] div; // this 'div' = '2*div' from matlab model
 reg [3 : 0] div_2; // replacement mult on 'div' in calc bias by shift on 'div_2'
 
-reg [8 : 0] cnt_sector;
-reg [8 : 0] cnt_sector_d;
+reg [SEC_BIT - 1 : 0] cnt_sector;
+reg [SEC_BIT - 1 : 0] cnt_sector_d;
 reg [8 : 0] cnt_sector_time;
 
 reg [8 : 0] size_bias_rd;
@@ -123,13 +123,13 @@ always@(posedge iCLK_2 or negedge iRESET)begin
 end
 
 always@(posedge iCLK_2 or negedge iRESET)begin
-	if(!iRESET) cnt_sector <= 9'd0;
-	else if(RESET_CNT_RD | EOF_STAGE ) cnt_sector <= 9'd0;
+	if(!iRESET) cnt_sector <= 0;
+	else if(RESET_CNT_RD | EOF_STAGE ) cnt_sector <= 0;
 	else if(EOF_SECTOR) cnt_sector <= cnt_sector + 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) cnt_sector_d <= 9'd0;
+	if(!iRESET) cnt_sector_d <= 0;
 	else cnt_sector_d <= cnt_sector;
 end
 
@@ -149,7 +149,7 @@ wire [A_BIT - 1 : 0] INC_ADDR_RD = (addr_rd_cnt + 1'b1);
 wire signed [9 : 0] BIAS_RD = INC_ADDR_RD + (cnt_bias_rd << div_2);
 wire signed [A_BIT - 1 : 0] BIAS_WR = SEC_PART_SUBSEC_D ? (addr_wr_cnt - (div >> 1)) : (addr_wr_cnt + (div >> 1));
 
-wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 9'd1)));
+wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 1)));
 wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? 1'b1 : EOF_SECTOR_1);
 
 // read:
@@ -180,7 +180,7 @@ always@(posedge iCLK_2 or negedge iRESET)begin
 	else if(RESET_CNT_RD) addr_rd_bias <= 0;
 	else
 		begin
-			if((cnt_sector > 9'd1) | ((cnt_sector == 9'd1) & EOF_SECTOR)) addr_rd_bias <= BIAS_RD[7 : 0];
+			if((cnt_sector > 1) | ((cnt_sector == 1) & EOF_SECTOR)) addr_rd_bias <= BIAS_RD[7 : 0];
 			else  addr_rd_bias <= addr_rd_bias + 1'b1;
 		end
 end
