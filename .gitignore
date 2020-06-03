@@ -1,3 +1,7 @@
+*.txt
+**/*.txt
+**/**/*.txt
+**/**/**/*.txt
 
 # Created by https://www.gitignore.io/api/matlab,csharp
 # Edit at https://www.gitignore.io/?templates=matlab,csharp
