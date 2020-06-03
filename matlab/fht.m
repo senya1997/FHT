@@ -233,14 +233,14 @@ for stage = 1:last_stage % without 0 stage
 				ram_buf(i, 1) = temp(3);
 				ram_buf(i, 3) = temp(4);
                 
-                fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i - div - 1, i - div - 1, i-1, i-1);
+                fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i - div - 1, i-1, i - div - 1 );
 			else
 				ram_buf(i, 1) = temp(1);
 				ram_buf(i, 3) = temp(2);
 				ram_buf(i + div, 2) = temp(3);
 				ram_buf(i + div, 4) = temp(4);
                 
-                fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i + div - 1, i + div - 1);
+                fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1,  i + div - 1, i-1, i + div - 1);
             end
 		end
         
