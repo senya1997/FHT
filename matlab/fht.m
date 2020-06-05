@@ -160,7 +160,7 @@ im = imag(ram_buf);
   
 % fht:
 file_ram = fopen('init_ram.txt', 'w');
-for i = 1 : row;
+for i = 1 : row
     fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
 end
     
@@ -183,12 +183,14 @@ coef_cos = 4;
 	div = N/(2*N_bank);
 	sector = 1;
  
+coef(1:row, 1:N_bank) = zeros;
+    
 for stage = 1:last_stage % without 0 stage
 	name = 'before_xst_ram.txt';
     name(8) = mat2str(stage);
     
     file_ram = fopen(name, 'w');
-    for i = 1 : row;
+    for i = 1 : row
         fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
     end
 
