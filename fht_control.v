@@ -271,10 +271,10 @@ assign o2ND_PART_SUBSEC =	SEC_PART_SUBSEC_D & !ZERO_STAGE;
 
 assign oSECTOR = cnt_sector_d;
 
-assign oADDR_RD_0 = addr_rd_cnt;
-assign oADDR_RD_1 = addr_rd_bias;
-assign oADDR_RD_2 = addr_rd_cnt;
-assign oADDR_RD_3 = addr_rd_bias;
+assign oADDR_RD_0 = cnt_sector[0] == 1'b0 ? addr_rd_bias : addr_rd_cnt;
+assign oADDR_RD_1 = cnt_sector[0] == 1'b0 ? addr_rd_cnt : addr_rd_bias;
+assign oADDR_RD_2 = cnt_sector[0] == 1'b0 ? addr_rd_bias : addr_rd_cnt;
+assign oADDR_RD_3 = cnt_sector[0] == 1'b0 ? addr_rd_cnt : addr_rd_bias;
 
 assign oADDR_WR_0 = addr_wr_cnt_d;
 assign oADDR_WR_1 = addr_wr_bias;
