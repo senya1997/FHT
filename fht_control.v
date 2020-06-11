@@ -169,6 +169,12 @@ always@(posedge iCLK_2 or negedge iRESET)begin
 		end
 end
 
+wire FIRST_HALF = iCLK;
+wire EN_BIAS = (cnt_sector > 1);
+
+wire EN_BIAS_EVEN =	(FIRST_HALF & EN_BIAS & (cnt_sector[0] == 0));
+wire EN_BIAS_ODD =	(FIRST_HALF & EN_BIAS & (cnt_sector[0] == 1));
+
 always@(posedge iCLK_2 or negedge iRESET)begin
 	if(!iRESET) addr_rd_cnt <= 0;
 	else if(RESET_CNT_RD) addr_rd_cnt <= 0;
@@ -178,13 +184,19 @@ end
 always@(posedge iCLK_2 or negedge iRESET)begin
 	if(!iRESET) addr_rd_bias <= 0;
 	else if(RESET_CNT_RD) addr_rd_bias <= 0;
+	else addr_rd_bias <= BIAS_RD[7 : 0];
+end
+/*
+always@(posedge iCLK_2 or negedge iRESET)begin
+	if(!iRESET) addr_rd_bias <= 0;
+	else if(RESET_CNT_RD) addr_rd_bias <= 0;
 	else
 		begin
 			if((cnt_sector > 1) | ((cnt_sector == 1) & EOF_SECTOR)) addr_rd_bias <= BIAS_RD[7 : 0];
 			else  addr_rd_bias <= addr_rd_bias + 1'b1;
 		end
 end
-
+*/
 // write:
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) sec_part_subsec_d <= 5'd0;
@@ -271,10 +283,10 @@ assign o2ND_PART_SUBSEC =	SEC_PART_SUBSEC_D & !ZERO_STAGE;
 
 assign oSECTOR = cnt_sector_d;
 
-assign oADDR_RD_0 = cnt_sector[0] == 1'b0 ? addr_rd_bias : addr_rd_cnt;
-assign oADDR_RD_1 = cnt_sector[0] == 1'b0 ? addr_rd_cnt : addr_rd_bias;
-assign oADDR_RD_2 = cnt_sector[0] == 1'b0 ? addr_rd_bias : addr_rd_cnt;
-assign oADDR_RD_3 = cnt_sector[0] == 1'b0 ? addr_rd_cnt : addr_rd_bias;
+assign oADDR_RD_0 = EN_BIAS_EVEN ?	addr_rd_bias : addr_rd_cnt;
+assign oADDR_RD_1 = EN_BIAS_ODD ?	addr_rd_bias : addr_rd_cnt;
+assign oADDR_RD_2 = EN_BIAS_EVEN ?	addr_rd_bias : addr_rd_cnt;
+assign oADDR_RD_3 = EN_BIAS_ODD ?	addr_rd_bias : addr_rd_cnt;
 
 assign oADDR_WR_0 = addr_wr_cnt_d;
 assign oADDR_WR_1 = addr_wr_bias;

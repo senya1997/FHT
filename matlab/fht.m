@@ -208,28 +208,16 @@ for stage = 1:last_stage % without 0 stage
         
 		for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div) 
 			if(j == 1)
-                temp = [ram(i, 2), ram(i, 2), ram(i, 4), ram(i, 4)];
-                temp = [ram(i, 1), ram(i, 2), ram(i, 3), ram(i, 4)];
-                
 				temp = fht_double_but([ram(i, 1), ram(i, 2), ram(i, 2)],...
 									  [ram(i, 3), ram(i, 4), ram(i, 4)], cur_cos_0, cur_cos_1, coef_cos);   
 			elseif(j == 2)
-                temp = [ram(i, 1), ram(i, 3), ram(i, 3), ram(i, 1)];
-                temp = [ram(i, 2), ram(i, 1), ram(i, 4), ram(i, 3)];
-                
 				temp = fht_double_but([ram(i, 2), ram(i, 1), ram(i, 3)],...
 									  [ram(i, 4), ram(i, 3), ram(i, 1)], cur_cos_0, cur_cos_1, coef_cos);
 			elseif(mod(j, 2) == 1)
-                temp = [ram(i, 2), ram(i + sector_cnt*2*div, 3), ram(i, 4), ram(i + sector_cnt*2*div, 1)];
-                temp = [ram(i, 1), ram(i, 2), ram(i, 3), ram(i, 4)];
-                
 				temp = fht_double_but([ram(i, 1), ram(i, 2), ram(i + sector_cnt*2*div, 3)],...
 									  [ram(i, 3), ram(i, 4), ram(i + sector_cnt*2*div, 1)],...
 									   cur_cos_0, cur_cos_1, coef_cos);
-            else
-                temp = [ram(i, 1), ram(i + sector_cnt*2*div, 4), ram(i, 3), ram(i + sector_cnt*2*div, 2)];
-                temp = [ram(i, 2), ram(i, 1), ram(i, 4), ram(i, 3)];
-                
+			else
 				temp = fht_double_but([ram(i, 2), ram(i, 1), ram(i + sector_cnt*2*div, 4)],...
 									  [ram(i, 4), ram(i, 3), ram(i + sector_cnt*2*div, 2)],...
 									   cur_cos_0, cur_cos_1, coef_cos);
