@@ -169,11 +169,10 @@ always@(posedge iCLK_2 or negedge iRESET)begin
 		end
 end
 
-wire FIRST_HALF = iCLK;
-wire EN_BIAS = (cnt_sector > 1);
+wire EN_BIAS = ~iCLK_2 & (cnt_sector > 1);
 
-wire EN_BIAS_EVEN =	(FIRST_HALF & EN_BIAS & (cnt_sector[0] == 0));
-wire EN_BIAS_ODD =	(FIRST_HALF & EN_BIAS & (cnt_sector[0] == 1));
+wire EN_BIAS_EVEN =	(EN_BIAS & (cnt_sector[0] == 0));
+wire EN_BIAS_ODD =	(EN_BIAS & (cnt_sector[0] == 1));
 
 always@(posedge iCLK_2 or negedge iRESET)begin
 	if(!iRESET) addr_rd_cnt <= 0;
