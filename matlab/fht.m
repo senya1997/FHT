@@ -173,6 +173,8 @@ for i = 1:row % 0 stage (only butterfly)
    ram(i, :) = [temp(1), temp(3), temp(2), temp(4)];
    
    fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+   fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+   
    fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 end
 
@@ -182,8 +184,6 @@ coef_cos = 4;
 % init coef for 1st stage:
 	div = N/(2*N_bank);
 	sector = 1;
- 
-coef(1:row, 1:N_bank) = zeros;
     
 for stage = 1:last_stage % without 0 stage
 	name = 'before_xst_ram.txt';
@@ -209,30 +209,30 @@ for stage = 1:last_stage % without 0 stage
 		for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div) 
 			if(j == 1)
 				temp = fht_double_but([ram(i, 1), ram(i, 2), ram(i, 2)],...
-									  [ram(i, 3), ram(i, 4), ram(i, 4)], cur_cos_0, cur_cos_1, coef_cos);   
+									  [ram(i, 3), ram(i, 4), ram(i, 4)], cur_cos_0, cur_cos_1, coef_cos);
+                                  
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			elseif(j == 2)
 				temp = fht_double_but([ram(i, 2), ram(i, 1), ram(i, 3)],...
 									  [ram(i, 4), ram(i, 3), ram(i, 1)], cur_cos_0, cur_cos_1, coef_cos);
+                                  
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			elseif(mod(j, 2) == 1)
 				temp = fht_double_but([ram(i, 1), ram(i, 2), ram(i + sector_cnt*2*div, 3)],...
 									  [ram(i, 3), ram(i, 4), ram(i + sector_cnt*2*div, 1)],...
 									   cur_cos_0, cur_cos_1, coef_cos);
+                                   
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i + sector_cnt*2*div-1, i-1, i + sector_cnt*2*div-1, i-1);                 
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			else
 				temp = fht_double_but([ram(i, 2), ram(i, 1), ram(i + sector_cnt*2*div, 4)],...
 									  [ram(i, 4), ram(i, 3), ram(i + sector_cnt*2*div, 2)],...
 									   cur_cos_0, cur_cos_1, coef_cos);
-            end
-            
-            coef(i, 1) = round(sin(cur_cos_0*(2*pi/coef_cos))*1024);
-            coef(i, 2) = round(cos(cur_cos_0*(2*pi/coef_cos))*1024);
-            
-            coef(i, 3) = round(sin(cur_cos_1*(2*pi/coef_cos))*1024);
-            coef(i, 4) = round(cos(cur_cos_1*(2*pi/coef_cos))*1024);
-            
-			if(j <= 2)
-                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
-            else
+                                   
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i + sector_cnt*2*div-1, i-1, i + sector_cnt*2*div-1);
+                fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
             end
             
 			if(stage == last_stage)

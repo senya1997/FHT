@@ -61,7 +61,7 @@ initial begin
 		// #(`TACT - 1);
 		
 	wait(!RDY);	
-	$display("\t 0 stage FHT, time: %t", $time);
+	$display("\t 0 stage FHT, time: %t\n", $time);
 	
 // wait the end of conversion:
 	wait(RDY);
@@ -81,7 +81,7 @@ initial begin
 end
 
 `ifdef COMPARE_WITH_MATLAB
-	always@(posedge clk_2)begin
+	always@(posedge clk)begin
 		if(!RDY & (CONTROL.cnt_stage_time < 256))
 		// if(!RDY & (CONTROL.cnt_stage_time < `BANK_SIZE))
 			COMPARE_MATLAB_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
@@ -105,7 +105,7 @@ always@(CONTROL.cnt_stage)begin
 			
 			$display("\n\t\t\tpress 'run' to continue\n");
 				$stop;
-			$display("\n\t%2d stage FHT, time: %t", CONTROL.cnt_stage, $time);
+			$display("\n\t%2d stage FHT, time: %t\n", CONTROL.cnt_stage, $time);
 		end
 end
 
