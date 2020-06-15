@@ -215,13 +215,13 @@ end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) we_a <= 1'b0;
-	else if(RESET_CNT_WR) we_a <= 1'b0;
+	else if(RESET_CNT_WR | iCLK_2) we_a <= 1'b0;
 	else if(WE_EN & STAGE_ODD) we_a <= 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) we_b <= 1'b0;
-	else if(RESET_CNT_WR) we_b <= 1'b0;
+	else if(RESET_CNT_WR | iCLK_2) we_b <= 1'b0;
 	else if(WE_EN & STAGE_EVEN) we_b <= 1'b1;
 end
 

@@ -51,14 +51,14 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 			end
 	end
 `else
-	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN + 2'sd1;
+	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN;
 	
 	wire signed [D_BIT : 0] EXT_SUM = iX_0 + sum_mul + 2'sd1;
 	wire signed [D_BIT : 0] EXT_SUB = iX_0 - sum_mul + 2'sd1;
 	
-		always@(posedge iCLK or negedge iRESET)begin
+	always@(posedge iCLK or negedge iRESET)begin
 		if(!iRESET) sum_mul <= 0;
-		else sum_mul <= EXT_SUM_MUL[D_BIT + W_BIT - 2 : W_BIT - 1];
+		else sum_mul <= EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2];
 	end
 
 	always@(posedge iCLK or negedge iRESET)begin

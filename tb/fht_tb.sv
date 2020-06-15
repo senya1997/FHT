@@ -154,7 +154,6 @@ always@(FHT.CONTROL.cnt_stage)begin
 			
 			`ifdef COMPARE_WITH_MATLAB
 				str_temp_ref = {"../../fht/matlab/before_", str_stage, "st_ram.txt"};
-		
 				COMPARE_MATLAB_RAM(str_temp_ref, str_temp);
 			`endif
 	

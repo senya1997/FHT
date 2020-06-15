@@ -35,6 +35,6 @@ assign oSIN_0 = OUT_SIN;
 assign oCOS_0 = OUT_COS;
 
 assign oSIN_1 = OUT_COS;
-assign oCOS_1 = {~OUT_SIN[W_BIT - 1], OUT_SIN[W_BIT - 2 : 0]};
+assign oCOS_1 = OUT_SIN == 0 ? 0 : {~OUT_SIN[W_BIT - 1 : W_BIT - 2], OUT_SIN[W_BIT - 3 : 0]};
 
 endmodule 
