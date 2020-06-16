@@ -32,6 +32,8 @@ module fht_control #(parameter A_BIT = 8, SEC_BIT = 9)(
 	output oRDY
 );
 
+reg clk_2;
+
 reg [3 : 0] cnt_stage; // max = log(N)/log(2) - 1
 reg [9 : 0] cnt_stage_time; // length of bank + reserve (for wait time end of writing in RAM)
 
@@ -85,6 +87,11 @@ wire SEC_PART_SUBSEC_D =	(sec_part_subsec_d[3]); // delayed
 wire RESET_CNT_RD = 	 (rdy | EOF_READ);
 wire RESET_CNT_WR = 	 (rdy | EOF_STAGE);
 wire RESET_CNT_COEF = (rdy | EOF_COEF);
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) clk_2 <= 1'b0;
+	else clk_2 <= ~clk_2;
+end
 
 // *********** stage counters: *********** //
 
@@ -150,7 +157,7 @@ wire signed [A_BIT - 1 : 0] BIAS_WR = SEC_PART_SUBSEC_D ? (addr_wr_cnt - (div >>
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 1)));
 wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? 1'b1 : EOF_SECTOR_1);
 
-wire EN_BIAS = ~iCLK_2 & (cnt_sector > 1);
+wire EN_BIAS = ~clk_2 & (cnt_sector > 1);
 
 wire EN_BIAS_EVEN =	(EN_BIAS & (cnt_sector[0] == 0));
 wire EN_BIAS_ODD =	(EN_BIAS & (cnt_sector[0] == 1));
@@ -213,13 +220,13 @@ end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) we_a <= 1'b0;
-	else if(RESET_CNT_WR | iCLK_2) we_a <= 1'b0;
+	else if(RESET_CNT_WR | clk_2) we_a <= 1'b0;
 	else if(WE_EN & STAGE_ODD) we_a <= 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) we_b <= 1'b0;
-	else if(RESET_CNT_WR | iCLK_2) we_b <= 1'b0;
+	else if(RESET_CNT_WR | clk_2) we_b <= 1'b0;
 	else if(WE_EN & STAGE_EVEN) we_b <= 1'b1;
 end
 
