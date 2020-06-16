@@ -52,6 +52,7 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 	end
 `else
 	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN;
+	//wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN + `HALF_W_MAX;
 	
 	wire signed [D_BIT : 0] EXT_SUM = iX_0 + sum_mul + 2'sd1;
 	wire signed [D_BIT : 0] EXT_SUB = iX_0 - sum_mul + 2'sd1;

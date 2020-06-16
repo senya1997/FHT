@@ -161,21 +161,29 @@ im = imag(ram_buf);
 % fht:
 file_ram = fopen('init_ram.txt', 'w');
 for i = 1 : row
-    fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
+    fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', round(ram(i, :)));
 end
     
 file_addr_rd = fopen('addr_rd.txt', 'w'); % for compare with rtl
 file_addr_wr = fopen('addr_wr.txt', 'w');
 
+coef(1:row, 1:4) = zeros;
+
 for i = 1:row % 0 stage (only butterfly)
-   temp = fht_double_but([ram(i, 1), ram(i, 2), 0],...
+    temp = fht_double_but([ram(i, 1), ram(i, 2), 0],...
                          [ram(i, 3), ram(i, 4), 0], 0, 0, 1);
-   ram(i, :) = [temp(1), temp(3), temp(2), temp(4)];
-   
-   fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
-   fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
-   
-   fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+    ram(i, :) = [temp(1), temp(3), temp(2), temp(4)];
+
+    fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+    fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+
+    fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+
+    coef(i, 1) = round(sin(0*(2*pi/2))*1024);
+    coef(i, 2) = round(cos(0*(2*pi/2))*1024);
+
+    coef(i, 3) = round(sin(0*(2*pi/2))*1024);
+    coef(i, 4) = round(cos(0*(2*pi/2))*1024);
 end
 
 last_stage = log(N)/log(2) - 1; % numbers start from zero
@@ -191,7 +199,7 @@ for stage = 1:last_stage % without 0 stage
     
     file_ram = fopen(name, 'w');
     for i = 1 : row
-        fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
+        fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', round(ram(i, :)));
     end
 
     ram_buf(1:row, 1:N_bank) = zeros;
@@ -234,6 +242,12 @@ for stage = 1:last_stage % without 0 stage
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i + sector_cnt*2*div-1, i-1, i + sector_cnt*2*div-1);
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
             end
+            
+            coef(i, 1) = round(sin(cur_cos_0*(2*pi/coef_cos))*1024);
+            coef(i, 2) = round(cos(cur_cos_0*(2*pi/coef_cos))*1024);
+            
+            coef(i, 3) = round(sin(cur_cos_1*(2*pi/coef_cos))*1024);
+            coef(i, 4) = round(cos(cur_cos_1*(2*pi/coef_cos))*1024);
             
 			if(stage == last_stage)
 				ram_buf(i, 1) = temp(1);

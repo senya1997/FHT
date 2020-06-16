@@ -51,11 +51,10 @@ reg [A_BIT - 1 : 0] addr_rd_bias; // 0-255 on 0,1 sector, after - is added bias
 reg [A_BIT - 1 : 0] addr_wr_cnt, addr_wr_cnt_d; // analog 'addr_rd_cnt'
 reg [A_BIT - 1 : 0] addr_wr_bias; // bias on write addr swap every half subsector from this reg on another
 
-reg [A_BIT - 1 : 0] addr_coef_cnt;
-reg [A_BIT - 1 : 0] addr_coef;
+reg [A_BIT - 3 : 0] addr_coef_cnt;
+reg [A_BIT - 3 : 0] addr_coef;
 
 reg [4 : 0] sec_part_subsec_d;
-reg [2 : 0] eof_sector_d;
 
 reg we_a;
 reg we_b;
@@ -79,7 +78,6 @@ wire EOF_STAGE_1 =	(cnt_stage_time == 10'd257); // behind 'EOF_STAGE'
 
 wire EOF_SECTOR =		(cnt_sector_time == div - 9'd1);
 wire EOF_SECTOR_1 =	(cnt_sector_time == div - 9'd2); // behind 'EOF_SECTOR'
-wire EOF_SECTOR_D =	(eof_sector_d[2]);
 
 wire SEC_PART_SUBSEC =		(cnt_sector_time >= (div >> 1));
 wire SEC_PART_SUBSEC_D =	(sec_part_subsec_d[3]); // delayed
@@ -226,22 +224,23 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 // coef:
-always@(posedge iCLK_2 or negedge iRESET)begin
-	if(!iRESET) eof_sector_d <= 3'd0;
-	else eof_sector_d <= {eof_sector_d[1 : 0], EOF_SECTOR};
-end
+function [A_BIT - 3 : 0] F_BIT_REV(input [A_BIT - 3 : 0] iDATA);
+integer i;
+	begin
+		for (i = 0; i < A_BIT - 2; i = i + 1) F_BIT_REV[A_BIT - 3 - i] = iDATA[i];
+	end
+endfunction
 
 always@(posedge iCLK_2 or negedge iRESET)begin
 	if(!iRESET) addr_coef_cnt <= 0;
 	else if(RESET_CNT_COEF) addr_coef_cnt <= 0;
-	else if(EOF_SECTOR_D) addr_coef_cnt <= addr_coef_cnt + 1'b1;
+	else if(EOF_SECTOR_1) addr_coef_cnt <= addr_coef_cnt + 1'b1;
 end
 
 always@(posedge iCLK_2 or negedge iRESET)begin
 	if(!iRESET) addr_coef <= 0;
 	else if(RESET_CNT_COEF) addr_coef <= 0;
-	else if(COEF_EN) addr_coef <= {addr_coef_cnt[0], addr_coef_cnt[1], addr_coef_cnt[2], addr_coef_cnt[3], 
-											 addr_coef_cnt[4], addr_coef_cnt[5], addr_coef_cnt[6], addr_coef_cnt[7]};
+	else if(COEF_EN) addr_coef <= F_BIT_REV(addr_coef_cnt);
 end
 
 // ************** others: ************** //

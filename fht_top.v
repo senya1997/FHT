@@ -234,6 +234,8 @@ fht_rom_block #(.W_BIT(`W_BIT), .A_BIT(`A_BIT),
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
+	.iST_ZERO(ST_ZERO),
+	
 	.iADDR(ADDR_COEF),
 	
 	.oSIN_0(SIN_0),
