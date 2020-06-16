@@ -24,6 +24,22 @@ module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, SEC_BIT = 9)(
 	output signed [D_BIT - 1 : 0] oY_3
 );
 
+reg signed [W_BIT - 1 : 0] sin [0 : 1];
+reg signed [W_BIT - 1 : 0] cos [0 : 1];
+
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET)
+		begin
+			sin[0] <= 0; sin[1] <= 0;
+			cos[0] <= 0; cos[1] <= 0;
+		end
+	else
+		begin
+			sin[0] <= iSIN_0; sin[1] <= iSIN_1;
+			cos[0] <= iCOS_0; cos[1] <= iCOS_1;
+		end
+end
+
 // this block have 2 butterfly (0 and 1, double butterfly Radix-2)
 
 // on 1st tact reading this block gets 'X2' and 'X3' points that going on multiplier in butterfly
@@ -110,8 +126,8 @@ fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_0(
 	.iX_1(MIX_TO_BUT_0[1]),
 	.iX_2(MIX_TO_BUT_0[2]),
 	
-	.iSIN(iSIN_0),
-	.iCOS(iCOS_0),
+	.iSIN(sin[0]),
+	.iCOS(cos[0]),
 	
 	.oY_0(BUT_TO_MIX[0]),
 	.oY_1(BUT_TO_MIX[1])
@@ -125,8 +141,8 @@ fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_1(
 	.iX_1(MIX_TO_BUT_1[1]),
 	.iX_2(MIX_TO_BUT_1[2]),
 	
-	.iSIN(iSIN_1),
-	.iCOS(iCOS_1),
+	.iSIN(sin[1]),
+	.iCOS(cos[1]),
 	
 	.oY_0(BUT_TO_MIX[2]),
 	.oY_1(BUT_TO_MIX[3])

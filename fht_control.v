@@ -241,7 +241,7 @@ endfunction
 always@(posedge iCLK_2 or negedge iRESET)begin
 	if(!iRESET) addr_coef_cnt <= 0;
 	else if(RESET_CNT_COEF) addr_coef_cnt <= 0;
-	else if(EOF_SECTOR_1) addr_coef_cnt <= addr_coef_cnt + 1'b1;
+	else if(cnt_sector_time == (div - 9'd3)) addr_coef_cnt <= addr_coef_cnt + 1'b1;
 end
 
 always@(posedge iCLK_2 or negedge iRESET)begin
@@ -252,9 +252,16 @@ end
 
 // ************** others: ************** //
 
+reg [2 : 0] start_sh; // shift
+
+always@(posedge iCLK_2 or negedge iRESET)begin
+	if(!iRESET) start_sh <= 3'b0;
+	else start_sh <= {start_sh[1 : 0], iSTART};
+end
+
 always@(posedge iCLK_2 or negedge iRESET)begin
 	if(!iRESET) rdy <= 1'b1;
-	else if(iSTART) rdy <= 1'b0;
+	else if(start_sh[2]) rdy <= 1'b0;
 	else if(LAST_STAGE & EOF_STAGE) rdy <= 1'b1;
 end
 
@@ -266,7 +273,7 @@ end
 
 always@(posedge iCLK_2 or negedge iRESET)begin
 	if(!iRESET) source_cont <= 1'b0;
-	else if(iSTART) source_cont <= 1'b0;
+	else if(start_sh[2]) source_cont <= 1'b0;
 	else source_cont <= rdy;
 end
 
