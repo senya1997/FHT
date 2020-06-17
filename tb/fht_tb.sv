@@ -213,10 +213,10 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 			scan[0] = $fscanf(file_ref, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 			scan[1] = $fscanf(file, "%4d\t%4d\t%4d\t%4d\n", temp[0], temp[1], temp[2], temp[3]);
 			
-			if(((temp_ref[0] <= temp[0] + 1) | (temp_ref[0] >= temp[0] - 1)) & 
-			   ((temp_ref[1] <= temp[1] + 1) | (temp_ref[1] >= temp[1] - 1)) & 
-			   ((temp_ref[2] <= temp[2] + 1) | (temp_ref[2] >= temp[2] - 1)) & 
-			   ((temp_ref[3] <= temp[3] + 1) | (temp_ref[3] >= temp[3] - 1)))
+			if(((temp_ref[0] <= temp[0] + 1) & (temp_ref[0] >= temp[0] - 1)) & 
+			   ((temp_ref[1] <= temp[1] + 1) & (temp_ref[1] >= temp[1] - 1)) & 
+			   ((temp_ref[2] <= temp[2] + 1) & (temp_ref[2] >= temp[2] - 1)) & 
+			   ((temp_ref[3] <= temp[3] + 1) & (temp_ref[3] >= temp[3] - 1)))
 				$display("\tLine %3d: data_0: %4d, data_1: %4d, data_2: %4d, data_3: %4d", 
 							j, temp[0], temp[1], temp[2], temp[3]);
 			else

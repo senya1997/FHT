@@ -39,16 +39,13 @@ add wave -noupdate -expand -group addr_rd -radix unsigned /fht_control_tb/CONTRO
 add wave -noupdate -expand -group addr_rd -radix unsigned /fht_control_tb/CONTROL/BIAS_RD_BYTE
 add wave -noupdate -expand -group addr_rd -radix decimal -childformat {{{/fht_control_tb/CONTROL/BIAS_RD[9]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[8]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[7]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[6]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[5]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[4]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[3]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[2]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[1]} -radix decimal} {{/fht_control_tb/CONTROL/BIAS_RD[0]} -radix decimal}} -subitemconfig {{/fht_control_tb/CONTROL/BIAS_RD[9]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[8]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[7]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[6]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[5]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[4]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[3]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[2]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[1]} {-height 15 -radix decimal} {/fht_control_tb/CONTROL/BIAS_RD[0]} {-height 15 -radix decimal}} /fht_control_tb/CONTROL/BIAS_RD
 add wave -noupdate -expand -group addr_wr -radix unsigned /fht_control_tb/CONTROL/addr_wr_cnt
-add wave -noupdate -expand -group addr_wr -color {Slate Blue} /fht_control_tb/CONTROL/we_a
-add wave -noupdate -expand -group addr_wr -color {Slate Blue} /fht_control_tb/CONTROL/we_b
 add wave -noupdate -expand -group addr_wr /fht_control_tb/CONTROL/WE_EN
-add wave -noupdate /fht_control_tb/CONTROL/EOF_SECTOR_D
 add wave -noupdate -color Gold -radix unsigned /fht_control_tb/CONTROL/addr_coef
 add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/addr_coef_cnt
 add wave -noupdate /fht_control_tb/CONTROL/COEF_EN
 add wave -noupdate /fht_control_tb/CONTROL/rdy
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {38560 ns} 0}
+WaveRestoreCursors {{Cursor 1} {23696 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 100
@@ -64,4 +61,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {38008 ns} {39160 ns}
+WaveRestoreZoom {0 ns} {56480 ns}
