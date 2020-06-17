@@ -2,8 +2,6 @@
 
 module fht_top(
 	input iCLK,
-	input iCLK_2, // half freq of 'iCLK' from PLL
-	
 	input iRESET,
 	
 	input iSTART, // after load point in RAM(A) required issue strobe on 'iSTART'
@@ -85,27 +83,19 @@ assign ADDR_RD[1] = SOURCE_CONT ? iADDR_RD_1 : ADDR_RD_CTRL[1];
 assign ADDR_RD[2] = SOURCE_CONT ? iADDR_RD_2 : ADDR_RD_CTRL[2];
 assign ADDR_RD[3] = SOURCE_CONT ? iADDR_RD_3 : ADDR_RD_CTRL[3];
 
-// ======================= control: ===========================
-reg start_d;
+// ======================= control: =========================== //
 
 wire ST_ZERO, ST_LAST;
 wire SEC_PART_SUBSEC;
-wire [`SEC_BIT - 1: 0] SECTOR;
 
+wire [`SEC_BIT - 1: 0] SECTOR;
 wire [`A_BIT - 1 : 0] ADDR_COEF;
 
-always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) start_d <= 1'b0;
-	else start_d <= iSTART;
-end
-	
 fht_control #(.A_BIT(`A_BIT), .SEC_BIT(`SEC_BIT)) CONTROL(
 	.iCLK(iCLK),
-	.iCLK_2(iCLK_2),
-	
 	.iRESET(iRESET),
 	
-	.iSTART(iSTART | start_d),
+	.iSTART(iSTART),
 	
 	.oST_ZERO(ST_ZERO),
 	.oST_LAST(ST_LAST), 
@@ -133,7 +123,7 @@ fht_control #(.A_BIT(`A_BIT), .SEC_BIT(`SEC_BIT)) CONTROL(
 	.oRDY(RDY)
 );
 
-// ==================== butterfly block: ======================
+// ==================== butterfly block: ====================== //
 
 wire signed [`W_BIT - 1 : 0] SIN_0, COS_0;
 wire signed [`W_BIT - 1 : 0] SIN_1, COS_1;
@@ -164,7 +154,7 @@ fht_but_block #(.D_BIT(`D_BIT), .W_BIT(`W_BIT), .SEC_BIT(`SEC_BIT)) BUT_BLOCK(
 	.oY_3(DATA_BUT_RAM[3])
 );
 
-// ========================== RAM: ============================
+// ========================== RAM: ============================ //
 
 fht_ram_block #(.D_BIT(`D_BIT), .A_BIT(`A_BIT)) FHT_RAM_A(
 	.iCLK(iCLK),
@@ -226,7 +216,7 @@ fht_ram_block #(.D_BIT(`D_BIT), .A_BIT(`A_BIT)) FHT_RAM_B(
 	.oDATA_3(DATA_RAM_B_BUT[3])
 );
 
-// ========================== ROM: =============================
+// ========================== ROM: ============================= //
 
 fht_rom_block #(.W_BIT(`W_BIT), .A_BIT(`A_BIT),
 					 .MIF_SIN(`MIF_SIN), 

@@ -1,7 +1,5 @@
 module fht_control #(parameter A_BIT = 8, SEC_BIT = 9)(
 	input iCLK,
-	input iCLK_2,
-	
 	input iRESET,
 	
 	input iSTART,
@@ -88,28 +86,30 @@ wire RESET_CNT_RD = 	 (rdy | EOF_READ);
 wire RESET_CNT_WR = 	 (rdy | EOF_STAGE);
 wire RESET_CNT_COEF = (rdy | EOF_COEF);
 
+wire N_CLK_2 = ~clk_2;
+
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) clk_2 <= 1'b0;
-	else clk_2 <= ~clk_2;
+	else clk_2 <= N_CLK_2;
 end
 
 // *********** stage counters: *********** //
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_stage <= 4'd0;
 	else if(rdy) cnt_stage <= 4'd0;
-	else if(EOF_STAGE) cnt_stage <= cnt_stage + 1'b1;
+	else if(EOF_STAGE & clk_2) cnt_stage <= cnt_stage + 1'b1;
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_stage_time <= 10'd0;
-	else if(rdy | EOF_STAGE) cnt_stage_time <= 10'd0;
-	else cnt_stage_time <= cnt_stage_time + 1'b1;
+	else if((rdy | EOF_STAGE) & clk_2) cnt_stage_time <= 10'd0;
+	else if(clk_2) cnt_stage_time <= cnt_stage_time + 1'b1;
 end
 
 // *********** sector counters: *********** //
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) 
 		begin
 			div <= 9'd256; // required to add in defines div = N/N_bank
@@ -120,17 +120,17 @@ always@(posedge iCLK_2 or negedge iRESET)begin
 			div <= 9'd256;
 			div_2 <= 4'd8;
 		end
-	else if(EOF_STAGE & (!ZERO_STAGE)) 
+	else if(EOF_STAGE & (!ZERO_STAGE) & clk_2) 
 		begin
 			div <= (div >> 1);
 			div_2 <= div_2 - 1'b1;
 		end
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_sector <= 0;
-	else if(RESET_CNT_RD | EOF_STAGE ) cnt_sector <= 0;
-	else if(EOF_SECTOR) cnt_sector <= cnt_sector + 1'b1;
+	else if(RESET_CNT_RD | EOF_STAGE) cnt_sector <= 0;
+	else if(EOF_SECTOR & clk_2) cnt_sector <= cnt_sector + 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -138,10 +138,10 @@ always@(posedge iCLK or negedge iRESET)begin
 	else cnt_sector_d <= cnt_sector;
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_sector_time <= 9'd0;
-	else if(RESET_CNT_RD | EOF_SECTOR ) cnt_sector_time <= 9'd0;
-	else cnt_sector_time <= cnt_sector_time + 1'b1;
+	else if((RESET_CNT_RD | EOF_SECTOR) & clk_2) cnt_sector_time <= 9'd0;
+	else if(clk_2) cnt_sector_time <= cnt_sector_time + 1'b1;
 end
 
 // ************* choose addr: ************* //
@@ -157,38 +157,38 @@ wire signed [A_BIT - 1 : 0] BIAS_WR = SEC_PART_SUBSEC_D ? (addr_wr_cnt - (div >>
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 1)));
 wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? 1'b1 : EOF_SECTOR_1);
 
-wire EN_BIAS = ~clk_2 & (cnt_sector > 1);
+wire EN_BIAS = N_CLK_2 & (cnt_sector > 1);
 
 wire EN_BIAS_EVEN =	(EN_BIAS & (cnt_sector[0] == 0));
 wire EN_BIAS_ODD =	(EN_BIAS & (cnt_sector[0] == 1));
 
 // read:
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 9'd0;
 	else if(EOF_STAGE_1) size_bias_rd <= 9'd1;
-	else if(CHOOSE_EN_NEW_BIAS_RD & NEW_BIAS_RD) size_bias_rd = (size_bias_rd << 1);
+	else if(CHOOSE_EN_NEW_BIAS_RD & NEW_BIAS_RD & clk_2) size_bias_rd = (size_bias_rd << 1);
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_bias_rd <= 9'd0;
 	else if(EOF_STAGE_1) cnt_bias_rd <= 9'd2;
-	else if(CHOOSE_EN_NEW_BIAS_RD)
+	else if(CHOOSE_EN_NEW_BIAS_RD & clk_2)
 		begin
 			if(NEW_BIAS_RD) cnt_bias_rd = size_bias_rd - 1'b1;
 			else cnt_bias_rd = cnt_bias_rd - 9'd2;
 		end
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_rd_cnt <= 0;
-	else if(RESET_CNT_RD) addr_rd_cnt <= 0;
-	else addr_rd_cnt <= INC_ADDR_RD;
+	else if(RESET_CNT_RD & clk_2) addr_rd_cnt <= 0;
+	else if(clk_2) addr_rd_cnt <= INC_ADDR_RD;
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_rd_bias <= 0;
-	else if(RESET_CNT_RD) addr_rd_bias <= 0;
-	else addr_rd_bias <= BIAS_RD[7 : 0];
+	else if(RESET_CNT_RD & clk_2) addr_rd_bias <= 0;
+	else if(clk_2) addr_rd_bias <= BIAS_RD[7 : 0];
 end
 
 // write:
@@ -197,10 +197,10 @@ always@(posedge iCLK or negedge iRESET)begin
 	else sec_part_subsec_d <= {sec_part_subsec_d[3 : 0], SEC_PART_SUBSEC};
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_wr_cnt <= 0;
-	else if(RESET_CNT_WR) addr_wr_cnt <= 0;
-	else if(WE_EN) addr_wr_cnt <= addr_wr_cnt + 1'b1;
+	else if(RESET_CNT_WR & clk_2) addr_wr_cnt <= 0;
+	else if(WE_EN & clk_2) addr_wr_cnt <= addr_wr_cnt + 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -238,42 +238,35 @@ integer i;
 	end
 endfunction
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_coef_cnt <= 0;
-	else if(RESET_CNT_COEF) addr_coef_cnt <= 0;
-	else if(cnt_sector_time == (div - 9'd3)) addr_coef_cnt <= addr_coef_cnt + 1'b1;
+	else if(RESET_CNT_COEF & clk_2) addr_coef_cnt <= 0;
+	else if((cnt_sector_time == (div - 9'd3)) & clk_2) addr_coef_cnt <= addr_coef_cnt + 1'b1;
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_coef <= 0;
-	else if(RESET_CNT_COEF) addr_coef <= 0;
-	else if(COEF_EN) addr_coef <= F_BIT_REV(addr_coef_cnt);
+	else if(RESET_CNT_COEF & clk_2) addr_coef <= 0;
+	else if(COEF_EN & clk_2) addr_coef <= F_BIT_REV(addr_coef_cnt);
 end
 
 // ************** others: ************** //
 
-reg [2 : 0] start_sh; // shift
-
-always@(posedge iCLK_2 or negedge iRESET)begin
-	if(!iRESET) start_sh <= 3'b0;
-	else start_sh <= {start_sh[1 : 0], iSTART};
-end
-
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) rdy <= 1'b1;
-	else if(start_sh[2]) rdy <= 1'b0;
+	else if(iSTART) rdy <= 1'b0;
 	else if(LAST_STAGE & EOF_STAGE) rdy <= 1'b1;
 end
 
-always@(posedge iCLK_2 or negedge iRESET) begin
+always@(posedge iCLK or negedge iRESET) begin
 	if(!iRESET) source_data <= 1'b0;
 	else if(rdy) source_data <= 1'b0;
 	else if(EOF_STAGE) source_data <= ~source_data;
 end
 
-always@(posedge iCLK_2 or negedge iRESET)begin
+always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) source_cont <= 1'b0;
-	else if(start_sh[2]) source_cont <= 1'b0;
+	else if(iSTART) source_cont <= 1'b0;
 	else source_cont <= rdy;
 end
 

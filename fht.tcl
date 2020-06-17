@@ -1,6 +1,6 @@
 set_current_revision fht;
 
-set compile 1
+set compile 0
 set upd_script 1
 
 puts " "
@@ -23,9 +23,9 @@ if {$compile} {
 if {$upd_script} {
 	puts "copy scripts..."
 	
-#	file copy -force $path_script/fht_control.do $path_modelsim
+	file copy -force $path_script/fht_control.do $path_modelsim
 	file copy -force $path_script/fht_but_sdf.do $path_modelsim
-#	file copy -force $path_script/fht.do $path_modelsim
+	file copy -force $path_script/fht.do $path_modelsim
 	
 	file copy -force $path_script/lib_setup.tcl $path_modelsim
 }

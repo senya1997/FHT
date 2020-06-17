@@ -4,7 +4,7 @@
 
 module fht_tb;
 
-bit clk, clk_2;
+bit clk;
 bit reset;
 
 bit [2 : 0] i;
@@ -39,11 +39,6 @@ initial begin
 	$timeformat(-6, 3, " us", 6);
 	clk = 1;
 	forever	#(`HALF_TACT) clk = ~clk;
-end
-
-initial begin
-	clk_2 = 1;
-	forever	#(`TACT) clk_2 = ~clk_2;
 end
 
 initial begin
@@ -116,11 +111,13 @@ initial begin
 	ram_sel = 1'b1;
 	
 	$display("\n\tstart FHT, time: %t\n", $time);
-		#1; // if "sdf" is turn off
+
+		// #1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
-		#(2*`TACT);
+		#(`TACT);
+		
 	wait(RDY);
 	$display("\n\tfinish FHT, time: %t\n", $time);
 	
@@ -178,17 +175,17 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 		// number of bank memory must be the 'integer number', not a 'variable'
 			if(ram_sel == 0)
 				begin
-					buf_signed[0] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[1] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[2] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[3] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					buf_signed[0] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+					buf_signed[1] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+					buf_signed[2] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+					buf_signed[3] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[cnt_data];
 				end
 			else if(ram_sel == 1)
 				begin
-					buf_signed[0] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[1] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[2] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[3] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					buf_signed[0] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+					buf_signed[1] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+					buf_signed[2] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+					buf_signed[3] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[cnt_data];
 				end
 			
 			for(cnt_bank = 0; cnt_bank < 4; cnt_bank = cnt_bank + 1) 
@@ -206,14 +203,15 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 	int file_ref, file;
 	int temp_ref [4];
 	int temp [4];
+	int scan [2];
 	
 	file_ref =	$fopen(name_ref, "r");
 	file = 		$fopen(name, "r");
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1)
 		begin
-			$fscanf(file_ref, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
-			$fscanf(file, "%4d\t%4d\t%4d\t%4d\n", temp[0], temp[1], temp[2], temp[3]);
+			scan[0] = $fscanf(file_ref, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+			scan[1] = $fscanf(file, "%4d\t%4d\t%4d\t%4d\n", temp[0], temp[1], temp[2], temp[3]);
 			
 			if(((temp_ref[0] <= temp[0] + 1) | (temp_ref[0] >= temp[0] - 1)) & 
 			   ((temp_ref[1] <= temp[1] + 1) | (temp_ref[1] >= temp[1] - 1)) & 
@@ -274,8 +272,6 @@ endfunction
 
 fht_top FHT(
 	.iCLK(clk),
-	.iCLK_2(clk_2),
-	
 	.iRESET(reset),
 	
 	.iSTART(start),

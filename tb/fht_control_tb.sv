@@ -4,7 +4,7 @@
 
 module fht_control_tb;
  
-reg clk, clk_2;
+reg clk;
 reg reset;
 
 reg start;
@@ -25,11 +25,6 @@ initial begin
 	$timeformat(-6, 3, " us", 6);
 	clk = 1;
 	forever	#(`HALF_TACT) clk = ~clk;
-end
-
-initial begin
-	clk_2 = 1;
-	forever	#(`TACT) clk_2 = ~clk_2;
 end
 
 initial begin
@@ -54,9 +49,9 @@ initial begin
 	f_addr_rd = $fopen("../../fht/matlab/addr_rd.txt", "r");
 	f_addr_wr = $fopen("../../fht/matlab/addr_wr.txt", "r");
 	
-		#1; // if "sdf" is turn off
+		// #1; // if "sdf" is turn off
 	start = 1'b1;
-		#(2*`TACT);
+		#(`TACT);
 	start = 1'b0;
 		// #(`TACT - 1);
 		
@@ -87,7 +82,7 @@ end
 			COMPARE_MATLAB_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
 	end
 
-	always@(negedge clk_2)begin
+	always@(posedge CONTROL.clk_2)begin
 		if(!RDY & (WE_A | WE_B))
 			COMPARE_MATLAB_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 	end
@@ -120,8 +115,9 @@ task COMPARE_MATLAB_ADDR(
 	input [`A_BIT - 1 : 0] iADDR_3
 );
 	int temp_ref [4];
+	int temp;
 
-	$fscanf(file, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+	temp = $fscanf(file, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 			
 	if((temp_ref[0] == iADDR_0) & (temp_ref[1] == iADDR_1) & 
 	   (temp_ref[2] == iADDR_2) & (temp_ref[3] == iADDR_3))
@@ -141,8 +137,6 @@ endtask
 
 fht_control CONTROL(
 	.iCLK(clk),
-	.iCLK_2(clk_2),
-	
 	.iRESET(reset),
 	
 	.iSTART(start),
