@@ -89,7 +89,7 @@ wire ST_ZERO, ST_LAST;
 wire SEC_PART_SUBSEC;
 
 wire [`SEC_BIT - 1: 0] SECTOR;
-wire [`A_BIT - 1 : 0] ADDR_COEF;
+wire [`A_BIT - 3 : 0] ADDR_COEF;
 
 fht_control #(.A_BIT(`A_BIT), .SEC_BIT(`SEC_BIT)) CONTROL(
 	.iCLK(iCLK),
@@ -218,7 +218,7 @@ fht_ram_block #(.D_BIT(`D_BIT), .A_BIT(`A_BIT)) FHT_RAM_B(
 
 // ========================== ROM: ============================= //
 
-fht_rom_block #(.W_BIT(`W_BIT), .A_BIT(`A_BIT),
+fht_rom_block #(.W_BIT(`W_BIT), .A_BIT(`A_BIT - 2),
 					 .MIF_SIN(`MIF_SIN), 
 					 .MIF_COS(`MIF_COS)) ROM_BLOCK(
 	.iCLK(iCLK),

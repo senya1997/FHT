@@ -2,9 +2,7 @@ clear;
 clc;
 
 width = 12;
-depth = 256;
-
-fprintf('\n\tBegin\n');
+depth = 64;
 
 % read files:
     coef(1:depth, 1:2) = [load('sin.txt'), load('cos.txt')];
@@ -21,7 +19,7 @@ for i = 1:2
 	fprintf(file_mif(i), 'CONTENT BEGIN\n');
 end
 
-fprintf('\n\t\tadd data in ".mif"...\n');
+fprintf('\n\tadd data in ".mif"...');
 
 % add data:
 for k = 1:2
@@ -34,4 +32,4 @@ for k = 1:2
     fclose(file_mif(k));
 end
 
-fprintf('\n\tComplete\n');
+fprintf('\n\t\tComplete\n');

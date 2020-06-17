@@ -19,7 +19,7 @@ module fht_control #(parameter A_BIT = 8, SEC_BIT = 9)(
 	output [A_BIT - 1 : 0] oADDR_WR_2,
 	output [A_BIT - 1 : 0] oADDR_WR_3,
 	
-	output [A_BIT - 1 : 0] oADDR_COEF,
+	output [A_BIT - 3 : 0] oADDR_COEF,
 	
 	output oWE_A,
 	output oWE_B,

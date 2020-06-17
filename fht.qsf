@@ -42,7 +42,7 @@
 # ========================
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 14.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:53:17  MAY 10, 2020"
-set_global_assignment -name LAST_QUARTUS_VERSION 13.1
+set_global_assignment -name LAST_QUARTUS_VERSION 14.1.0
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 
 # Classic Timing Assignments
@@ -82,11 +82,11 @@ set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 	# EDA Netlist Writer Assignments
 	# ==============================
 set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
-	set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
+set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
 	set_global_assignment -name EDA_MAP_ILLEGAL_CHARACTERS OFF -section_id eda_simulation
 	set_global_assignment -name EDA_ENABLE_GLITCH_FILTERING OFF -section_id eda_simulation
 	set_global_assignment -name EDA_WRITE_NODES_FOR_POWER_ESTIMATION OFF -section_id eda_simulation
-	set_global_assignment -name EDA_TEST_BENCH_DESIGN_INSTANCE_NAME BUT -section_id eda_simulation
+set_global_assignment -name EDA_TEST_BENCH_DESIGN_INSTANCE_NAME BUT -section_id eda_simulation
 
 # end EDA_TOOL_SETTINGS(eda_simulation)
 # -------------------------------------
@@ -96,31 +96,31 @@ set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
 
 	# Pin & Location Assignments
 	# ==========================
-	set_instance_assignment -name VIRTUAL_PIN ON -to oDATA_1
-	set_instance_assignment -name VIRTUAL_PIN ON -to oDATA_2
-	set_instance_assignment -name VIRTUAL_PIN ON -to oDATA_3
-	set_instance_assignment -name VIRTUAL_PIN ON -to oDATA_0
-	set_instance_assignment -name VIRTUAL_PIN ON -to iWE_1
-	set_instance_assignment -name VIRTUAL_PIN ON -to iWE_2
-	set_instance_assignment -name VIRTUAL_PIN ON -to iWE_3
-	set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_RD_0
-	set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_RD_1
-	set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_RD_2
-	set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_RD_3
-	set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_WR
-	set_instance_assignment -name VIRTUAL_PIN ON -to iDATA
-	set_instance_assignment -name VIRTUAL_PIN ON -to iWE_0
-	set_instance_assignment -name VIRTUAL_PIN ON -to oRDY
-	set_instance_assignment -name VIRTUAL_PIN ON -to iSTART
+set_instance_assignment -name VIRTUAL_PIN ON -to oDATA_1
+set_instance_assignment -name VIRTUAL_PIN ON -to oDATA_2
+set_instance_assignment -name VIRTUAL_PIN ON -to oDATA_3
+set_instance_assignment -name VIRTUAL_PIN ON -to oDATA_0
+set_instance_assignment -name VIRTUAL_PIN ON -to iWE_1
+set_instance_assignment -name VIRTUAL_PIN ON -to iWE_2
+set_instance_assignment -name VIRTUAL_PIN ON -to iWE_3
+set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_RD_0
+set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_RD_1
+set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_RD_2
+set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_RD_3
+set_instance_assignment -name VIRTUAL_PIN ON -to iADDR_WR
+set_instance_assignment -name VIRTUAL_PIN ON -to iDATA
+set_instance_assignment -name VIRTUAL_PIN ON -to iWE_0
+set_instance_assignment -name VIRTUAL_PIN ON -to oRDY
+set_instance_assignment -name VIRTUAL_PIN ON -to iSTART
 
 	# start DESIGN_PARTITION(Top)
 	# ---------------------------
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-		set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
 	# end DESIGN_PARTITION(Top)
 	# -------------------------
@@ -129,10 +129,10 @@ set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
 # -------------------
 set_global_assignment -name ENABLE_DA_RULE "C101, C102, C103, C104, C105, C106, R101, R103, R104, R105, T101, T102, A101, A102, A103, A104, A105, A106, A107, A108, A109, A110, S101, S102, S103, S104, D101, D102, D103"
 set_global_assignment -name DISABLE_DA_RULE R102
+set_global_assignment -name VERILOG_FILE fht_rom.v
 set_global_assignment -name SDC_FILE fht.out.sdc
 set_global_assignment -name MIF_FILE matlab/sin.mif
 set_global_assignment -name MIF_FILE matlab/cos.mif
-set_global_assignment -name VERILOG_FILE fht_rom.v
 set_global_assignment -name VERILOG_FILE fht_ram.v
 set_global_assignment -name VERILOG_FILE fht_ram_block.v
 set_global_assignment -name VERILOG_FILE fht_control.v
