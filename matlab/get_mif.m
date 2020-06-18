@@ -1,7 +1,7 @@
 clear;
 clc;
 
-width = 12;
+width = 16;
 depth = 64;
 
 % read files:
@@ -24,7 +24,7 @@ fprintf('\n\tadd data in ".mif"...');
 % add data:
 for k = 1:2
     for i = 1:depth
-        str = num2str(dec2hex((coef(i, k) < 0)*2^width + coef(i, k), width/4));
+        str = num2str(dec2hex((coef(i, k) < 0)*2^width + coef(i, k), 4));
         fprintf(file_mif(k), '%d\t:\t%s;\n', i - 1, str);
     end
     

@@ -115,7 +115,7 @@ fht_control #(.A_BIT(`A_BIT), .SEC_BIT(`SEC_BIT)) CONTROL(
 wire signed [`W_BIT - 1 : 0] SIN_0, COS_0;
 wire signed [`W_BIT - 1 : 0] SIN_1, COS_1;
 
-fht_but_block #(.D_BIT(`D_BIT), .W_BIT(`W_BIT), .SEC_BIT(`SEC_BIT)) BUT_BLOCK(
+fht_but_block #(.D_BIT(`D_BIT), .W_BIT(`W_BIT), .HALF_W_MAX(`HALF_W_MAX), .SEC_BIT(`SEC_BIT)) BUT_BLOCK(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	

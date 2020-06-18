@@ -1,6 +1,6 @@
 `include "fht_defines_tb.v"
 
-module fht_but #(parameter D_BIT = 17, W_BIT = 12)(
+module fht_but #(parameter D_BIT = 17, W_BIT = 12, HALF_W_MAX = 11'sd512)(
 	input iCLK,
 	input iRESET,
 	
@@ -51,11 +51,10 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 			end
 	end
 `else
-	wire signed [D_BIT + W_BIT - 1 : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN + 11'sd512;
-	//wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN + `HALF_W_MAX;
+	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN + HALF_W_MAX;
 	
-	wire signed [D_BIT : 0] EXT_SUM = iX_0 + sum_mul + 3'sd1;
-	wire signed [D_BIT : 0] EXT_SUB = iX_0 - sum_mul + 3'sd1;
+	wire signed [D_BIT : 0] EXT_SUM = iX_0 + sum_mul + 2'sd1;
+	wire signed [D_BIT : 0] EXT_SUB = iX_0 - sum_mul + 2'sd1;
 	
 	always@(posedge iCLK or negedge iRESET)begin
 		if(!iRESET) sum_mul <= 0;
