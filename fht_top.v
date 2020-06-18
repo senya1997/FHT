@@ -46,28 +46,15 @@ wire [`A_BIT - 1 : 0] ADDR_WR [0 : 3];
 	wire signed [`D_BIT - 1 : 0] DATA_RAM_A_BUT [0 : 3];
 	wire signed [`D_BIT - 1 : 0] DATA_RAM_B_BUT [0 : 3];
 	wire signed [`D_BIT - 1 : 0] DATA_BUT_RAM [0 : 3];
-
-`ifdef MODEL_TECH
-	reg rdy_d;
-	
-	always@(posedge iCLK or negedge iRESET)begin
-		if(!iRESET) rdy_d <= 1'b1;
-		else rdy_d <= RDY;
-	end
-`endif
 	
 genvar k;
 generate
 	for(k = 0; k < 4; k = k + 1)
 		begin: data_addr_wr
-			assign DATA_RAM_A[k] =	SOURCE_CONT ? {iDATA[15], iDATA} : DATA_BUT_RAM[k];
 			assign ADDR_WR[k] = 		SOURCE_CONT ? iADDR_WR : ADDR_WR_CTRL[k];
-			
-		`ifdef MODEL_TECH
-			assign DATA_BUT[k] = rdy_d ? 0 : (SOURCE_DATA ? DATA_RAM_B_BUT[k] : DATA_RAM_A_BUT[k]);
-		`else
-			assign DATA_BUT[k] = SOURCE_DATA ? DATA_RAM_B_BUT[k] : DATA_RAM_A_BUT[k];
-		`endif
+		
+			assign DATA_RAM_A[k] =	SOURCE_CONT ? {iDATA[15], iDATA} : DATA_BUT_RAM[k];
+			assign DATA_BUT[k] =		SOURCE_DATA ? DATA_RAM_B_BUT[k] : DATA_RAM_A_BUT[k];
 		end
 endgenerate
 

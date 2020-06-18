@@ -129,7 +129,7 @@ end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_sector <= 0;
-	else if(RESET_CNT_RD | EOF_STAGE) cnt_sector <= 0;
+	else if((RESET_CNT_RD | EOF_STAGE) & clk_2) cnt_sector <= 0;
 	else if(EOF_SECTOR & clk_2) cnt_sector <= cnt_sector + 1'b1;
 end
 
@@ -261,7 +261,7 @@ end
 always@(posedge iCLK or negedge iRESET) begin
 	if(!iRESET) source_data <= 1'b0;
 	else if(rdy) source_data <= 1'b0;
-	else if(EOF_STAGE) source_data <= ~source_data;
+	else if(EOF_STAGE & clk_2) source_data <= ~source_data;
 end
 
 always@(posedge iCLK or negedge iRESET)begin

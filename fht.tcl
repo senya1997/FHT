@@ -1,6 +1,6 @@
 set_current_revision fht;
 
-set compile 1
+set compile 0
 set upd_script 1
 
 puts " "
