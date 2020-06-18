@@ -2,9 +2,9 @@ clear;
 clc;
 
 % choose test signal:
-    %test = 'sin';
+    test = 'sin';
     %test = 'const';
-    test = 'num';
+    %test = 'num';
 
 % variable constants:
     N = 1024;
@@ -289,6 +289,12 @@ for stage = 1:last_stage % without 0 stage
     
 	ram = ram_buf;
 end
+
+file_ram = fopen('ram.txt', 'w');
+for i = 1 : row
+    fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', round(ram(i, :)));
+end
+
 clear temp;
 
 fclose(file_addr_rd); 

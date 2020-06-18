@@ -7,24 +7,13 @@ module fht_tb;
 bit clk;
 bit reset;
 
-bit [2 : 0] i;
-shortint j;
+int i, j;
 int cnt_er;
 
 real temp;
 
 bit start;
 bit ram_sel;
-
-`ifdef SIN
-	real time_s = 0;
-	real noise = 0;
-`endif
-
-`ifdef NUM
-	shortint k = 0;
-	// shortint k = 1;
-`endif
 	
 bit signed [`D_BIT - 2 : 0] data_adc; // '-2' because data from ADC don't have bit expansion
 bit [`A_BIT - 1 : 0] addr_rd [0 : 3];
@@ -48,6 +37,8 @@ initial begin
 end
 
 initial begin
+	int file_data, scan_data, temp_data[4];
+
 	`ifdef TEST_MIXER
 		$display("\n\n\t\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
 	`else
@@ -62,49 +53,26 @@ initial begin
 	
 	#(10*`TACT);
 	
-	`ifdef SIN
-		$display("\t\ttest signal: sine wave with next config:");
-		$display("\t\t  amp\t=\t%6d, %6d\n\t  freq\t=\t%6d, %6d Hz\n\t  phase\t=\t%6.3f, %6.3f Rad\n\t  bias\t=\t%6d\n\t  noise\t=\t%6d\n", 
-				 `AMP_1, `AMP_2, `FREQ_1, `FREQ_2, `PHASE_1, `PHASE_2, `BIAS, `AMP_NOISE);
-	`elsif AUDIO
-		$display("\t\ttest signal: audio from path - ", `AUDIO_PATH, "\n");
-	`elsif BIAS
-		$display("\t\ttest signal: const = %d\n", `CONST);
-	`elsif NUM
-		$display("\t\ttest signal: numbers (function 'y = x')\n");
-	`endif
-	
 	$display("\twrite ADC data point in RAM, time: %t\n", $time);
+	file_data = $fopen("../../fht/matlab/init_ram.txt", "r");
 	
-	for(i = 0; i < 4; i = i + 1)
-		for(j = 0; j < `BANK_SIZE; j = j + 1) 
-			begin
-				`ifdef SIN
-					noise = $unsigned($random)%(`AMP_NOISE);
-
-					temp = `BIAS + `AMP_1*(signal(`FREQ_1, time_s, `PHASE_1)) + 
-								   `AMP_2*(signal(`FREQ_2, time_s, `PHASE_2)) + noise;
-								   
-					time_s = time_s + 1.0/`FREQ_D;
-				`elsif AUDIO
-				
-				`elsif BIAS
-					temp = `CONST;
-				`elsif NUM
-					temp = k;
-					k = k + 1;
-				`endif
-				
-				data_adc = temp;
-				
-				addr_wr = j;
-				
-			// save input data from ADC required bitreverse bank counter
-				we[{i[0], i[1]}] = 1'b1;
-					#(`TACT);
-				we[{i[0], i[1]}] = 1'b0;
-			end
-		
+	for(j = 0; j < `BANK_SIZE; j = j + 1) 
+		begin
+			scan_data = $fscanf(file_data, "%d\t%d\t%d\t%d\n", temp_data[0], temp_data[1], temp_data[2], temp_data[3]);
+			
+			for(i = 0; i < 4; i = i + 1)
+				begin
+					data_adc = temp_data[i];
+					addr_wr = j;
+					
+				// save input data from ADC required bitreverse bank counter
+					we[i] = 1'b1;
+						#(`TACT);
+					we[i] = 1'b0;
+				end
+		end
+	$fclose(file_data);
+	
 	#(10*`TACT);
 	
 	SAVE_RAM_DATA("init_ram_a.txt", 0);
@@ -124,6 +92,10 @@ initial begin
 	#(100*`TACT);
 	SAVE_RAM_DATA("ram_a.txt", 0); // name must not change, this use in matlab 'analys'
 	SAVE_RAM_DATA("ram_b.txt", 1);
+	
+	$display("\n\t\t\tpress 'run' to continue\n");
+		$stop;
+	COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_a.txt");
 	
 	$display("\n\t\t\t\tCOMPLETE\n");
 	mti_fli::mti_Cmd("stop -sync");
@@ -210,8 +182,8 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1)
 		begin
-			scan[0] = $fscanf(file_ref, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
-			scan[1] = $fscanf(file, "%4d\t%4d\t%4d\t%4d\n", temp[0], temp[1], temp[2], temp[3]);
+			scan[0] = $fscanf(file_ref, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+			scan[1] = $fscanf(file, "%d\t%d\t%d\t%d\n", temp[0], temp[1], temp[2], temp[3]);
 			
 			if(((temp_ref[0] <= temp[0] + 1) & (temp_ref[0] >= temp[0] - 1)) & 
 			   ((temp_ref[1] <= temp[1] + 1) & (temp_ref[1] >= temp[1] - 1)) & 

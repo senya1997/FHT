@@ -117,7 +117,7 @@ task COMPARE_MATLAB_ADDR(
 	int temp_ref [4];
 	int temp;
 
-	temp = $fscanf(file, "%4d\t%4d\t%4d\t%4d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+	temp = $fscanf(file, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 			
 	if((temp_ref[0] == iADDR_0) & (temp_ref[1] == iADDR_1) & 
 	   (temp_ref[2] == iADDR_2) & (temp_ref[3] == iADDR_3))
