@@ -73,7 +73,7 @@ set_global_assignment -name ENABLE_DRC_SETTINGS ON
 
 # Power Estimation Assignments
 # ============================
-set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "NO HEAT SINK WITH STILL AIR"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
 
 # start EDA_TOOL_SETTINGS(eda_simulation)
@@ -129,6 +129,10 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 # -------------------
 set_global_assignment -name ENABLE_DA_RULE "C101, C102, C103, C104, C105, C106, R101, R103, R104, R105, T101, T102, A101, A102, A103, A104, A105, A106, A107, A108, A109, A110, S101, S102, S103, S104, D101, D102, D103"
 set_global_assignment -name DISABLE_DA_RULE R102
+set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
+set_global_assignment -name TCL_SCRIPT_FILE scripts/lib_setup.tcl
+set_global_assignment -name TCL_SCRIPT_FILE scripts/src.tcl
+set_global_assignment -name TCL_SCRIPT_FILE scripts/fht.tcl
 set_global_assignment -name VERILOG_FILE fht_rom.v
 set_global_assignment -name SDC_FILE fht.out.sdc
 set_global_assignment -name MIF_FILE matlab/sin.mif
@@ -140,7 +144,7 @@ set_global_assignment -name VERILOG_FILE fht_in_mix.v
 set_global_assignment -name VERILOG_FILE fht_but_block.v
 set_global_assignment -name VERILOG_FILE fht_but.v
 set_global_assignment -name VERILOG_FILE fht_defines.v
-set_global_assignment -name TCL_SCRIPT_FILE fht.tcl
 set_global_assignment -name VERILOG_FILE fht_rom_block.v
 set_global_assignment -name VERILOG_FILE fht_top.v
+set_global_assignment -name POWER_USE_TA_VALUE 40
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

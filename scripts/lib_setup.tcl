@@ -1,33 +1,45 @@
-#This file contains the commands to create libraries and compile the library file into those libraries.
+# This file contains the commands to create libraries and compile the library file into those libraries.
 
 set path_to_quartus "D:/Program Files/altera/14.1/quartus"
 set type_of_sim compile_all
 
 # The type_of_sim should be one of the following values
-# compile_all: Compiles all Altera libraries 
-# functional: Compiles all libraries that are required for a functional simulation
-# ip_functional: Compiles all libraries that are required functional simulation of Altera IP cores
-# stratix_gx: Compiles all libraries that are required for a functional simulation of a StratixGX design
-# apex20ke: Compiles all libraries that are required for an APEX20KE timing simulation
-# apex20k: Compiles all libraries that are required for an APEX20K timing simulation
-# apexii: Compiles all libraries that are required for an APEXII timing simulation
-# cyclone: Compiles all libraries that are required for an CYCLONE timing simulation
-# cycloneii: Compiles all libraries that are required for an CYCLONEII timing simulation
-# cycloneiii: Compiles all libraries that are required for an CYCLONEIII timing simulation
-# cycloneiv: Compiles all libraries that are required for an CYCLONEIV timing simulation
-# flex10ke: Compiles all libraries that are required for an FLEX10KE timing simulation
-# flex6000: Compiles all libraries that are required for an FLEX6000 timing simulation
-# hardcopy: Compiles all libraries that are required for an HARDCOPY timing simulation
-# hardcopyii: Compiles all libraries that are required for an HARDCOPYII timing simulation
-# max: Compiles all libraries that are required for an MAX timing simulation
-# maxii: Compiles all libraries that are required for an MAXII timing simulation
-# mercury: Compiles all libraries that are required for an MERCURY timing simulation
-# stratix: Compiles all libraries that are required for an STRATIX timing simulation
-# stratixii: Compiles all libraries that are required for an STRATIXII timing simulation
-# stratixiii: Compiles all libraries that are required for an STRATIXIII timing simulation
-# stratixgx_timing: Compiles all libraries that are required for an STRATIXGX timing simulation
-# stratixiigx_timing: Compiles all libraries that are required for an STRATIXIIGX timing simulation
-# arriagx_timing: Compiles all libraries that are required for an ARRIAGX timing simulation
+
+# compile_all:	Compiles all Altera libraries 
+
+# functional:		Compiles all libraries that are required for a functional simulation
+# ip_functional:	Compiles all libraries that are required functional simulation of Altera IP cores
+
+# stratix_gx:	Compiles all libraries that are required for a functional simulation of a StratixGX design
+
+# apex20ke:	Compiles all libraries that are required for an APEX20KE timing simulation
+# apex20k:	Compiles all libraries that are required for an APEX20K timing simulation
+# apexii:	Compiles all libraries that are required for an APEXII timing simulation
+
+# cyclone:		Compiles all libraries that are required for an CYCLONE timing simulation
+# cycloneii:	Compiles all libraries that are required for an CYCLONEII timing simulation
+# cycloneiii:	Compiles all libraries that are required for an CYCLONEIII timing simulation
+# cycloneiv:	Compiles all libraries that are required for an CYCLONEIV timing simulation
+
+# flex10ke:	Compiles all libraries that are required for an FLEX10KE timing simulation
+# flex6000:	Compiles all libraries that are required for an FLEX6000 timing simulation
+
+# hardcopy:		Compiles all libraries that are required for an HARDCOPY timing simulation
+# hardcopyii:	Compiles all libraries that are required for an HARDCOPYII timing simulation
+
+# max:	Compiles all libraries that are required for an MAX timing simulation
+# maxii:	Compiles all libraries that are required for an MAXII timing simulation
+
+# mercury:	Compiles all libraries that are required for an MERCURY timing simulation
+
+# stratix:		Compiles all libraries that are required for an STRATIX timing simulation
+# stratixii:	Compiles all libraries that are required for an STRATIXII timing simulation
+# stratixiii:	Compiles all libraries that are required for an STRATIXIII timing simulation
+
+# stratixgx_timing:		Compiles all libraries that are required for an STRATIXGX timing simulation
+# stratixiigx_timing:	Compiles all libraries that are required for an STRATIXIIGX timing simulation
+
+# arriagx_timing:	Compiles all libraries that are required for an ARRIAGX timing simulation
 
 if {[string equal $type_of_sim "compile_all"]} {
 # compiles all libraries

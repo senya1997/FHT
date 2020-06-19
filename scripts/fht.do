@@ -2,7 +2,7 @@ transcript on
 
 quit -sim
 
-set work_pc 1
+set work_pc [lindex $argv 0]
 
 #remove .vo from prj
 	set path_vo ../../fht/simulation/modelsim/fht.vo	
