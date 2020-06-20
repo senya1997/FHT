@@ -42,7 +42,7 @@
 # ========================
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 14.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:53:17  MAY 10, 2020"
-set_global_assignment -name LAST_QUARTUS_VERSION 13.1
+set_global_assignment -name LAST_QUARTUS_VERSION 14.1.0
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 
 # Classic Timing Assignments
@@ -147,4 +147,13 @@ set_global_assignment -name VERILOG_FILE fht_defines.v
 set_global_assignment -name VERILOG_FILE fht_rom_block.v
 set_global_assignment -name VERILOG_FILE fht_top.v
 set_global_assignment -name POWER_USE_TA_VALUE 40
+set_global_assignment -name LL_ROOT_REGION ON -section_id "Root Region"
+set_global_assignment -name IGNORE_PARTITIONS ON
+set_global_assignment -name AUTO_EXPORT_INCREMENTAL_COMPILATION ON
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FILE fht_top.qxp
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_POST_SYNTH ON
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_POST_FIT ON
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_ROUTING ON
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_PARTITION_NAME Top
+set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

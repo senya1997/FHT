@@ -1,3 +1,12 @@
+####################################################
+#																	#
+#	keys: -c -upd												#
+#																	#
+#	-c:	compile and copy .sdo, .vo	 for modelsim	#
+#	-upd: copy .do, .tcl for modelsim					#
+#																	#
+####################################################
+
 proc disp_warning msg {
 	puts "\tWARNING: $msg"
 	puts " "
@@ -9,7 +18,7 @@ set_current_revision fht;
 # ========================= input parameters: ========================= #
 
 	# name of define and file that include him which turn off part of RTL
-		set path_def ./../fht_defines_tb.v
+		set path_def ./fht_defines_tb.v
 		set name_def TEST_MIXER
 
 	# read input keys from cmd
@@ -17,9 +26,9 @@ set_current_revision fht;
 		set upd_script [lindex $argv 1]
 
 	# path of element that need to copy
-		set path_script	.
+		set path_script	./scripts
 		set path_modelsim ./../modelsim/fht/
-		set path_sdo		./../simulation/modelsim
+		set path_sdo		./simulation/modelsim
 	
 puts " "
 puts "******************   START   *******************"
@@ -55,37 +64,25 @@ if {[string equal $compile -c]} {
 		disp_warning "'$name_def' define was not found in $path_def"
 	}
 	
-	#set test_mixer_str_num 189
-	
-	#seek $f_def $test_mixer_str_num
-	#set temp_str [gets $f_def] 
-	#set bool [string first // $temp_str]
-	
-	#	if {$bool != 0} {
-	#		puts "\tWARNING: TEST_MIXER is enabled"
-	#		puts " "
-	#		post_message -type warning "TEST_MIXER is enabled"
-	#	}
-	
 	close $f_def
 	
 	puts "compiling..."
 	execute_flow -compile;
 	
 	puts "copy sdo..."
-	file copy -force $path_sdo/fht_v.sdo $path_modelsim
-	file copy -force $path_sdo/fht.vo $path_modelsim
+	file copy -force $path_sdo/fht_v.sdo	$path_modelsim
+	file copy -force $path_sdo/fht.vo		$path_modelsim
 }
 
 if {[string equal $upd_script -upd]} {
 	puts "copy scripts..."
 	
-	file copy -force $path_script/fht_control.do $path_modelsim
-	file copy -force $path_script/fht_but_sdf.do $path_modelsim
-	file copy -force $path_script/fht.do $path_modelsim
+	file copy -force $path_script/fht_control.do	$path_modelsim
+	file copy -force $path_script/fht_but_sdf.do	$path_modelsim
+	file copy -force $path_script/fht.do			$path_modelsim
 	
-	file copy -force $path_script/lib_setup.tcl $path_modelsim
-	
+	file copy -force $path_script/lib_setup.tcl	$path_modelsim
+	file copy -force $path_script/src.tcl			$path_modelsim
 }
 
 puts " "
