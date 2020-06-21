@@ -8,7 +8,7 @@
 ####################################################
 
 proc disp_warning msg {
-	puts "\tWARNING: $msg"
+	puts "WARNING: $msg"
 	puts " "
 	post_message -type warning "$msg"
 }
@@ -31,7 +31,7 @@ set_current_revision fht;
 		set path_sdo		./simulation/modelsim
 	
 puts " "
-puts "******************   START   *******************"
+puts "\tSTART"
 puts " "
 
 if {[string equal $compile -c]} {
@@ -86,5 +86,5 @@ if {[string equal $upd_script -upd]} {
 }
 
 puts " "
-puts "******************  COMPLETE  ******************"
+puts "\tCOMPLETE"
 puts " "
