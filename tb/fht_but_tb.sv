@@ -7,11 +7,11 @@ module fht_but_tb;
 bit clk;
 bit reset;
 
-bit signed [`D_SIZE - 1 : 0] data [0 : 2];
-bit signed [`W_SIZE - 1 : 0] sin;
-bit signed [`W_SIZE - 1 : 0] cos;
+bit signed [`D_BIT - 1 : 0] data [0 : 2];
+bit signed [`W_BIT - 1 : 0] sin;
+bit signed [`W_BIT - 1 : 0] cos;
 
-wire signed [`D_SIZE - 1 : 0] RESULT [0 : 1];
+wire signed [`D_BIT - 1 : 0] RESULT [0 : 1];
 
 // real temp;
 byte temp_byte;
@@ -106,7 +106,7 @@ task DISP_INPUT;
 endtask
 
 task DISP_RESULT;
-	bit signed [`D_SIZE + `W_SIZE : 0] ext_buf; 
+	bit signed [`D_BIT + `W_BIT : 0] ext_buf; 
 	
 	real ref_0, ref_1;
 	real er_0, er_1;

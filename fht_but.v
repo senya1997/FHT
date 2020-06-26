@@ -51,14 +51,18 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 			end
 	end
 `else
-	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN + HALF_W_MAX;
+	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN;
+	wire signed [D_BIT + W_BIT : 0] ROUND_SUM_MUL = EXT_SUM_MUL[D_BIT + W_BIT - 3] ? (EXT_SUM_MUL - HALF_W_MAX) : (EXT_SUM_MUL + HALF_W_MAX);
 	
-	wire signed [D_BIT : 0] EXT_SUM = iX_0 + sum_mul + 2'sd1;
-	wire signed [D_BIT : 0] EXT_SUB = iX_0 - sum_mul + 2'sd1;
+	wire signed [D_BIT : 0] EXT_SUM = iX_0 + sum_mul;
+	wire signed [D_BIT : 0] EXT_SUB = iX_0 - sum_mul;
+	
+	wire signed [D_BIT : 0] ROUND_SUM = EXT_SUM[D_BIT] ? (EXT_SUM - 2'sd1) : (EXT_SUM + 2'sd1);
+	wire signed [D_BIT : 0] ROUND_SUB = EXT_SUB[D_BIT] ? (EXT_SUB - 2'sd1) : (EXT_SUB + 2'sd1);
 	
 	always@(posedge iCLK or negedge iRESET)begin
 		if(!iRESET) sum_mul <= 0;
-		else sum_mul <= EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2];
+		else sum_mul <= ROUND_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2];
 	end
 
 	always@(posedge iCLK or negedge iRESET)begin
@@ -69,8 +73,8 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 			end
 		else
 			begin
-				sum_buf <= EXT_SUM[D_BIT : 1];
-				sub_buf <= EXT_SUB[D_BIT : 1];
+				sum_buf <= ROUND_SUM[D_BIT : 1];
+				sub_buf <= ROUND_SUB[D_BIT : 1];
 			end
 	end
 `endif
