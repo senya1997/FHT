@@ -2,7 +2,6 @@ module fht_rom_block #(parameter W_BIT = 12, A_BIT = 6,
 											MIF_SIN = "./matlab/sin.mif", 
 											MIF_COS = "./matlab/cos.mif")(
 	input iCLK,
-	input iRESET,
 	
 	input iST_ZERO,
 	

@@ -209,7 +209,6 @@ fht_rom_block #(.W_BIT(`W_BIT), .A_BIT(`A_BIT - 2),
 					 .MIF_SIN(`MIF_SIN), 
 					 .MIF_COS(`MIF_COS)) ROM_BLOCK(
 	.iCLK(iCLK),
-	.iRESET(iRESET),
 	
 	.iST_ZERO(ST_ZERO),
 	
