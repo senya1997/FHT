@@ -64,6 +64,9 @@ initial begin
 			DISP_RESULT;
 		end
 	
+	$display("\n\t\t\tpress 'run' to continue\n");
+	$stop;
+	
 	#(5*`TACT);
 	
 	$display("\n\n\n\t\tTEST ON SPEC ANGLES\n");
@@ -108,17 +111,22 @@ endtask
 task DISP_RESULT;
 	bit signed [`D_BIT + `W_BIT : 0] ext_buf; 
 	
+	real temp;
 	real ref_0, ref_1;
 	real er_0, er_1;
 
 	$display("\treference/output signals:");
 					
 		ext_buf = cos*data[1] + sin*data[2];
-	ref_0 = (data[0] + ext_buf*1.0/`MAX_W/2.0)/2.0;
-	ref_1 = (data[0] - ext_buf*1.0/`MAX_W/2.0)/2.0;
+		temp = ext_buf*1.0/`MAX_W;
+	$display("\t\tnormalize mult REF = %9.3f", temp);
+	$display("\t\tnormalize mult RES = %5d\n", BUT.ROUND_SUM_MUL);
 	
-	$display("\t\tREF: y0 = %9.3f,", ref_0, "\ty1 = %9.3f", ref_1);
-	$display("\t\tRES: y0 = %9d,", RESULT[0], "\ty1 = %9d", RESULT[1]);
+	ref_0 = (data[0] + temp)/2.0;
+	ref_1 = (data[0] - temp)/2.0;
+	
+	$display("\t\tREF: y0 = %9.3f\t\t\ty1 = %9.3f", ref_0, ref_1);
+	$display("\t\tRES: y0 = %5d\t\t\ty1 = %5d", RESULT[0], RESULT[1]);
 	
 	$display("\terror (subtraction of res and ref signals), time: %t", $time);
 		er_0 = RESULT[0] - ref_0; // value of error
@@ -180,7 +188,7 @@ task GET_SPEC_ANG(
 	endcase
 endtask
 
-fht_but BUT(
+fht_but #(.D_BIT(`D_BIT), .W_BIT(`W_BIT), .HALF_W_MAX(`HALF_W_MAX)) BUT(
 	.iCLK(clk),
 	.iRESET(reset),
 	

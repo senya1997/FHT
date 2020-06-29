@@ -1,10 +1,12 @@
 `ifdef MODEL_TECH
 //	`define MIF_SIN "D:/SS/fpga/fht/matlab/sin.mif"
 //	`define MIF_COS "D:/SS/fpga/fht/matlab/cos.mif"
-//	`define MIF_SIN "D:/work/fht/matlab/sin.mif"
-//	`define MIF_COS "D:/work/fht/matlab/cos.mif"
-	`define MIF_SIN "./../fht/matlab/sin.mif"
-	`define MIF_COS "./../fht/matlab/cos.mif"
+
+	`define MIF_SIN "D:/work/fht/matlab/sin.mif"
+	`define MIF_COS "D:/work/fht/matlab/cos.mif"
+	
+//	`define MIF_SIN "./../fht/matlab/sin.mif"
+//	`define MIF_COS "./../fht/matlab/cos.mif"
 `else
 	`define MIF_SIN "./matlab/sin.mif"
 	`define MIF_COS "./matlab/cos.mif"
