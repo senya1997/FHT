@@ -1,6 +1,4 @@
-`include "fht_defines_tb.v"
-
-module fht_but #(parameter D_BIT = 17, W_BIT = 12, HALF_W_MAX = 11'sd512)(
+module fht_but #(parameter D_BIT = 17, W_BIT = 12)(
 	input iCLK,
 	input iRESET,
 	
@@ -51,16 +49,9 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 			end
 	end
 `else
-	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN;
-	
-	//wire signed [D_BIT - 1 : 0] ROUND_SUM_MUL = EXT_SUM_MUL[W_BIT - 3] ? (EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2] + 1'b1) : EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2];
-	
-	//wire POS_LHALF_SUM_MUL = (~EXT_SUM_MUL[D_BIT + W_BIT - 3] & EXT_SUM_MUL[W_BIT - 3]); // '+' & '>= 0.5'
-	//wire NEG_LHALF_SUM_MUL = ( EXT_SUM_MUL[D_BIT + W_BIT - 3] & EXT_SUM_MUL[W_BIT - 3 : 0] > {1'b1, {(W_BIT - 3){1'b0}}}); // '-' & '> 0.5'
-	
-	//wire signed [D_BIT - 1 : 0] ROUND_SUM_MUL = (POS_LHALF_SUM_MUL | NEG_LHALF_SUM_MUL) ? (EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2] + 1'b1) : EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2];
-	
 	wire signed [D_BIT + W_BIT : 0] EXT_X0 = {{3{iX_0[D_BIT - 1]}}, iX_0, {(W_BIT - 2){1'b0}}};
+
+	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN;
 	
 	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUM = EXT_X0 + sum_mul;
 	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUB = EXT_X0 - sum_mul;

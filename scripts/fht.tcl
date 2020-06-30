@@ -18,7 +18,7 @@ set_current_revision fht;
 # ========================= input parameters: ========================= #
 
 	# name of define and file that include him which turn off part of RTL
-		set path_def ./fht_defines_tb.v
+		set path_def ./fht_defines.v
 		set name_def TEST_MIXER
 
 	# read input keys from cmd

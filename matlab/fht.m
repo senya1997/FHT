@@ -12,15 +12,16 @@ clc;
     Fd = 44100;
     bias = 0;
     
-    amp_1 = 10000; % e.g. 16 bit ADC
-    amp_2 = 5000; % 2nd sine
+    amp_1 = 8000; % e.g. 16 bit ADC
+    amp_2 = 1500; % 2nd sine
 
-    freq_1 = 9000; % Hz
-    freq_2 = 4500;
+    freq_1 = 900; % Hz
+    freq_2 = 1500;
 
     phase_1 = 0; % grad
     phase_2 = 37;
-
+    
+%% get input data
 N_bank = 4;
 row = round(N/N_bank);
 
@@ -78,7 +79,7 @@ plot(time, test_signal);
 grid on;
 clear time;
 
-% fft (for check):
+%% fft (for check):
 temp_fft = fft(test_signal, N)/N;
 cnt = 1;
 
@@ -158,7 +159,7 @@ re = real(ram_buf);
 im = imag(ram_buf);
 %}
   
-% fht:
+%% fht:
 file_ram = fopen('init_ram.txt', 'w');
 for i = 1 : row
     fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', round(ram(i, :)));
@@ -300,28 +301,29 @@ clear temp;
 fclose(file_addr_rd); 
 fclose(file_addr_wr); 
 
+%% get norm order in RAM
 % from matrix to row:
-cnt = 1;
-clear ram_buf;
-ram_buf(1:N) = zeros;
+    cnt = 1;
+    clear ram_buf;
+    ram_buf(1:N) = zeros;
 
-for i = 1:row
-	ram_buf((1 + (i-1)*4) : (4*i)) = ram(i, 1:4);
-    cnt = cnt + 1;
-end
+    for i = 1:row
+        ram_buf((1 + (i-1)*4) : (4*i)) = ram(i, 1:4);
+        cnt = cnt + 1;
+    end
 
 % change index order (bit reverse):
-cnt = 1;
-ram_fht(1:row, 1:N_bank) = zeros;
+    cnt = 1;
+    ram_fht(1:row, 1:N_bank) = zeros;
 
-for i = 1:row
-	ram_fht(i, 1:4) = [ram_buf(bin2dec(fliplr(dec2bin(cnt-1, last_stage+1))) + 1),... % cnt+0-1
-					   ram_buf(bin2dec(fliplr(dec2bin(cnt, last_stage+1))) + 1),...   % cnt+1-1
-					   ram_buf(bin2dec(fliplr(dec2bin(cnt+1, last_stage+1))) + 1),... % cnt+2-1
-					   ram_buf(bin2dec(fliplr(dec2bin(cnt+2, last_stage+1))) + 1)];   % cnt+3-1
-    cnt = cnt + 4;
-end
+    for i = 1:row
+        ram_fht(i, 1:4) = [ram_buf(bin2dec(fliplr(dec2bin(cnt-1, last_stage+1))) + 1),... % cnt+0-1
+                           ram_buf(bin2dec(fliplr(dec2bin(cnt, last_stage+1))) + 1),...   % cnt+1-1
+                           ram_buf(bin2dec(fliplr(dec2bin(cnt+1, last_stage+1))) + 1),... % cnt+2-1
+                           ram_buf(bin2dec(fliplr(dec2bin(cnt+2, last_stage+1))) + 1)];   % cnt+3-1
+        cnt = cnt + 4;
+    end
 
-clear cnt;
+    clear cnt;
 
-ram_sub = ram_fft - ram_fht;
+    ram_sub = ram_fft - ram_fht;

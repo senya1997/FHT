@@ -1,4 +1,4 @@
-module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, HALF_W_MAX = 11'sd512, SEC_BIT = 9)(
+module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, SEC_BIT = 9)(
 	input iCLK,
 	input iRESET,
 	
@@ -118,7 +118,7 @@ fht_in_mix #(.D_BIT(D_BIT), .SEC_BIT(SEC_BIT)) MIX_1(
 );
 
 // butterflyes:
-fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT), .HALF_W_MAX(HALF_W_MAX)) BUT_0(
+fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_0(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
@@ -133,7 +133,7 @@ fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT), .HALF_W_MAX(HALF_W_MAX)) BUT_0(
 	.oY_1(BUT_TO_MIX[1])
 );
 
-fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT), .HALF_W_MAX(HALF_W_MAX)) BUT_1(
+fht_but #(.D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_1(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	

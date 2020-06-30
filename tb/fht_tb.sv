@@ -1,6 +1,5 @@
 `timescale 1ns/1ns
 `include "../fht_defines.v"
-`include "../fht_defines_tb.v"
 
 module fht_tb;
 
@@ -21,8 +20,6 @@ bit [`A_BIT - 1 : 0] addr_wr;
 bit [3 : 0] we;
 
 wire RDY;
-
-import "DPI-C" function real signal(input real f, input real t, input real p);
 
 initial begin
 	$timeformat(-6, 3, " us", 6);
@@ -195,10 +192,12 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 			scan[0] = $fscanf(file_ref, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 			scan[1] = $fscanf(file, "%d\t%d\t%d\t%d\n", temp[0], temp[1], temp[2], temp[3]);
 			
-			if(((temp_ref[0] <= temp[0] + 1) & (temp_ref[0] >= temp[0] - 1)) & 
-			   ((temp_ref[1] <= temp[1] + 1) & (temp_ref[1] >= temp[1] - 1)) & 
-			   ((temp_ref[2] <= temp[2] + 1) & (temp_ref[2] >= temp[2] - 1)) & 
-			   ((temp_ref[3] <= temp[3] + 1) & (temp_ref[3] >= temp[3] - 1)))
+			// if(((temp_ref[0] <= temp[0] + 1) & (temp_ref[0] >= temp[0] - 1)) & 
+			   // ((temp_ref[1] <= temp[1] + 1) & (temp_ref[1] >= temp[1] - 1)) & 
+			   // ((temp_ref[2] <= temp[2] + 1) & (temp_ref[2] >= temp[2] - 1)) & 
+			   // ((temp_ref[3] <= temp[3] + 1) & (temp_ref[3] >= temp[3] - 1)))
+			if((temp_ref[0] == temp[0]) & (temp_ref[1] == temp[1]) &
+			   (temp_ref[2] == temp[2]) & (temp_ref[3] == temp[3]))
 				$display("\tLine %3d: data_0: %4d, data_1: %4d, data_2: %4d, data_3: %4d", 
 							j, temp[0], temp[1], temp[2], temp[3]);
 			else

@@ -1,6 +1,5 @@
 `timescale 1ns/1ns
 `include "../fht_defines.v"
-`include "../fht_defines_tb.v"
 
 module fht_but_tb;
 
@@ -193,7 +192,7 @@ task GET_SPEC_ANG(
 	endcase
 endtask
 
-fht_but #(.D_BIT(`D_BIT), .W_BIT(`W_BIT), .HALF_W_MAX(`HALF_W_MAX)) BUT(
+fht_but #(.D_BIT(`D_BIT), .W_BIT(`W_BIT)) BUT(
 	.iCLK(clk),
 	.iRESET(reset),
 	
