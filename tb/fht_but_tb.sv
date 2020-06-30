@@ -124,8 +124,8 @@ task DISP_RESULT;
 					
 		ext_buf = cos*data[1] + sin*data[2];
 		temp = ext_buf*1.0/`MAX_W;
-	$display("\t\tnormalize mult REF = %9.5f", temp);
-	$display("\t\tnormalize mult RES = %5d\n", BUT.ROUND_SUM_MUL);
+	// $display("\t\tnormalize mult REF = %9.5f", temp);
+	// $display("\t\tnormalize mult RES = %5d\n", BUT.ROUND_SUM_MUL);
 	
 	ref_0 = (data[0] + temp)/2.0;
 	ref_1 = (data[0] - temp)/2.0;

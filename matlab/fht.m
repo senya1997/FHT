@@ -2,9 +2,9 @@ clear;
 clc;
 
 % choose test signal:
-    %test = 'sin';
+    test = 'sin';
     %test = 'const';
-    test = 'num';
+    %test = 'num';
 
 % variable constants:
     N = 1024;
