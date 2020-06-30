@@ -175,7 +175,6 @@ set_global_assignment -name PARTITION_COLOR 2154272 -section_id "fht_in_mix:MIX_
 set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_in_mix:MIX_1"
 set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_in_mix:MIX_1"
 set_global_assignment -name PARTITION_COLOR 16037301 -section_id "fht_in_mix:MIX_1"
-set_global_assignment -name VERILOG_FILE fht_sum.v
 set_global_assignment -name TCL_SCRIPT_FILE scripts/lib_setup.tcl
 set_global_assignment -name TCL_SCRIPT_FILE scripts/src.tcl
 set_global_assignment -name TCL_SCRIPT_FILE scripts/fht.tcl

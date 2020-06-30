@@ -13,4 +13,4 @@
 `define MAX_D 32768
 `define MAX_W (2*`HALF_W_MAX)
 
-`define NUM_OF_RPT 10 // number of repeat butterfly test
+`define NUM_OF_RPT 20 // number of repeat butterfly test

@@ -53,13 +53,18 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 `else
 	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN;
 	
-	wire signed [D_BIT - 1 : 0] ROUND_SUM_MUL = EXT_SUM_MUL[W_BIT - 3] ? (EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2] + 1'b1) : EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2];
-
+	//wire signed [D_BIT - 1 : 0] ROUND_SUM_MUL = EXT_SUM_MUL[W_BIT - 3] ? (EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2] + 1'b1) : EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2];
+	
+	wire POS_LHALF_SUM_MUL = (~EXT_SUM_MUL[D_BIT + W_BIT - 3] & EXT_SUM_MUL[W_BIT - 3]); // '+' & '>= 0.5'
+	wire NEG_LHALF_SUM_MUL = ( EXT_SUM_MUL[D_BIT + W_BIT - 3] & EXT_SUM_MUL[W_BIT - 3 : 0] > {1'b1, {(W_BIT - 3){1'b0}}}); // '-' & '> 0.5'
+	
+	wire signed [D_BIT - 1 : 0] ROUND_SUM_MUL = (POS_LHALF_SUM_MUL | NEG_LHALF_SUM_MUL) ? (EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2] + 1'b1) : EXT_SUM_MUL[D_BIT + W_BIT - 3 : W_BIT - 2];
+	
 	wire signed [D_BIT : 0] EXT_SUM = iX_0 + sum_mul;
 	wire signed [D_BIT : 0] EXT_SUB = iX_0 - sum_mul;
 	
-	wire signed [D_BIT - 1 : 0] ROUND_SUM = (EXT_SUM[0]) ? (EXT_SUM[D_BIT : 1] + 1'b1) : EXT_SUM[D_BIT : 1];
-	wire signed [D_BIT - 1 : 0] ROUND_SUB = (EXT_SUB[0]) ? (EXT_SUB[D_BIT : 1] + 1'b1) : EXT_SUB[D_BIT : 1];
+	wire signed [D_BIT - 1 : 0] ROUND_SUM = (~EXT_SUM[D_BIT] & EXT_SUM[0]) ? (EXT_SUM[D_BIT : 1] + 1'b1) : EXT_SUM[D_BIT : 1];
+	wire signed [D_BIT - 1 : 0] ROUND_SUB = (~EXT_SUM[D_BIT] & EXT_SUB[0]) ? (EXT_SUB[D_BIT : 1] + 1'b1) : EXT_SUB[D_BIT : 1];
 	
 	always@(posedge iCLK or negedge iRESET)begin
 		if(!iRESET) sum_mul <= 0;

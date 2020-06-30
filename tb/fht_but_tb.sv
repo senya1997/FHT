@@ -49,12 +49,17 @@ initial begin
 				if(data[1] == `MAX_D) data[1] = data[1] - 1;
 			data[2] = $signed($random)%(`MAX_D);
 				if(data[2] == `MAX_D) data[2] = data[2] - 1;
-				
+			
 			sin = $signed($random)%(`MAX_W);
 				temp_byte = $signed($random)%(2);
 				// temp = (temp_byte == 0) ? ($sqrt(`MAX_W*`MAX_W - sin*sin)) : ($sqrt(`MAX_W*`MAX_W - sin*sin) * temp_byte);
 			// cos = temp - 1;
 			cos = (temp_byte == 0) ? ($sqrt(`MAX_W*`MAX_W - sin*sin)) : ($sqrt(`MAX_W*`MAX_W - sin*sin) * temp_byte);
+			
+			// data[1] = 0;
+			// data[2] = 2;
+			// sin = 12288;
+			// cos = 0;
 			
 			data[0] = #(`TACT) $signed($random)%(`MAX_D);
 				if(data[0] == `MAX_D) data[0] = data[0] - 1;
@@ -119,7 +124,7 @@ task DISP_RESULT;
 					
 		ext_buf = cos*data[1] + sin*data[2];
 		temp = ext_buf*1.0/`MAX_W;
-	$display("\t\tnormalize mult REF = %9.3f", temp);
+	$display("\t\tnormalize mult REF = %9.5f", temp);
 	$display("\t\tnormalize mult RES = %5d\n", BUT.ROUND_SUM_MUL);
 	
 	ref_0 = (data[0] + temp)/2.0;
