@@ -257,13 +257,9 @@ fht_top FHT(
 	
 	.iSTART(start),
 	
+	.iWE(we),
 	.iDATA(data_adc),
 	.iADDR_WR(addr_wr),
-	
-	.iWE_0(we[0]),
-	.iWE_1(we[1]),
-	.iWE_2(we[2]),
-	.iWE_3(we[3]),	
 	
 	.iADDR_RD_0(addr_rd[0]),
 	.iADDR_RD_1(addr_rd[1]),

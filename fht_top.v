@@ -6,14 +6,10 @@ module fht_top(
 	
 	input iSTART, // after load point in RAM(A) required issue strobe on 'iSTART'
 	
+	input [3 : 0] iWE, // 'WE' is signal of 'bank choice'
 	input [`D_BIT - 2 : 0] iDATA, // still not extended data from ADC
 //	input signed [`D_BIT - 2 : 0] iDATA,
 	input [`A_BIT - 1 : 0] iADDR_WR, // max = N/N_bank
-	
-	input iWE_0, // 'WE' is signal of 'bank choice'
-	input iWE_1,
-	input iWE_2,
-	input iWE_3,
 	
 	input [`A_BIT - 1 : 0] iADDR_RD_0,
 	input [`A_BIT - 1 : 0] iADDR_RD_1,
@@ -60,10 +56,10 @@ endgenerate
 
 wire WE_A, WE_B;
 wire [3 : 0] WE;
-	assign WE[0] = SOURCE_CONT ? iWE_0 : WE_A;
-	assign WE[1] = SOURCE_CONT ? iWE_1 : WE_A;
-	assign WE[2] = SOURCE_CONT ? iWE_2 : WE_A;
-	assign WE[3] = SOURCE_CONT ? iWE_3 : WE_A;
+	assign WE[0] = SOURCE_CONT ? iWE[0] : WE_A;
+	assign WE[1] = SOURCE_CONT ? iWE[1] : WE_A;
+	assign WE[2] = SOURCE_CONT ? iWE[2] : WE_A;
+	assign WE[3] = SOURCE_CONT ? iWE[3] : WE_A;
 	
 assign ADDR_RD[0] = SOURCE_CONT ? iADDR_RD_0 : ADDR_RD_CTRL[0];
 assign ADDR_RD[1] = SOURCE_CONT ? iADDR_RD_1 : ADDR_RD_CTRL[1];
