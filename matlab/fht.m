@@ -20,10 +20,12 @@ clc;
 
     phase_1 = 0; % grad
     phase_2 = 37;
+
+w_amp = 16384; % amplitude of twiddle coef use to normalize data after multiplier
     
 %% get input data
 N_bank = 4;
-row = round(N/N_bank);
+row = N/N_bank; % necessarily integer
 
 time = 0 : 1/Fd : (N - 1)/Fd;
 signal = bias + amp_1*sind((freq_1*360).* time + phase_1) + amp_2*sind((freq_2*360).* time + phase_2);
@@ -160,39 +162,34 @@ im = imag(ram_buf);
 %}
   
 %% fht:
+sin_x = load('sin.txt');
+cos_x = load('cos.txt');
+
 file_ram = fopen('init_ram.txt', 'w');
 for i = 1 : row
-    fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', round(ram(i, :)));
+    fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
 end
     
 file_addr_rd = fopen('addr_rd.txt', 'w'); % for compare with rtl
 file_addr_wr = fopen('addr_wr.txt', 'w');
 
-coef(1:row, 1:4) = zeros;
-
 for i = 1:row % 0 stage (only butterfly)
     temp = fht_double_but([ram(i, 1), ram(i, 2), 0],...
-                         [ram(i, 3), ram(i, 4), 0], 0, 0, 1);
+                          [ram(i, 3), ram(i, 4), 0], sin_x(1), cos_x(1), w_amp);
     ram(i, :) = [temp(1), temp(3), temp(2), temp(4)];
 
-    fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
+    fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1); % every second tact
     fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 
     fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
-
-    coef(i, 1) = round(sin(0*(2*pi/2))*1024);
-    coef(i, 2) = round(cos(0*(2*pi/2))*1024);
-
-    coef(i, 3) = round(sin(0*(2*pi/2))*1024);
-    coef(i, 4) = round(cos(0*(2*pi/2))*1024);
 end
 
 last_stage = log(N)/log(2) - 1; % numbers start from zero
-coef_cos = 4;
 
 % init coef for 1st stage:
-	div = N/(2*N_bank);
-	sector = 1;
+    bit_depth = log(row)/log(2) - 2; % bit depth of ROM data: [A_BIT - 3 : 0]	
+    div = N/(2*N_bank);
+    sector = 1;
     
 for stage = 1:last_stage % without 0 stage
 	name = 'before_xst_ram.txt';
@@ -200,7 +197,7 @@ for stage = 1:last_stage % without 0 stage
     
     file_ram = fopen(name, 'w');
     for i = 1 : row
-        fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', round(ram(i, :)));
+        fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
     end
 
     ram_buf(1:row, 1:N_bank) = zeros;
@@ -209,46 +206,38 @@ for stage = 1:last_stage % without 0 stage
 	sector_cnt = 2;
 
 	cos_cnt = 0;
-	bit_depth = stage;
-
+	
 	for j = 1:sector
-		cur_cos_0 = bin2dec(fliplr(dec2bin(cos_cnt, bit_depth)));
-		cur_cos_1 = bin2dec(fliplr(dec2bin(cos_cnt + 1, bit_depth)));
+        num_coef = bin2dec(fliplr(dec2bin(cos_cnt, bit_depth))) + 1;
         
-		for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div) 
+		for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div)
 			if(j == 1)
 				temp = fht_double_but([ram(i, 1), ram(i, 2), ram(i, 2)],...
-									  [ram(i, 3), ram(i, 4), ram(i, 4)], cur_cos_0, cur_cos_1, coef_cos);
+									  [ram(i, 3), ram(i, 4), ram(i, 4)], sin_x(num_coef), cos_x(num_coef), w_amp);
                                   
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			elseif(j == 2)
 				temp = fht_double_but([ram(i, 2), ram(i, 1), ram(i, 3)],...
-									  [ram(i, 4), ram(i, 3), ram(i, 1)], cur_cos_0, cur_cos_1, coef_cos);
+									  [ram(i, 4), ram(i, 3), ram(i, 1)], sin_x(num_coef), cos_x(num_coef), w_amp);
                                   
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			elseif(mod(j, 2) == 1)
 				temp = fht_double_but([ram(i, 1), ram(i, 2), ram(i + sector_cnt*2*div, 3)],...
 									  [ram(i, 3), ram(i, 4), ram(i + sector_cnt*2*div, 1)],...
-									   cur_cos_0, cur_cos_1, coef_cos);
+									   sin_x(num_coef), cos_x(num_coef), w_amp);
                                    
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i + sector_cnt*2*div-1, i-1, i + sector_cnt*2*div-1, i-1);                 
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			else
 				temp = fht_double_but([ram(i, 2), ram(i, 1), ram(i + sector_cnt*2*div, 4)],...
 									  [ram(i, 4), ram(i, 3), ram(i + sector_cnt*2*div, 2)],...
-									   cur_cos_0, cur_cos_1, coef_cos);
+									   sin_x(num_coef), cos_x(num_coef), w_amp);
                                    
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i + sector_cnt*2*div-1, i-1, i + sector_cnt*2*div-1);
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
             end
-            
-            coef(i, 1) = round(sin(cur_cos_0*(2*pi/coef_cos))*1024);
-            coef(i, 2) = round(cos(cur_cos_0*(2*pi/coef_cos))*1024);
-            
-            coef(i, 3) = round(sin(cur_cos_1*(2*pi/coef_cos))*1024);
-            coef(i, 4) = round(cos(cur_cos_1*(2*pi/coef_cos))*1024);
             
 			if(stage == last_stage)
 				ram_buf(i, 1) = temp(1);
@@ -281,11 +270,14 @@ for stage = 1:last_stage % without 0 stage
 			sector_cnt = sector_cnt - 2;
         end
         
-        cos_cnt = cos_cnt + 2;
+        if(cos_cnt == (row/4 - 1)) % overflow
+            cos_cnt = 0;
+        else
+            cos_cnt = cos_cnt + 1;
+        end
 	end
 
 	div = div/2;
-	coef_cos = 2*coef_cos;
 	sector = 2*sector;
     
 	ram = ram_buf;
@@ -293,7 +285,7 @@ end
 
 file_ram = fopen('ram.txt', 'w');
 for i = 1 : row
-    fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', round(ram(i, :)));
+    fprintf(file_ram, '%4d\t%4d\t%4d\t%4d\n', ram(i, :));
 end
 
 clear temp;
