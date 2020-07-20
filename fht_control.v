@@ -241,13 +241,13 @@ endfunction
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_coef_cnt <= 0;
 	else if(RESET_CNT_COEF) addr_coef_cnt <= 0;
-	else if((cnt_sector_time == (div - 9'd2)) & clk_2) addr_coef_cnt <= addr_coef_cnt + 1'b1;
+	else if(((cnt_sector_time == (div - 9'd2)) & clk_2) | (LAST_STAGE & !clk_2)) addr_coef_cnt <= addr_coef_cnt + 1'b1;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_coef <= 0;
 	else if(RESET_CNT_COEF) addr_coef <= 0;
-	else if(COEF_EN & clk_2) addr_coef <= F_BIT_REV(addr_coef_cnt);
+	else if(COEF_EN | LAST_STAGE) addr_coef <= F_BIT_REV(addr_coef_cnt);
 end
 
 // ************** others: ************** //

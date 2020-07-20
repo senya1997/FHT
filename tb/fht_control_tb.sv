@@ -1,8 +1,14 @@
 `timescale 1ns/1ns
 `include "../fht_defines.v"
 
+package fli;
+	import "DPI-C" function mti_Cmd(input string cmd);
+endpackage
+
 module fht_control_tb;
- 
+
+import fli::*;
+
 reg clk;
 reg reset;
 
@@ -71,7 +77,7 @@ initial begin
 		
 	#(100*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
-	mti_fli::mti_Cmd("stop -sync");
+	mti_Cmd("stop -sync");
 end
 
 `ifdef COMPARE_WITH_MATLAB
@@ -98,7 +104,7 @@ always@(CONTROL.cnt_stage)begin
 			`endif
 			
 			$display("\n\t\t\tpress 'run' to continue\n");
-				$stop;
+				mti_Cmd("stop -sync");
 			$display("\n\t%2d stage FHT, time: %t\n", CONTROL.cnt_stage, $time);
 		end
 end
