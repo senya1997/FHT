@@ -1,11 +1,11 @@
-module fht_but_block #(parameter D_BIT = 17, W_BIT = 12, SEC_BIT = 9)(
+module fht_but_block #(parameter D_BIT = 17, A_BIT = 8, W_BIT = 12)(
 	input iCLK,
 	input iRESET,
 	
 	input iST_ZERO,
 	input iST_LAST,
 	input i2ND_PART_SUBSEC,
-	input [SEC_BIT - 1 : 0] iSECTOR,
+	input [A_BIT - 1 : 0] iSECTOR,
 	
 	input signed [D_BIT - 1 : 0] iBANK_0, 
 	input signed [D_BIT - 1 : 0] iBANK_1,
@@ -83,7 +83,7 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 // input bank mixers:
-fht_in_mix #(.D_BIT(D_BIT), .SEC_BIT(SEC_BIT)) MIX_0(
+fht_in_mix #(.D_BIT(D_BIT), .A_BIT(A_BIT)) MIX_0(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
@@ -100,7 +100,7 @@ fht_in_mix #(.D_BIT(D_BIT), .SEC_BIT(SEC_BIT)) MIX_0(
 	.oY_2(MIX_TO_BUT_0[2])
 );
 
-fht_in_mix #(.D_BIT(D_BIT), .SEC_BIT(SEC_BIT)) MIX_1(
+fht_in_mix #(.D_BIT(D_BIT), .A_BIT(A_BIT)) MIX_1(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	

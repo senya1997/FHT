@@ -340,7 +340,8 @@ function real GET_SIN(input real time_s);
 endfunction
 */
 
-fht_top FHT(
+fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
+			.MIF_SIN(`MIF_SIN), .MIF_COS(`MIF_COS)) FHT(
 	.iCLK(clk),
 	.iRESET(reset),
 	

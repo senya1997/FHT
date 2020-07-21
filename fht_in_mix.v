@@ -1,9 +1,9 @@
-module fht_in_mix #(parameter D_BIT = 17, SEC_BIT = 9)( 
+module fht_in_mix #(parameter D_BIT = 17, A_BIT = 8)( 
 	input iCLK,
 	input iRESET,
 	
 	input iST_ZERO,
-	input [SEC_BIT - 1 : 0] iSECTOR,
+	input [A_BIT - 1 : 0] iSECTOR,
 	
 	input signed [D_BIT - 1 : 0] iBANK_0, // normal order 0,1,2,3
 	input signed [D_BIT - 1 : 0] iBANK_1, // reverse order 2,3,0,1

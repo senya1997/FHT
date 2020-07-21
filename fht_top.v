@@ -1,25 +1,26 @@
 `include "fht_defines.v"
 
-module fht_top(
+module fht_top #(parameter D_BIT = `D_BIT, A_BIT = `A_BIT, W_BIT = `W_BIT, 
+									MIF_SIN = `MIF_SIN, MIF_COS = `MIF_COS)(
 	input iCLK,
 	input iRESET,
 	
 	input iSTART, // after load point in RAM(A) required issue strobe on 'iSTART'
 	
 	input [3 : 0] iWE, // 'WE' is signal of 'bank choice'
-	input [`D_BIT - 2 : 0] iDATA, // still not extended data from ADC
+	input [D_BIT - 2 : 0] iDATA, // still not extended data from ADC
 //	input signed [`D_BIT - 2 : 0] iDATA,
-	input [`A_BIT - 1 : 0] iADDR_WR, // max = N/N_bank
+	input [A_BIT - 1 : 0] iADDR_WR, // max = N/N_bank
 	
-	input [`A_BIT - 1 : 0] iADDR_RD_0,
-	input [`A_BIT - 1 : 0] iADDR_RD_1,
-	input [`A_BIT - 1 : 0] iADDR_RD_2,
-	input [`A_BIT - 1 : 0] iADDR_RD_3,
+	input [A_BIT - 1 : 0] iADDR_RD_0,
+	input [A_BIT - 1 : 0] iADDR_RD_1,
+	input [A_BIT - 1 : 0] iADDR_RD_2,
+	input [A_BIT - 1 : 0] iADDR_RD_3,
 	
-	output signed [`D_BIT - 1 : 0] oDATA_0,
-	output signed [`D_BIT - 1 : 0] oDATA_1,
-	output signed [`D_BIT - 1 : 0] oDATA_2,
-	output signed [`D_BIT - 1 : 0] oDATA_3,
+	output signed [D_BIT - 1 : 0] oDATA_0,
+	output signed [D_BIT - 1 : 0] oDATA_1,
+	output signed [D_BIT - 1 : 0] oDATA_2,
+	output signed [D_BIT - 1 : 0] oDATA_3,
 	
 	output oRDY
 );
@@ -29,19 +30,19 @@ wire SOURCE_CONT;
 
 wire RDY;
 
-wire signed [`D_BIT - 1 : 0] DATA_RAM_A [0 : 3]; // RAM(A) gives input and issue output points
-wire signed [`D_BIT - 1 : 0] DATA_BUT [0 : 3];
+wire signed [D_BIT - 1 : 0] DATA_RAM_A [0 : 3]; // RAM(A) gives input and issue output points
+wire signed [D_BIT - 1 : 0] DATA_BUT [0 : 3];
 
-wire [`A_BIT - 1 : 0] ADDR_RD_CTRL [0 : 3];
-wire [`A_BIT - 1 : 0] ADDR_WR_CTRL [0 : 3];	
+wire [A_BIT - 1 : 0] ADDR_RD_CTRL [0 : 3];
+wire [A_BIT - 1 : 0] ADDR_WR_CTRL [0 : 3];	
 
-wire [`A_BIT - 1 : 0] ADDR_RD [0 : 3];
-wire [`A_BIT - 1 : 0] ADDR_WR [0 : 3];
+wire [A_BIT - 1 : 0] ADDR_RD [0 : 3];
+wire [A_BIT - 1 : 0] ADDR_WR [0 : 3];
 
 // syntax: DATA_"FROM"_"TO"
-	wire signed [`D_BIT - 1 : 0] DATA_RAM_A_BUT [0 : 3];
-	wire signed [`D_BIT - 1 : 0] DATA_RAM_B_BUT [0 : 3];
-	wire signed [`D_BIT - 1 : 0] DATA_BUT_RAM [0 : 3];
+	wire signed [D_BIT - 1 : 0] DATA_RAM_A_BUT [0 : 3];
+	wire signed [D_BIT - 1 : 0] DATA_RAM_B_BUT [0 : 3];
+	wire signed [D_BIT - 1 : 0] DATA_BUT_RAM [0 : 3];
 	
 genvar k;
 generate
@@ -71,10 +72,10 @@ assign ADDR_RD[3] = SOURCE_CONT ? iADDR_RD_3 : ADDR_RD_CTRL[3];
 wire ST_ZERO, ST_LAST;
 wire SEC_PART_SUBSEC;
 
-wire [`SEC_BIT - 1: 0] SECTOR;
-wire [`A_BIT - 3 : 0] ADDR_COEF;
+wire [A_BIT - 1 : 0] SECTOR;
+wire [A_BIT - 3 : 0] ADDR_COEF;
 
-fht_control #(.A_BIT(`A_BIT), .SEC_BIT(`SEC_BIT)) CONTROL(
+fht_control #(.A_BIT(A_BIT)) CONTROL(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
@@ -108,10 +109,10 @@ fht_control #(.A_BIT(`A_BIT), .SEC_BIT(`SEC_BIT)) CONTROL(
 
 // ==================== butterfly block: ====================== //
 
-wire signed [`W_BIT - 1 : 0] SIN_0, COS_0;
-wire signed [`W_BIT - 1 : 0] SIN_1, COS_1;
+wire signed [W_BIT - 1 : 0] SIN_0, COS_0;
+wire signed [W_BIT - 1 : 0] SIN_1, COS_1;
 
-fht_but_block #(.D_BIT(`D_BIT), .W_BIT(`W_BIT), .SEC_BIT(`SEC_BIT)) BUT_BLOCK(
+fht_but_block #(.A_BIT(A_BIT), .D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_BLOCK(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
@@ -139,7 +140,7 @@ fht_but_block #(.D_BIT(`D_BIT), .W_BIT(`W_BIT), .SEC_BIT(`SEC_BIT)) BUT_BLOCK(
 
 // ========================== RAM: ============================ //
 
-fht_ram_block #(.D_BIT(`D_BIT), .A_BIT(`A_BIT)) FHT_RAM_A(
+fht_ram_block #(.D_BIT(D_BIT), .A_BIT(A_BIT)) FHT_RAM_A(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 
@@ -169,7 +170,7 @@ fht_ram_block #(.D_BIT(`D_BIT), .A_BIT(`A_BIT)) FHT_RAM_A(
 	.oDATA_3(DATA_RAM_A_BUT[3])
 );
 
-fht_ram_block #(.D_BIT(`D_BIT), .A_BIT(`A_BIT)) FHT_RAM_B(
+fht_ram_block #(.D_BIT(D_BIT), .A_BIT(A_BIT)) FHT_RAM_B(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
@@ -201,9 +202,9 @@ fht_ram_block #(.D_BIT(`D_BIT), .A_BIT(`A_BIT)) FHT_RAM_B(
 
 // ========================== ROM: ============================= //
 
-fht_rom_block #(.W_BIT(`W_BIT), .A_BIT(`A_BIT - 2),
-					 .MIF_SIN(`MIF_SIN), 
-					 .MIF_COS(`MIF_COS)) ROM_BLOCK(
+fht_rom_block #(.W_BIT(W_BIT), .A_BIT(A_BIT - 2),
+					 .MIF_SIN(MIF_SIN), 
+					 .MIF_COS(MIF_COS)) ROM_BLOCK(
 	.iCLK(iCLK),
 	
 	.iST_ZERO(ST_ZERO),
