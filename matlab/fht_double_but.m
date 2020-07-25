@@ -7,10 +7,17 @@ fht_double_but(2) = x(2);
 
 fht_double_but(3) = y(1);
 fht_double_but(4) = y(2);
+
+fprintf('WARNING: TEST_MIXER is enabled');
 %}
 
-mul_x = (cos_x*x(2) + sin_x*x(3))/w_amp;
-mul_y =(-sin_x*y(2) + cos_x*y(3))/w_amp;
+%mul_x = cos(n_x*(2*pi/N))*x(2) + sin(n_x*(2*pi/N))*x(3);
+%mul_y = -sin(n_x*(2*pi/N))*y(2) + cos(n_x*(2*pi/N))*y(3);
+
+mul_x = (cos_x(1)*x(2) + sin_x(1)*x(3))/w_amp;
+mul_y = (cos_x(2)*y(2) + sin_x(2)*y(3))/w_amp;
+
+%mul_y =(-sinx(1)*y(2) + cosx(1)*y(3))/w_amp;
 
 fht_double_but(1) = round((x(1) + mul_x)/2);
 fht_double_but(2) = round((x(1) - mul_x)/2);

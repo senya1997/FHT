@@ -130,7 +130,10 @@ if {[expr round($DEPTH_NUM_STAGE) - $DEPTH_NUM_STAGE] == 0} {
 	disp_error "DEPTH_NUM_STAGE is not integer"
 }
 
-if {($D_BIT > 0) && ($W_BIT > 0) && ($A_BIT > 0)} {
+if {($D_BIT > 11) && ($D_BIT < 25)\
+	 && ($W_BIT > 11) && ($W_BIT < 21)\
+	 && ($A_BIT > 4) && ($A_BIT < 10)} {
+	 
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"
@@ -141,7 +144,7 @@ if {($D_BIT > 0) && ($W_BIT > 0) && ($A_BIT > 0)} {
 	puts $f_def "/*******************************************/"
 	puts $f_def " "
 } else {
-	disp_error "Input parameters is not positive"
+	disp_error "Input parameters is not correct"
 }
 
 close $f_def
