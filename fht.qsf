@@ -19,7 +19,7 @@
 #
 # Quartus II 64-Bit
 # Version 14.1.0 Build 186 12/03/2014 SJ Full Version
-# Date created = 18:18:41  July 21, 2020
+# Date created = 13:38:46  July 25, 2020
 #
 # -------------------------------------------------------------------------- #
 #
@@ -44,13 +44,13 @@ set_global_assignment -name ORIGINAL_QUARTUS_VERSION 14.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:53:17  MAY 10, 2020"
 set_global_assignment -name LAST_QUARTUS_VERSION 14.1.0
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+set_global_assignment -name MIF_FILE sin.mif
+set_global_assignment -name MIF_FILE cos.mif
 set_global_assignment -name TCL_SCRIPT_FILE scripts/lib_setup.tcl
 set_global_assignment -name TCL_SCRIPT_FILE scripts/src.tcl
 set_global_assignment -name TCL_SCRIPT_FILE scripts/fht.tcl
 set_global_assignment -name VERILOG_FILE fht_rom.v
 set_global_assignment -name SDC_FILE fht.out.sdc
-set_global_assignment -name MIF_FILE matlab/sin.mif
-set_global_assignment -name MIF_FILE matlab/cos.mif
 set_global_assignment -name VERILOG_FILE fht_ram.v
 set_global_assignment -name VERILOG_FILE fht_ram_block.v
 set_global_assignment -name VERILOG_FILE fht_control.v

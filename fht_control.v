@@ -44,11 +44,11 @@ end
 /*                           regs                             */
 /**************************************************************/
 
-reg [`DEPTH_NUM_STAGE : 0] cnt_stage;	// max = log(N)/log(2) - 1
+reg [3 : 0] cnt_stage;	// max = log(N)/log(2) - 1, max addr of one bank = 9 => max cnt_stage = 11
 reg [A_BIT : 0] cnt_stage_time;			// length of bank + reserve (for wait time end of writing in RAM)
 
-reg [A_BIT : 0] div;							// this 'div' = '2*div' from matlab model
-reg [`DEPTH_NUM_STAGE : 0] div_2;		// replacement mult on 'div' in calc bias by shift on 'div_2'
+reg [A_BIT : 0] div;	// this 'div' = '2*div' from matlab model
+reg [3 : 0] div_2;	// replacement mult on 'div' in calc bias by shift on 'div_2', max addr of one bank = 9 => max div_2 = 9
 
 reg [A_BIT - 1 : 0] cnt_sector;			// number of rows in bank
 reg [A_BIT - 1 : 0] cnt_sector_d;
@@ -82,7 +82,7 @@ reg rdy;
 /*                            wires                           */
 /**************************************************************/
 
-wire ZERO_STAGE =	(cnt_stage == 0 & !rdy); // to aviod "1" on output when FHT is not started
+wire ZERO_STAGE =	(cnt_stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
 wire LAST_STAGE =	(cnt_stage == `LAST_STAGE);
 
 wire WE_EN =			(cnt_stage_time >= 2);
@@ -107,8 +107,8 @@ wire RESET_CNT_COEF = (rdy | EOF_COEF);
 // *********** stage counters: *********** //
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) cnt_stage <= 0;
-	else if(rdy) cnt_stage <= 0;
+	if(!iRESET) cnt_stage <= 4'd0;
+	else if(rdy) cnt_stage <= 4'd0;
 	else if(EOF_STAGE & clk_2) cnt_stage <= cnt_stage + 1'b1;
 end
 

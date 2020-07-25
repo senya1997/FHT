@@ -14,9 +14,13 @@ proc disp_error msg {
 # 'arg = 0' - write sin, 1 - cos
 proc generate_mif {arg W_BIT DEPTH_ROM BANK_SIZE} {
 	if {$arg == 0} {
+	# for FPGA
 		set f_mif [open sin.mif w]
+	# for matlab
+		set f_txt [open matlab/sin.txt w]
 	} elseif {$arg == 1} {
 		set f_mif [open cos.mif w]
+		set f_txt [open matlab/cos.txt w]
 	} else {
 		disp_error "Wrong input argument in 'generate_mif' proc"
 	}
@@ -38,11 +42,13 @@ proc generate_mif {arg W_BIT DEPTH_ROM BANK_SIZE} {
 			set data [expr round(cos(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
 		}
 		puts $f_mif "\t$i\t:\t$data;"
+		puts $f_txt "$data"
 	}
 	
 	puts $f_mif "END;"
 	
 	close $f_mif
+	close $f_txt
 }
 
 set_current_revision fht;
@@ -98,7 +104,6 @@ set path_def ./fht_defines.v
 	set N [expr round(4*pow(2, $A_BIT))] 
 	set BANK_SIZE [expr $N/4]
 
-	set DEPTH_NUM_STAGE	[expr log($A_BIT)/log(2)]
 	set DEPTH_ROM			[expr round(pow(2, $A_BIT - 2))]
 	set LAST_STAGE			[expr round(log($N)/log(2) - 1)] 
 
@@ -113,27 +118,22 @@ puts " "
 puts "writing defines..."
 set f_def [open $path_def r+]
 
-if {[expr round($DEPTH_NUM_STAGE) - $DEPTH_NUM_STAGE] == 0} {
-	set DEPTH_NUM_STAGE [expr round($DEPTH_NUM_STAGE)]
-	
+if {($A_BIT > 4) && ($A_BIT < 10)} {
 	puts $f_def "/*******************************************/"
 	puts $f_def "/* auto generated defines (do not modify): */"
 	puts $f_def "/*******************************************/"
 	puts $f_def " "
 	puts $f_def "`define N $N"
 	puts $f_def "`define BANK_SIZE $BANK_SIZE"
-	puts $f_def "`define DEPTH_NUM_STAGE $DEPTH_NUM_STAGE"
 	puts $f_def "`define DEPTH_ROM $DEPTH_ROM"
 	puts $f_def "`define LAST_STAGE $LAST_STAGE"
 	puts $f_def " "
 } else {
-	disp_error "DEPTH_NUM_STAGE is not integer"
+	disp_error "A_BIT is not valid"
 }
 
 if {($D_BIT > 11) && ($D_BIT < 25)\
-	 && ($W_BIT > 11) && ($W_BIT < 21)\
-	 && ($A_BIT > 4) && ($A_BIT < 10)} {
-	 
+	 && ($W_BIT > 11) && ($W_BIT < 21)} {
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"
@@ -149,7 +149,7 @@ if {($D_BIT > 11) && ($D_BIT < 25)\
 
 close $f_def
 
-puts "generate MIF for ROM..."
+puts "generate MIF for ROM and TXT for matlab..."
 	generate_mif 0 $W_BIT $DEPTH_ROM $BANK_SIZE
 	generate_mif 1 $W_BIT $DEPTH_ROM $BANK_SIZE
 

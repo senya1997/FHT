@@ -17,9 +17,13 @@ package require -exact qsys 13.1
 # 'arg = 0' - write sin, 1 - cos
 proc generate_mif {arg W_BIT DEPTH_ROM BANK_SIZE} {
 	if {$arg == 0} {
+	# for FPGA
 		set f_mif [open sin.mif w]
+	# for matlab
+		set f_txt [open matlab/sin.txt w]
 	} elseif {$arg == 1} {
 		set f_mif [open cos.mif w]
+		set f_txt [open matlab/cos.txt w]
 	}
 		
 	puts $f_mif "WIDTH=$W_BIT;"
@@ -39,11 +43,13 @@ proc generate_mif {arg W_BIT DEPTH_ROM BANK_SIZE} {
 			set data [expr round(cos(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
 		}
 		puts $f_mif "\t$i\t:\t$data;"
+		puts $f_txt "$data"
 	}
 	
 	puts $f_mif "END;"
 	
 	close $f_mif
+	close $f_txt
 }
 
 set_module_property VALIDATION_CALLBACK validate
@@ -58,7 +64,6 @@ proc validate {} {
 	set MAX_D [expr round(pow(2, $pD_BIT - 2))]
 	set MAX_W [expr round(pow(2, $pW_BIT - 2))]	
 
-	set DEPTH_NUM_STAGE	[expr round(log($pA_BIT)/log(2))]
 	set DEPTH_ROM		[expr round(pow(2, $pA_BIT - 2))]
 	set LAST_STAGE		[expr round(log($pN)/log(2) - 1)] 
 	
@@ -70,7 +75,6 @@ proc validate {} {
 		puts $f_def " "
 		puts $f_def "`define N $pN"
 		puts $f_def "`define BANK_SIZE $BANK_SIZE"
-		puts $f_def "`define DEPTH_NUM_STAGE $DEPTH_NUM_STAGE"
 		puts $f_def "`define DEPTH_ROM $DEPTH_ROM"
 		puts $f_def "`define LAST_STAGE $LAST_STAGE"
 		puts $f_def " "

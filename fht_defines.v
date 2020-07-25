@@ -4,7 +4,6 @@
  
 `define N 1024
 `define BANK_SIZE 256
-`define DEPTH_NUM_STAGE 3
 `define DEPTH_ROM 64
 `define LAST_STAGE 9
  
@@ -18,7 +17,7 @@
 /*******************************************/
  
 
-
+ 
 // `define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
 `define COMPARE_WITH_MATLAB
 
