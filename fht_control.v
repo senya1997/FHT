@@ -33,13 +33,12 @@ module fht_control #(parameter A_BIT = 8)(
 );
 
 reg clk_2;
+wire N_CLK_2 = ~clk_2;
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) clk_2 <= 1'b0;
 	else clk_2 <= N_CLK_2;
 end
-
-wire N_CLK_2 = ~clk_2;
 
 /**************************************************************/
 /*                           regs                             */

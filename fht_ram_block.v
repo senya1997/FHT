@@ -1,4 +1,4 @@
-module fht_ram_block #(parameter D_BIT = 17, A_BIT = 8)(
+module fht_ram_block #(parameter D_BIT = 17, A_BIT = 8, DEPTH = 256)(
 	input iCLK,
 	input iRESET,
 	
@@ -54,7 +54,7 @@ genvar k;
 generate 
 	for(k = 0; k < 4; k = k + 1)
 		begin: ram_bank
-			fht_ram RAM_BANK(
+			fht_ram #(.D_BIT(D_BIT), .A_BIT(A_BIT), .DEPTH(DEPTH)) RAM_BANK(
 				.clock(iCLK),
 				.data(DATA_IN[k]),
 				.rdaddress(ADDR_RD[k]),

@@ -11,8 +11,12 @@ quit -sim
 	project::removefile $path_vo
 
 project::compileall
+vlog -novopt ../../fht/tb/fht_tb.sv
 
-vsim -L altera_mf_ver -L cycloneiv_ver -L cycloneive_ver -L altera_prim_ver -c fht_tb -novopt
+#simulate
+	#vlog fft_tb.sv
+	#vsim -L altera_mf_ver -L cycloneiv_ver -L cycloneive_ver -L altera_prim_ver -c fht_tb -sv_lib signal -novopt
+	vsim -L altera_mf_ver -L cycloneiv_ver -L cycloneive_ver -L altera_prim_ver -c fht_tb -novopt
 	
 do ../../fht/tb/wave/top.do
 configure wave -timelineunits us

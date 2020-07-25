@@ -8,7 +8,7 @@ module fht_top #(parameter D_BIT = `D_BIT, A_BIT = `A_BIT, W_BIT = `W_BIT,
 	input iSTART, // after load point in RAM(A) required issue strobe on 'iSTART'
 	
 	input [3 : 0] iWE, // 'WE' is signal of 'bank choice'
-	input [D_BIT - 2 : 0] iDATA, // still not extended data from ADC
+	input [D_BIT - 1 : 0] iDATA, // still not extended data from ADC
 //	input signed [`D_BIT - 2 : 0] iDATA,
 	input [A_BIT - 1 : 0] iADDR_WR, // max = N/N_bank
 	
@@ -50,7 +50,7 @@ generate
 		begin: data_addr_wr
 			assign ADDR_WR[k] = 		SOURCE_CONT ? iADDR_WR : ADDR_WR_CTRL[k];
 		
-			assign DATA_RAM_A[k] =	SOURCE_CONT ? {iDATA[15], iDATA} : DATA_BUT_RAM[k];
+			assign DATA_RAM_A[k] =	SOURCE_CONT ? iDATA : DATA_BUT_RAM[k];
 			assign DATA_BUT[k] =		SOURCE_DATA ? DATA_RAM_B_BUT[k] : DATA_RAM_A_BUT[k];
 		end
 endgenerate
@@ -140,7 +140,7 @@ fht_but_block #(.A_BIT(A_BIT), .D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_BLOCK(
 
 // ========================== RAM: ============================ //
 
-fht_ram_block #(.D_BIT(D_BIT), .A_BIT(A_BIT)) FHT_RAM_A(
+fht_ram_block #(.D_BIT(D_BIT), .A_BIT(A_BIT), .DEPTH(`BANK_SIZE)) FHT_RAM_A(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 
@@ -170,7 +170,7 @@ fht_ram_block #(.D_BIT(D_BIT), .A_BIT(A_BIT)) FHT_RAM_A(
 	.oDATA_3(DATA_RAM_A_BUT[3])
 );
 
-fht_ram_block #(.D_BIT(D_BIT), .A_BIT(A_BIT)) FHT_RAM_B(
+fht_ram_block #(.D_BIT(D_BIT), .A_BIT(A_BIT), .DEPTH(`BANK_SIZE)) FHT_RAM_B(
 	.iCLK(iCLK),
 	.iRESET(iRESET),
 	
@@ -202,9 +202,8 @@ fht_ram_block #(.D_BIT(D_BIT), .A_BIT(A_BIT)) FHT_RAM_B(
 
 // ========================== ROM: ============================= //
 
-fht_rom_block #(.W_BIT(W_BIT), .A_BIT(A_BIT - 2),
-					 .MIF_SIN(MIF_SIN), 
-					 .MIF_COS(MIF_COS)) ROM_BLOCK(
+fht_rom_block #(.A_BIT(A_BIT - 2), .DEPTH(`DEPTH_ROM), .W_BIT(W_BIT),
+					 .MIF_SIN(MIF_SIN), .MIF_COS(MIF_COS)) ROM_BLOCK(
 	.iCLK(iCLK),
 	
 	.iST_ZERO(ST_ZERO),

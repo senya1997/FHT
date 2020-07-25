@@ -37,7 +37,7 @@
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
-module fht_ram (
+module fht_ram #(parameter D_BIT = 17, A_BIT = 8, DEPTH = 256)(
 	clock,
 	data,
 	rdaddress,
@@ -46,11 +46,11 @@ module fht_ram (
 	q);
 
 	input	  clock;
-	input	[16:0]  data;
-	input	[7:0]  rdaddress;
-	input	[7:0]  wraddress;
+	input	[D_BIT - 1 : 0]  data;
+	input	[A_BIT - 1 : 0]  rdaddress;
+	input	[A_BIT - 1 : 0]  wraddress;
 	input	  wren;
-	output	[16:0]  q;
+	output	[D_BIT - 1 : 0]  q;
 `ifndef ALTERA_RESERVED_QIS
 // synopsys translate_off
 `endif
@@ -60,8 +60,8 @@ module fht_ram (
 // synopsys translate_on
 `endif
 
-	wire [16:0] sub_wire0;
-	wire [16:0] q = sub_wire0[16:0];
+	wire [D_BIT - 1 : 0] sub_wire0;
+	wire [D_BIT - 1 : 0] q = sub_wire0 [D_BIT - 1 : 0];
 
 	altsyncram	altsyncram_component (
 				.address_a (wraddress),
@@ -95,17 +95,17 @@ module fht_ram (
 		altsyncram_component.clock_enable_output_b = "BYPASS",
 		altsyncram_component.intended_device_family = "Cyclone IV E",
 		altsyncram_component.lpm_type = "altsyncram",
-		altsyncram_component.numwords_a = 256,
-		altsyncram_component.numwords_b = 256,
+		altsyncram_component.numwords_a = DEPTH,
+		altsyncram_component.numwords_b = DEPTH,
 		altsyncram_component.operation_mode = "DUAL_PORT",
 		altsyncram_component.outdata_aclr_b = "NONE",
 		altsyncram_component.outdata_reg_b = "UNREGISTERED",
 		altsyncram_component.power_up_uninitialized = "FALSE",
 		altsyncram_component.read_during_write_mode_mixed_ports = "OLD_DATA",
-		altsyncram_component.widthad_a = 8,
-		altsyncram_component.widthad_b = 8,
-		altsyncram_component.width_a = 17,
-		altsyncram_component.width_b = 17,
+		altsyncram_component.widthad_a = A_BIT,
+		altsyncram_component.widthad_b = A_BIT,
+		altsyncram_component.width_a = D_BIT,
+		altsyncram_component.width_b = D_BIT,
 		altsyncram_component.width_byteena_a = 1;
 
 

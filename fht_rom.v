@@ -36,12 +36,12 @@
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
-module fht_rom #(parameter W_BIT = 12, MIF = "./matlab/sin.mif")(
+module fht_rom #(parameter A_BIT = 6, DEPTH = 64, W_BIT = 12, MIF = "./matlab/sin.mif")(
 	address,
 	clock,
 	q);
 
-	input	[5:0]  address;
+	input	[A_BIT - 1 : 0]  address;
 	input	  clock;
 	output	[W_BIT - 1 : 0]  q;
 `ifndef ALTERA_RESERVED_QIS
@@ -87,11 +87,11 @@ module fht_rom #(parameter W_BIT = 12, MIF = "./matlab/sin.mif")(
 		altsyncram_component.intended_device_family = "Cyclone IV E",
 		altsyncram_component.lpm_hint = "ENABLE_RUNTIME_MOD=NO",
 		altsyncram_component.lpm_type = "altsyncram",
-		altsyncram_component.numwords_a = 64,
+		altsyncram_component.numwords_a = DEPTH,
 		altsyncram_component.operation_mode = "ROM",
 		altsyncram_component.outdata_aclr_a = "NONE",
 		altsyncram_component.outdata_reg_a = "UNREGISTERED",
-		altsyncram_component.widthad_a = 6,
+		altsyncram_component.widthad_a = A_BIT,
 		altsyncram_component.width_a = W_BIT,
 		altsyncram_component.width_byteena_a = 1;
 

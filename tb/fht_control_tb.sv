@@ -82,8 +82,7 @@ end
 
 `ifdef COMPARE_WITH_MATLAB
 	always@(posedge clk)begin
-		if(!RDY & (CONTROL.cnt_stage_time < 256))
-		// if(!RDY & (CONTROL.cnt_stage_time < `BANK_SIZE))
+		if(!RDY & (CONTROL.cnt_stage_time < `BANK_SIZE))
 			COMPARE_MATLAB_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
 	end
 

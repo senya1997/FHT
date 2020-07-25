@@ -88,6 +88,8 @@ initial begin
 					we[i] = 1'b0;
 				end
 		end
+		
+	disp_data = 0;
 	$fclose(file_data);
 	
 	#(10*`TACT);
@@ -153,9 +155,9 @@ always@(FHT.CONTROL.cnt_stage)begin
 			int_stage = FHT.CONTROL.cnt_stage;
 			str_stage.itoa(int_stage);
 			
-			if(ram_sel == 0)
+			if(~ram_sel)
 				str_temp = {"before_", str_stage, "st_ram_a.txt"};
-			else if(ram_sel)
+			else
 				str_temp = {"before_", str_stage, "st_ram_b.txt"};
 				
 			#(2*`TACT) SAVE_RAM_DATA(str_temp, ram_sel);
@@ -278,7 +280,6 @@ task BIT_REV_TO_NORM;
 		end	
 
 	cnt_rev = 0;
-	disp_data = 0;
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
 		begin
@@ -300,7 +301,9 @@ task BIT_REV_TO_NORM;
 				end
 				
 			cnt_rev = cnt_rev + 1;
-		end	
+		end
+		
+	disp_data = 0;
 endtask
 
 /*
@@ -348,7 +351,7 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iSTART(start),
 	
 	.iWE(we),
-	.iDATA(data_adc),
+	.iDATA({data_adc[15], data_adc}),
 	.iADDR_WR(addr_wr),
 	
 	.iADDR_RD_0(addr_rd[0]),

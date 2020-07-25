@@ -5,6 +5,7 @@
 `define N 1024
 `define BANK_SIZE 256
 `define DEPTH_NUM_STAGE 3
+`define DEPTH_ROM 64
 `define LAST_STAGE 9
  
 `define D_BIT 17
