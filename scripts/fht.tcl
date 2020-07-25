@@ -1,5 +1,3 @@
-# keys: -c (compile and copy .sdo, .vo	 for modelsim)
-
 proc disp_warning msg {
 	puts " "
 	puts "WARNING: $msg"
@@ -10,54 +8,113 @@ proc disp_warning msg {
 proc disp_error msg {
 	puts " "
 	post_message -type error $msg
-	puts " "
 	return -code error $msg
+}
+
+# 'arg = 0' - write sin, 1 - cos
+proc generate_mif {arg W_BIT DEPTH_ROM BANK_SIZE} {
+	if {$arg == 0} {
+		set f_mif [open sin.mif w]
+	} elseif {$arg == 1} {
+		set f_mif [open cos.mif w]
+	} else {
+		disp_error "Wrong input argument in 'generate_mif' proc"
+	}
+		
+	puts $f_mif "WIDTH=$W_BIT;"
+	puts $f_mif "DEPTH=$DEPTH_ROM;"
+	puts $f_mif " "
+	puts $f_mif "ADDRESS_RADIX=UNS;"
+	puts $f_mif "DATA_RADIX=DEC;"
+	puts $f_mif " "
+	puts $f_mif "CONTENT BEGIN"
+	
+	set pi 3.1415926535
+	
+	for {set i 0} {$i < $DEPTH_ROM} {incr i} {
+		if {$arg == 0} {
+			set data [expr round(sin(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
+		} elseif {$arg == 1} {
+			set data [expr round(cos(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
+		}
+		puts $f_mif "\t$i\t:\t$data;"
+	}
+	
+	puts $f_mif "END;"
+	
+	close $f_mif
 }
 
 set_current_revision fht;
 
-# ========================= input parameters: ========================= #
+# ================================================================================= #
+# 											 input parameters: 											#
+# ================================================================================= #
 
-# data bit size with bit expansion for avoid overflow from 'max_negative_num*(-1)'
-	set D_BIT 17
-# depth of memory one bank RAM
+# keys: -c (compile and copy .sdo, .vo for modelsim)
+
+#---------------
+# A_BIT |  N	|
+#---------------
+#	5	  | 128	|
+# 	6	  | 256	|
+# 	7	  | 512	|
+# 	8	  | 1024	|
+# 	9	  | 2048	|
+#---------------
+
+# ADC data bit width
+	set D_BIT 16
+# depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
 	set A_BIT 8
-# twiddle coefficient bit analog data with bit expansion for use shift operating on division
-	set W_BIT 16
-	
-set MAX_D [expr int(pow(2, $D_BIT - 2))]
-set MAX_W [expr int(pow(2, $W_BIT - 2))]
+# twiddle coefficient data bit width
+	set W_BIT 15
 
-set N [expr int(4*pow(2, $A_BIT))] 
-set BANK_SIZE [expr $N/4]
-
-set DEPTH_NUM_STAGE	[expr log($A_BIT)/log(2)]
-set DEPTH_ROM			[expr int(pow(2, $A_BIT - 2))]
-set LAST_STAGE			[expr int(log($N)/log(2) - 1)] 
+# name of define which turn off part of RTL
+	set name_def TEST_MIXER
 	
+# path of element that need to copy
+	set path_script	./scripts
+	set path_modelsim ./../modelsim/fht/
+	set path_sdo		./simulation/modelsim
+
 set path_def ./fht_defines.v
-
-	# name of define which turn off part of RTL
-		set name_def TEST_MIXER
-
-	# read input keys from cmd
-		set compile [lindex $argv 0]
-
-	# path of element that need to copy
-		set path_script	./scripts
-		set path_modelsim ./../modelsim/fht/
-		set path_sdo		./simulation/modelsim
 	
+# ================================================================================= #
+# 											 calculate parameters: 										#
+# ================================================================================= #
+
+# add expansion bit (for avoid overflow from 'max_negative_num*(-1)' and for use shift operating on division)
+	set D_BIT [expr $D_BIT + 1]
+	set W_BIT [expr $W_BIT + 1]
+	
+# read input keys from cmd
+	set compile [lindex $argv 0]
+
+# calculate defines	
+	set MAX_D [expr round(pow(2, $D_BIT - 2))]
+	set MAX_W [expr round(pow(2, $W_BIT - 2))]
+
+	set N [expr round(4*pow(2, $A_BIT))] 
+	set BANK_SIZE [expr $N/4]
+
+	set DEPTH_NUM_STAGE	[expr log($A_BIT)/log(2)]
+	set DEPTH_ROM			[expr round(pow(2, $A_BIT - 2))]
+	set LAST_STAGE			[expr round(log($N)/log(2) - 1)] 
+
 puts " "
 puts "\tSTART"
 puts " "
 
-puts "writing defines..."
+# ================================================================================= #
+# 									generate defines and MIF files: 									#
+# ================================================================================= #
 
+puts "writing defines..."
 set f_def [open $path_def r+]
 
 if {[expr round($DEPTH_NUM_STAGE) - $DEPTH_NUM_STAGE] == 0} {
-	set DEPTH_NUM_STAGE [expr int($DEPTH_NUM_STAGE)]
+	set DEPTH_NUM_STAGE [expr round($DEPTH_NUM_STAGE)]
 	
 	puts $f_def "/*******************************************/"
 	puts $f_def "/* auto generated defines (do not modify): */"
@@ -70,12 +127,10 @@ if {[expr round($DEPTH_NUM_STAGE) - $DEPTH_NUM_STAGE] == 0} {
 	puts $f_def "`define LAST_STAGE $LAST_STAGE"
 	puts $f_def " "
 } else {
-	disp_error "Point number must be positive and divisible on 4 or DEPTH_NUM_STAGE is not integer"
+	disp_error "DEPTH_NUM_STAGE is not integer"
 }
 
-if {([expr round($A_BIT) - $A_BIT] == 0) && ($D_BIT > 0) && ($W_BIT > 0)} {
-	set A_BIT [expr int($A_BIT)]
-	
+if {($D_BIT > 0) && ($W_BIT > 0) && ($A_BIT > 0)} {
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"
@@ -86,11 +141,19 @@ if {([expr round($A_BIT) - $A_BIT] == 0) && ($D_BIT > 0) && ($W_BIT > 0)} {
 	puts $f_def "/*******************************************/"
 	puts $f_def " "
 } else {
-	disp_error "A_BIT is not integer or D_BIT, W_BIT is not positive"
+	disp_error "Input parameters is not positive"
 }
 
 close $f_def
 
+puts "generate MIF for ROM..."
+	generate_mif 0 $W_BIT $DEPTH_ROM $BANK_SIZE
+	generate_mif 1 $W_BIT $DEPTH_ROM $BANK_SIZE
+
+# ================================================================================= #
+# 										compile and copy scripts: 										#
+# ================================================================================= #
+	
 if {[string equal $compile -c]} {
 # check testbench defines for define which turn off part of RTL	
 	set f_def [open $path_def r]

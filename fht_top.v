@@ -217,7 +217,7 @@ fht_rom_block #(.A_BIT(A_BIT - 2), .DEPTH(`DEPTH_ROM), .W_BIT(W_BIT),
 	.oCOS_1(COS_1)
 );
 
-assign oDATA_0 = DATA_RAM_A_BUT[0];
+assign oDATA_0 = DATA_RAM_A_BUT[0]; // defines by nimber of stage
 assign oDATA_1 = DATA_RAM_A_BUT[1];
 assign oDATA_2 = DATA_RAM_A_BUT[2];
 assign oDATA_3 = DATA_RAM_A_BUT[3];

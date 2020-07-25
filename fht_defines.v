@@ -22,17 +22,17 @@
 `define COMPARE_WITH_MATLAB
 
 `ifdef MODEL_TECH
-//	`define MIF_SIN "D:/SS/fpga/fht/matlab/sin.mif"
-//	`define MIF_COS "D:/SS/fpga/fht/matlab/cos.mif"
+//	`define MIF_SIN "D:/SS/fpga/fht/sin.mif"
+//	`define MIF_COS "D:/SS/fpga/fht/cos.mif"
 
-	`define MIF_SIN "D:/work/fht/matlab/sin.mif"
-	`define MIF_COS "D:/work/fht/matlab/cos.mif"
+	`define MIF_SIN "D:/work/fht/sin.mif"
+	`define MIF_COS "D:/work/fht/cos.mif"
 	
-//	`define MIF_SIN "./../fht/matlab/sin.mif"
-//	`define MIF_COS "./../fht/matlab/cos.mif"
+//	`define MIF_SIN "./../fht/sin.mif"
+//	`define MIF_COS "./../fht/cos.mif"
 `else
-	`define MIF_SIN "./matlab/sin.mif"
-	`define MIF_COS "./matlab/cos.mif"
+	`define MIF_SIN "./sin.mif"
+	`define MIF_COS "./cos.mif"
 `endif		
 
 	`define TACT 20

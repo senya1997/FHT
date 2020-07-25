@@ -14,24 +14,55 @@
 # 
 package require -exact qsys 13.1
 
+# 'arg = 0' - write sin, 1 - cos
+proc generate_mif {arg W_BIT DEPTH_ROM BANK_SIZE} {
+	if {$arg == 0} {
+		set f_mif [open sin.mif w]
+	} elseif {$arg == 1} {
+		set f_mif [open cos.mif w]
+	}
+		
+	puts $f_mif "WIDTH=$W_BIT;"
+	puts $f_mif "DEPTH=$DEPTH_ROM;"
+	puts $f_mif " "
+	puts $f_mif "ADDRESS_RADIX=UNS;"
+	puts $f_mif "DATA_RADIX=DEC;"
+	puts $f_mif " "
+	puts $f_mif "CONTENT BEGIN"
+	
+	set pi 3.1415926535
+	
+	for {set i 0} {$i < $DEPTH_ROM} {incr i} {
+		if {$arg == 0} {
+			set data [expr round(sin(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
+		} elseif {$arg == 1} {
+			set data [expr round(cos(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
+		}
+		puts $f_mif "\t$i\t:\t$data;"
+	}
+	
+	puts $f_mif "END;"
+	
+	close $f_mif
+}
+
 set_module_property VALIDATION_CALLBACK validate
 proc validate {} {
 	set pA_BIT [get_parameter_value A_BIT]
 	set pD_BIT [expr [get_parameter_value D_BIT] + 1]
 	set pW_BIT [expr [get_parameter_value W_BIT] + 1]
 
-	set pN [expr int(4*pow(2, $pA_BIT))] 
+	set pN [expr round(4*pow(2, $pA_BIT))] 
 	set BANK_SIZE [expr $pN/4]
 		
-	set MAX_D [expr int(pow(2, $pD_BIT - 2))]
-	set MAX_W [expr int(pow(2, $pW_BIT - 2))]	
+	set MAX_D [expr round(pow(2, $pD_BIT - 2))]
+	set MAX_W [expr round(pow(2, $pW_BIT - 2))]	
 
-	set DEPTH_NUM_STAGE	[expr int(log($pA_BIT)/log(2))]
-	set DEPTH_ROM		[expr int(pow(2, $pA_BIT - 2))]
-	set LAST_STAGE		[expr int(log($pN)/log(2) - 1)] 
-		
-	set path_def ./fht_defines.v
-	set f_def [open $path_def r+]
+	set DEPTH_NUM_STAGE	[expr round(log($pA_BIT)/log(2))]
+	set DEPTH_ROM		[expr round(pow(2, $pA_BIT - 2))]
+	set LAST_STAGE		[expr round(log($pN)/log(2) - 1)] 
+	
+	set f_def [open ./fht_defines.v r+]
 
 		puts $f_def "/*******************************************/"
 		puts $f_def "/* auto generated defines (do not modify): */"
@@ -54,6 +85,9 @@ proc validate {} {
 		puts $f_def " "
 
 	close $f_def
+	
+	generate_mif 0 $pW_BIT $DEPTH_ROM $BANK_SIZE
+	generate_mif 1 $pW_BIT $DEPTH_ROM $BANK_SIZE
 }
 
 # 
@@ -95,50 +129,58 @@ add_fileset_file fht_top.v VERILOG PATH fht_top.v TOP_LEVEL_FILE
 # 
 # parameters
 # 
+add_parameter CLK INTEGER 100
+set_parameter_property CLK DEFAULT_VALUE 100000000
+set_parameter_property CLK DISPLAY_NAME "Input clock frequency"
+set_parameter_property CLK TYPE INTEGER
+set_parameter_property CLK ENABLED false
+set_parameter_property CLK UNITS Hertz
+set_parameter_property CLK ALLOWED_RANGES {25000000 50000000 75000000 100000000}
+set_parameter_property CLK HDL_PARAMETER true
 
 add_parameter A_BIT INTEGER 8
 set_parameter_property A_BIT DEFAULT_VALUE 8
 set_parameter_property A_BIT DISPLAY_NAME "Address width"
-set_parameter_property A_BIT DESCRIPTION "Defines number of point transform (N = 4*2^(Addr)), \
+set_parameter_property A_BIT DESCRIPTION "Defines number of point transform (N = 4*2^(A_BIT)), \
 															it is depth of 1 of 4 bank RAM \
-															(Addr - N; 4 - 64; 5 - 128; 6 - 256; 7 - 512; 8 - 1024; 9 - 2048; 10 - 4096)"
+															(A_BIT - N; 5 - 128; 6 - 256; 7 - 512; 8 - 1024; 9 - 2048)"
 set_parameter_property A_BIT TYPE INTEGER
 set_parameter_property A_BIT UNITS bits
-set_parameter_property A_BIT ALLOWED_RANGES \
-{5 6 7 8 9 10}
+set_parameter_property A_BIT ALLOWED_RANGES 5:9
 set_parameter_property A_BIT HDL_PARAMETER true
 
 add_parameter D_BIT INTEGER 16
 set_parameter_property D_BIT DEFAULT_VALUE 16
 set_parameter_property D_BIT DISPLAY_NAME "ADC data width"
-set_parameter_property D_BIT DESCRIPTION "Without extended bit"
+set_parameter_property D_BIT DESCRIPTION "Without bit expansion"
 set_parameter_property D_BIT TYPE INTEGER
 set_parameter_property D_BIT UNITS bits
-set_parameter_property D_BIT ALLOWED_RANGES \
-{12 16 20 24 32}
+set_parameter_property D_BIT ALLOWED_RANGES {12 16 20 24}
 set_parameter_property D_BIT HDL_PARAMETER true
 
 add_parameter W_BIT INTEGER 15
 set_parameter_property W_BIT DEFAULT_VALUE 15
 set_parameter_property W_BIT DISPLAY_NAME "Twiddle coef data width"
-set_parameter_property W_BIT DESCRIPTION "Without extended bit, allow from 12 to 20"
+set_parameter_property W_BIT DESCRIPTION "Without bit expansion, allow from 12 to 20"
 set_parameter_property W_BIT TYPE INTEGER
 set_parameter_property W_BIT UNITS bits
 set_parameter_property W_BIT ALLOWED_RANGES 12:20
 set_parameter_property W_BIT HDL_PARAMETER true
 
-add_parameter MIF_SIN STRING ./matlab/sin.mif
-set_parameter_property MIF_SIN DEFAULT_VALUE ./matlab/sin.mif
+add_parameter MIF_SIN STRING ./sin.mif
+set_parameter_property MIF_SIN DEFAULT_VALUE ./sin.mif
 set_parameter_property MIF_SIN DISPLAY_NAME MIF_SIN
 set_parameter_property MIF_SIN TYPE STRING
+set_parameter_property MIF_SIN ENABLED false
 set_parameter_property MIF_SIN UNITS None
 set_parameter_property MIF_SIN HDL_PARAMETER true
 
-add_parameter MIF_COS STRING ./matlab/cos.mif ""
-set_parameter_property MIF_COS DEFAULT_VALUE ./matlab/cos.mif
+add_parameter MIF_COS STRING ./cos.mif ""
+set_parameter_property MIF_COS DEFAULT_VALUE ./cos.mif
 set_parameter_property MIF_COS DISPLAY_NAME MIF_COS
 set_parameter_property MIF_COS WIDTH ""
 set_parameter_property MIF_COS TYPE STRING
+set_parameter_property MIF_COS ENABLED false
 set_parameter_property MIF_COS UNITS None
 set_parameter_property MIF_COS DESCRIPTION ""
 set_parameter_property MIF_COS HDL_PARAMETER true
@@ -155,7 +197,7 @@ add_display_item ROM MIF_COS PARAMETER ""
 # connection point clock_sink
 # 
 add_interface clock_sink clock end
-set_interface_property clock_sink clockRate 0
+set_interface_property clock_sink clockRate "CLK"
 set_interface_property clock_sink ENABLED true
 set_interface_property clock_sink EXPORT_OF ""
 set_interface_property clock_sink PORT_NAME_MAP ""
