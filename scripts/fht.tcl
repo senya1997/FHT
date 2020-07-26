@@ -127,6 +127,14 @@ if {($A_BIT > 4) && ($A_BIT < 10)} {
 	puts $f_def "`define BANK_SIZE $BANK_SIZE"
 	puts $f_def "`define DEPTH_ROM $DEPTH_ROM"
 	puts $f_def "`define LAST_STAGE $LAST_STAGE"
+	
+# even/odd of 'LAST_STAGE' defines where output data saved after transform (RAM A or B)	
+	if {fmod($LAST_STAGE, 2) == 1} {
+		puts $f_def "`define LAST_STAGE_ODD"
+	} else {
+		puts $f_def "`define LAST_STAGE_EVEN"
+	}
+	
 	puts $f_def " "
 } else {
 	disp_error "A_BIT is not valid"
@@ -184,7 +192,7 @@ if {[string equal $compile -c]} {
 	}
 	
 	if {$flag_def_exist == 0} {
-		disp_warning "'$name_def' define was not found in $path_def"
+		disp_error "'$name_def' define was not found in $path_def"
 	}
 	
 	close $f_def

@@ -6,6 +6,7 @@
 `define BANK_SIZE 256
 `define DEPTH_ROM 64
 `define LAST_STAGE 9
+`define LAST_STAGE_ODD
  
 `define D_BIT 17
 `define A_BIT 8
@@ -16,7 +17,8 @@
  
 /*******************************************/
  
-
+ 
+ 
  
 // `define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
 `define COMPARE_WITH_MATLAB
@@ -25,11 +27,11 @@
 //	`define MIF_SIN "D:/SS/fpga/fht/sin.mif"
 //	`define MIF_COS "D:/SS/fpga/fht/cos.mif"
 
-	`define MIF_SIN "D:/work/fht/sin.mif"
-	`define MIF_COS "D:/work/fht/cos.mif"
+//	`define MIF_SIN "D:/work/fht/sin.mif"
+//	`define MIF_COS "D:/work/fht/cos.mif"
 	
-//	`define MIF_SIN "./../fht/sin.mif"
-//	`define MIF_COS "./../fht/cos.mif"
+	`define MIF_SIN "../../fht/sin.mif"
+	`define MIF_COS "../../fht/cos.mif"
 `else
 	`define MIF_SIN "./sin.mif"
 	`define MIF_COS "./cos.mif"

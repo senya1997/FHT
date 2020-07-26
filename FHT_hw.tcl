@@ -77,6 +77,14 @@ proc validate {} {
 		puts $f_def "`define BANK_SIZE $BANK_SIZE"
 		puts $f_def "`define DEPTH_ROM $DEPTH_ROM"
 		puts $f_def "`define LAST_STAGE $LAST_STAGE"
+		
+	# even/odd of 'LAST_STAGE' defines where output data saved after transform (RAM A or B)	
+		if {fmod($LAST_STAGE, 2) == 1} {
+			puts $f_def "`define LAST_STAGE_ODD"
+		} else {
+			puts $f_def "`define LAST_STAGE_EVEN"
+		}
+		
 		puts $f_def " "
 		puts $f_def "`define D_BIT $pD_BIT"
 		puts $f_def "`define A_BIT $pA_BIT"

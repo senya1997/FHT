@@ -77,7 +77,7 @@ initial begin
 		
 	#(100*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
-	mti_Cmd("stop -sync");
+	void'(mti_Cmd("stop -sync"));
 end
 
 `ifdef COMPARE_WITH_MATLAB
@@ -103,7 +103,7 @@ always@(CONTROL.cnt_stage)begin
 			`endif
 			
 			$display("\n\t\t\tpress 'run' to continue\n");
-				mti_Cmd("stop -sync");
+				void'(mti_Cmd("stop -sync"));
 			$display("\n\t%2d stage FHT, time: %t\n", CONTROL.cnt_stage, $time);
 		end
 end
