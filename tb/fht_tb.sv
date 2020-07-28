@@ -12,7 +12,7 @@ import fli::*;
 bit clk;
 bit reset;
 
-bit flag_cp_matlab = 1;
+bit flag_cp_matlab = 1; // for turn off COMPARE_MATLAB_RAM on IFHT stage
 
 int i, j;
 int cnt_er;
@@ -61,14 +61,14 @@ initial begin
 		$display("\t\tRAM compare with 'txt' file from matlab");
 	`endif
 	
+	ram_sel = 1'b1;
 	start = 1'b0;
 	
 	#(10*`TACT);
-	
+
+// save ADC data line by line (row by row):	
 	$display("\twrite ADC data point in RAM, time: %t\n", $time);
 	file_data = $fopen("../../fht/matlab/init_ram.txt", "r");
-	
-// save ADC data line by line:
 	disp_data = 0;
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
@@ -94,11 +94,10 @@ initial begin
 	
 	#(10*`TACT);
 	
+// init data always saving in A RAM from external module	
 	SAVE_RAM_DATA("init_ram_a.txt", 0);
-	ram_sel = 1'b1;
 	
 	$display("\n\tstart FHT, time: %t\n", $time);
-
 		// #1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
@@ -108,13 +107,16 @@ initial begin
 	wait(RDY);
 	$display("\n\tfinish FHT, time: %t\n", $time);
 	
-	SAVE_RAM_DATA("ram_a.txt", 0); // name must not change, this use in matlab 'analys'
-	//SAVE_RAM_DATA("ram_b.txt", 1);
-	
 	$display("\n\t\t\tpress 'run' to continue\n");
 	void'(mti_Cmd("stop -sync"));
 	
-	COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_a.txt");
+	`ifdef LAST_STAGE_ODD
+		SAVE_RAM_DATA("ram_a.txt", 0);
+		COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_a.txt");
+	`elsif LAST_STAGE_EVEN
+		SAVE_RAM_DATA("ram_b.txt", 1);
+		COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_b.txt");
+	`endif
 	
 	$display("\n\t\t\t\tCOMPLETE\n");
 	void'(mti_Cmd("stop -sync"));
@@ -133,11 +135,15 @@ initial begin
 		#(`TACT);
 
 	wait(RDY);
-	$display("\n\tfinish IFHT, time: %t\n", $time);
+	$display("\tfinish IFHT, time: %t\n", $time);
 	
 	BIT_REV_TO_NORM;
 	
-	SAVE_RAM_DATA("ram_ia.txt", 0);
+	`ifdef LAST_STAGE_ODD
+		SAVE_RAM_DATA("ram_ia.txt", 0);
+	`elsif LAST_STAGE_EVEN
+		SAVE_RAM_DATA("ram_ib.txt", 1);
+	`endif
 	
 	$display("\n\t\t\t\tCOMPLETE\n");
 	void'(mti_Cmd("stop -sync"));
@@ -189,27 +195,31 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 		// number of bank memory must be the 'integer number', not a 'variable'
 			if(ram_sel == 0)
 				begin
-					// buf_signed[0] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[cnt_data];
-					// buf_signed[1] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[cnt_data];
-					// buf_signed[2] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[cnt_data];
-					// buf_signed[3] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[cnt_data];
-					
-					buf_signed[0] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[1] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[2] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[3] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					`ifdef RAM_BUG
+						buf_signed[0] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+						buf_signed[1] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+						buf_signed[2] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+						buf_signed[3] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+					`else
+						buf_signed[0] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+						buf_signed[1] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+						buf_signed[2] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+						buf_signed[3] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					`endif
 				end
 			else if(ram_sel == 1)
 				begin
-					// buf_signed[0] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[cnt_data];
-					// buf_signed[1] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[cnt_data];
-					// buf_signed[2] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[cnt_data];
-					// buf_signed[3] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[cnt_data];
-					
-					buf_signed[0] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[1] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[2] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
-					buf_signed[3] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					`ifdef RAM_BUG
+						buf_signed[0] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+						buf_signed[1] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+						buf_signed[2] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+						buf_signed[3] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[cnt_data];
+					`else
+						buf_signed[0] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+						buf_signed[1] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+						buf_signed[2] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+						buf_signed[3] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[cnt_data];
+					`endif
 				end
 			
 			for(cnt_bank = 0; cnt_bank < 4; cnt_bank = cnt_bank + 1) 
@@ -268,15 +278,31 @@ task BIT_REV_TO_NORM;
 
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
 		begin
-			// ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
-			// ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[j];
-			// ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[j];
-			// ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[j];
-			
-			ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-			ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-			ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-			ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+			`ifdef LAST_STAGE_ODD
+				`ifdef RAM_BUG
+					ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[j];
+				`else
+					ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+				`endif
+			`elsif LAST_STAGE_EVEN
+				`ifdef RAM_BUG
+					ram_buf_0[j] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_1[j] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_2[j] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_3[j] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[j];
+				`else
+					ram_buf_0[j] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_1[j] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_2[j] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_3[j] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+				`endif
+			`endif
 		end	
 
 	cnt_rev = 0;

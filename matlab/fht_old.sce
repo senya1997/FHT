@@ -27,7 +27,7 @@ clc;
 
     phase(1:3) = [round(rand()*180), round(rand()*180), round(rand()*180)];
 
-w_amp = 16384; // amplitude of twiddle coef use to normalize data after multiplier
+w_amp = 2048; // amplitude of twiddle coef use to normalize data after multiplier
     
 /************************************ get input data ************************************/
 exec('fht_double_but.sci');
@@ -290,5 +290,23 @@ mclose(file_addr_wr);
     title('Error:');
         plot(err_line);
     xgrid(2);
+    
+    i = 1;
+    threshold = 10;
+    [max_err(i), ind_max_err(i)] = max(err_line);
+    
+    while(max_err(i) > threshold)
+        i = i + 1;
+        
+        [max_err(i), ind_max_err(i)] = max(err_line);
+        err_line(ind_max_err(i)) = 0;
+    end
+    
+    ind_max_err = gsort(ind_max_err, 'g', 'i');
+    mprintf("\n");
+    
+    for i = 1:length(ind_max_err)
+        mprintf("%d\n", ind_max_err(i)); 
+    end
     
 mclose('all');

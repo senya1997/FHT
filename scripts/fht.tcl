@@ -74,7 +74,7 @@ set_current_revision fht;
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
 	set A_BIT 8
 # twiddle coefficient data bit width
-	set W_BIT 15
+	set W_BIT 12
 
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER
@@ -140,8 +140,8 @@ if {($A_BIT > 4) && ($A_BIT < 10)} {
 	disp_error "A_BIT is not valid"
 }
 
-if {($D_BIT > 11) && ($D_BIT < 25)\
-	 && ($W_BIT > 11) && ($W_BIT < 21)} {
+if {($D_BIT > 11) && ($D_BIT < 25) &&\
+	 ($W_BIT > 11) && ($W_BIT < 21)} {
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"

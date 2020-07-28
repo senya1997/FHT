@@ -42,7 +42,7 @@
 # ========================
 set_global_assignment -name ORIGINAL_QUARTUS_VERSION 14.1.0
 set_global_assignment -name PROJECT_CREATION_TIME_DATE "19:53:17  MAY 10, 2020"
-set_global_assignment -name LAST_QUARTUS_VERSION 14.1.0
+set_global_assignment -name LAST_QUARTUS_VERSION "13.0 SP1"
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name MIF_FILE sin.mif
 set_global_assignment -name MIF_FILE cos.mif
@@ -155,7 +155,7 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_SYNTH -section_id Top
+set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
 		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
 		set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
@@ -167,9 +167,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_control:CONTROL"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_control:CONTROL"
-		set_global_assignment -name PARTITION_COLOR 39423 -section_id "fht_control:CONTROL"
 
 	# end DESIGN_PARTITION(fht_control:CONTROL)
 	# -----------------------------------------
@@ -179,9 +176,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_rom_block:ROM_BLOCK"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_rom_block:ROM_BLOCK"
-		set_global_assignment -name PARTITION_COLOR 16711935 -section_id "fht_rom_block:ROM_BLOCK"
 
 	# end DESIGN_PARTITION(fht_rom_block:ROM_BLOCK)
 	# ---------------------------------------------
@@ -191,9 +185,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_ram:ram_bank_0__RAM_BANK"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_ram:ram_bank_0__RAM_BANK"
-		set_global_assignment -name PARTITION_COLOR 16776960 -section_id "fht_ram:ram_bank_0__RAM_BANK"
 
 	# end DESIGN_PARTITION(fht_ram:ram_bank_0__RAM_BANK)
 	# --------------------------------------------------
@@ -203,9 +194,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_ram:ram_bank_1__RAM_BANK"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_ram:ram_bank_1__RAM_BANK"
-		set_global_assignment -name PARTITION_COLOR 16711935 -section_id "fht_ram:ram_bank_1__RAM_BANK"
 
 	# end DESIGN_PARTITION(fht_ram:ram_bank_1__RAM_BANK)
 	# --------------------------------------------------
@@ -215,9 +203,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_ram:ram_bank_2__RAM_BANK"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_ram:ram_bank_2__RAM_BANK"
-		set_global_assignment -name PARTITION_COLOR 65535 -section_id "fht_ram:ram_bank_2__RAM_BANK"
 
 	# end DESIGN_PARTITION(fht_ram:ram_bank_2__RAM_BANK)
 	# --------------------------------------------------
@@ -227,9 +212,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_ram:ram_bank_3__RAM_BANK"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_ram:ram_bank_3__RAM_BANK"
-		set_global_assignment -name PARTITION_COLOR 16777164 -section_id "fht_ram:ram_bank_3__RAM_BANK"
 
 	# end DESIGN_PARTITION(fht_ram:ram_bank_3__RAM_BANK)
 	# --------------------------------------------------
@@ -239,9 +221,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_ram:ram_bank_0__RAM_BANK_2"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_ram:ram_bank_0__RAM_BANK_2"
-		set_global_assignment -name PARTITION_COLOR 10198015 -section_id "fht_ram:ram_bank_0__RAM_BANK_2"
 
 	# end DESIGN_PARTITION(fht_ram:ram_bank_0__RAM_BANK_2)
 	# ----------------------------------------------------
@@ -251,9 +230,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_ram:ram_bank_1__RAM_BANK_2"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_ram:ram_bank_1__RAM_BANK_2"
-		set_global_assignment -name PARTITION_COLOR 32896 -section_id "fht_ram:ram_bank_1__RAM_BANK_2"
 
 	# end DESIGN_PARTITION(fht_ram:ram_bank_1__RAM_BANK_2)
 	# ----------------------------------------------------
@@ -263,9 +239,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_ram:ram_bank_2__RAM_BANK_2"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_ram:ram_bank_2__RAM_BANK_2"
-		set_global_assignment -name PARTITION_COLOR 14622752 -section_id "fht_ram:ram_bank_2__RAM_BANK_2"
 
 	# end DESIGN_PARTITION(fht_ram:ram_bank_2__RAM_BANK_2)
 	# ----------------------------------------------------
@@ -275,9 +248,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_ram:ram_bank_3__RAM_BANK_2"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_ram:ram_bank_3__RAM_BANK_2"
-		set_global_assignment -name PARTITION_COLOR 2105567 -section_id "fht_ram:ram_bank_3__RAM_BANK_2"
 
 	# end DESIGN_PARTITION(fht_ram:ram_bank_3__RAM_BANK_2)
 	# ----------------------------------------------------
@@ -287,9 +257,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_in_mix:MIX_0"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_in_mix:MIX_0"
-		set_global_assignment -name PARTITION_COLOR 2154272 -section_id "fht_in_mix:MIX_0"
 
 	# end DESIGN_PARTITION(fht_in_mix:MIX_0)
 	# --------------------------------------
@@ -299,9 +266,6 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 
 		# Incremental Compilation Assignments
 		# ===================================
-		set_global_assignment -name PARTITION_NETLIST_TYPE POST_FIT -section_id "fht_in_mix:MIX_1"
-		set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id "fht_in_mix:MIX_1"
-		set_global_assignment -name PARTITION_COLOR 16037301 -section_id "fht_in_mix:MIX_1"
 
 	# end DESIGN_PARTITION(fht_in_mix:MIX_1)
 	# --------------------------------------
@@ -309,15 +273,3 @@ set_global_assignment -name INCREMENTAL_COMPILATION_EXPORT_FLATTEN ON
 # end ENTITY(fht_top)
 # -------------------
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
-set_instance_assignment -name PARTITION_HIERARCHY contr_e4d11 -to "fht_control:CONTROL" -section_id "fht_control:CONTROL"
-set_instance_assignment -name PARTITION_HIERARCHY mix0_c6c71 -to "fht_but_block:BUT_BLOCK|fht_in_mix:MIX_0" -section_id "fht_in_mix:MIX_0"
-set_instance_assignment -name PARTITION_HIERARCHY mix1_31991 -to "fht_but_block:BUT_BLOCK|fht_in_mix:MIX_1" -section_id "fht_in_mix:MIX_1"
-set_instance_assignment -name PARTITION_HIERARCHY ramba_ed3d1 -to "fht_ram_block:FHT_RAM_A|fht_ram:ram_bank[0].RAM_BANK" -section_id "fht_ram:ram_bank_0__RAM_BANK"
-set_instance_assignment -name PARTITION_HIERARCHY ramba_9e711 -to "fht_ram_block:FHT_RAM_B|fht_ram:ram_bank[0].RAM_BANK" -section_id "fht_ram:ram_bank_0__RAM_BANK_2"
-set_instance_assignment -name PARTITION_HIERARCHY ramba_62c11 -to "fht_ram_block:FHT_RAM_A|fht_ram:ram_bank[1].RAM_BANK" -section_id "fht_ram:ram_bank_1__RAM_BANK"
-set_instance_assignment -name PARTITION_HIERARCHY ramba_ff0c1 -to "fht_ram_block:FHT_RAM_B|fht_ram:ram_bank[1].RAM_BANK" -section_id "fht_ram:ram_bank_1__RAM_BANK_2"
-set_instance_assignment -name PARTITION_HIERARCHY ramba_d3e41 -to "fht_ram_block:FHT_RAM_A|fht_ram:ram_bank[2].RAM_BANK" -section_id "fht_ram:ram_bank_2__RAM_BANK"
-set_instance_assignment -name PARTITION_HIERARCHY ramba_e4e11 -to "fht_ram_block:FHT_RAM_B|fht_ram:ram_bank[2].RAM_BANK" -section_id "fht_ram:ram_bank_2__RAM_BANK_2"
-set_instance_assignment -name PARTITION_HIERARCHY ramba_30241 -to "fht_ram_block:FHT_RAM_A|fht_ram:ram_bank[3].RAM_BANK" -section_id "fht_ram:ram_bank_3__RAM_BANK"
-set_instance_assignment -name PARTITION_HIERARCHY ramba_6eaa1 -to "fht_ram_block:FHT_RAM_B|fht_ram:ram_bank[3].RAM_BANK" -section_id "fht_ram:ram_bank_3__RAM_BANK_2"
-set_instance_assignment -name PARTITION_HIERARCHY rombl_0d8a1 -to "fht_rom_block:ROM_BLOCK" -section_id "fht_rom_block:ROM_BLOCK"

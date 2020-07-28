@@ -7,6 +7,13 @@
    <irq preferredWidth="34" />
   </columns>
  </systemtable>
- <library expandedCategories="Project,Project/DSP,Library" />
- <window width="1296" height="1000" x="-8" y="-8" />
+ <library expandedCategories="Project/DSP,Library,Project" />
+ <window width="1936" height="1056" x="-8" y="-8" />
+ <clocktable>
+  <columns>
+   <clockname preferredWidth="548" />
+   <clocksource preferredWidth="548" />
+   <frequency preferredWidth="528" />
+  </columns>
+ </clocktable>
 </preferences>

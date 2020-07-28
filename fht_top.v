@@ -222,9 +222,7 @@ fht_rom_block #(.A_BIT(A_BIT - 2), .DEPTH(`DEPTH_ROM), .W_BIT(W_BIT),
 	assign oDATA_1 = DATA_RAM_A_BUT[1];
 	assign oDATA_2 = DATA_RAM_A_BUT[2];
 	assign oDATA_3 = DATA_RAM_A_BUT[3];
-`endif
-
-`ifdef LAST_STAGE_EVEN
+`elsif LAST_STAGE_EVEN
 	assign oDATA_0 = DATA_RAM_B_BUT[0];
 	assign oDATA_1 = DATA_RAM_B_BUT[1];
 	assign oDATA_2 = DATA_RAM_B_BUT[2];
