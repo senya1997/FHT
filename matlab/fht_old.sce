@@ -1,4 +1,5 @@
 clear;
+mclose('all');
 clc;
 
 // choose test signal:
@@ -6,30 +7,45 @@ clc;
     //test = 'const';
     //test = 'num';
 
-// variable constants:
-    N = 1024;
+// variables:
+file_def = mopen('../fht_defines.v', 'r');
+flag_N = 0;
+flag_w_amp = 0;
 
-    Fd = 44100;
-    bias = 0;
-    
-    //amp_1 = 12000; // e.g. 16 bit ADC
-    //amp_2 = 9000; // 2nd sine
+line = mgetl(file_def);
+len_line = size(line);
 
-    amp(1:3) = [round(rand()*15000), round(rand()*15000), round(rand()*15000)];
+for i = 1:len_line(1)
+    if(strstr(line(i), '`define N ') ~= '') then
+        N = part(line(i), 11:14);
+        [N, endstr] = strtod(N);
+        flag_N = 1;
+    end
 
-    //freq_1 = 930; // Hz
-    //freq_2 = 1510;
+    if(strstr(line(i), '`define W_BIT ') ~= '') then
+        w_amp = part(line(i), 15:16);
+        [w_amp, endstr] = strtod(w_amp);
+        flag_w_amp = 1;
+    end
+end
 
-    frequency(1:3) = [100 + round(rand()*1000), 100 + round(rand()*3000), 100 + round(rand()*5000)];
-    
-    //phase_1 = 0; // grad
-    //phase_2 = 37;
+if(~flag_N || ~flag_w_amp) then
+    error('Error while reading defines: N and W_MAX');
+end
 
-    phase(1:3) = [round(rand()*180), round(rand()*180), round(rand()*180)];
+clear line; clear file_def; clear len_line;
+clear flag_N; clear flag_w_amp;
 
-w_amp = 2048; // amplitude of twiddle coef use to normalize data after multiplier
-    
+w_amp = 2^(w_amp - 2);
+Fd = 44100;
+bias = 0;
+
 /************************************ get input data ************************************/
+
+amp(1:3) = [round(rand()*15000), round(rand()*15000), round(rand()*15000)];
+frequency(1:3) = [100 + round(rand()*1000), 100 + round(rand()*3000), 100 + round(rand()*5000)];
+phase(1:3) = [round(rand()*180), round(rand()*180), round(rand()*180)];
+
 exec('fht_double_but.sci');
 
 N_bank = 4;
@@ -260,7 +276,7 @@ mclose(file_addr_wr);
     cnt = 1;
     ram_fht(1:row, 1:N_bank) = 0;
     
-    fft_line = round(real(temp_fft) - imag(temp_fft));
+    fft_line = real(temp_fft) - imag(temp_fft);
     fht_line(1:N) = 0;
     
     for i = 1:row

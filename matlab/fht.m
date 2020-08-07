@@ -15,12 +15,12 @@ while(~feof(file_def))
     line = fgetl (file_def);
     
     if(length(line) > 12)
-        if(line(1:9) == '`define N')
+        if(line(1:9) == '`define N ')
             N = str2double(line(11:14));
             flag_N = 1;
         end
 
-        if(line(1:13) == '`define W_BIT')
+        if(line(1:13) == '`define W_BIT ')
             w_amp = str2double(line(15:16));
             flag_w_amp = 1;
         end       

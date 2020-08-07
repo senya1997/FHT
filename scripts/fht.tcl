@@ -11,46 +11,6 @@ proc disp_error msg {
 	return -code error $msg
 }
 
-# 'arg = 0' - write sin, 1 - cos
-proc generate_mif {arg W_BIT DEPTH_ROM BANK_SIZE} {
-	if {$arg == 0} {
-	# for FPGA
-		set f_mif [open sin.mif w]
-	# for matlab
-		set f_txt [open matlab/sin.txt w]
-	} elseif {$arg == 1} {
-		set f_mif [open cos.mif w]
-		set f_txt [open matlab/cos.txt w]
-	} else {
-		disp_error "Wrong input argument in 'generate_mif' proc"
-	}
-		
-	puts $f_mif "WIDTH=$W_BIT;"
-	puts $f_mif "DEPTH=$DEPTH_ROM;"
-	puts $f_mif " "
-	puts $f_mif "ADDRESS_RADIX=UNS;"
-	puts $f_mif "DATA_RADIX=DEC;"
-	puts $f_mif " "
-	puts $f_mif "CONTENT BEGIN"
-	
-	set pi 3.1415926535
-	
-	for {set i 0} {$i < $DEPTH_ROM} {incr i} {
-		if {$arg == 0} {
-			set data [expr round(sin(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
-		} elseif {$arg == 1} {
-			set data [expr round(cos(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
-		}
-		puts $f_mif "\t$i\t:\t$data;"
-		puts $f_txt "$data"
-	}
-	
-	puts $f_mif "END;"
-	
-	close $f_mif
-	close $f_txt
-}
-
 set_current_revision fht;
 
 # ================================================================================= #
@@ -73,10 +33,12 @@ set_current_revision fht;
 # ADC data bit width
 	set D_BIT 16
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
-	set A_BIT 10
+	set A_BIT 9
 # twiddle coefficient data bit width
-	set W_BIT 15
-
+	set W_BIT 12
+# impulse coefficient data bit width
+	set H_BIT 16
+	
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER
 	
@@ -101,6 +63,7 @@ set path_def ./fht_defines.v
 # calculate defines	
 	set MAX_D [expr round(pow(2, $D_BIT - 2))]
 	set MAX_W [expr round(pow(2, $W_BIT - 2))]
+	set MAX_H [expr round(pow(2, $H_BIT - 1))]
 
 	set N [expr round(4*pow(2, $A_BIT))] 
 	set BANK_SIZE [expr $N/4]
@@ -141,14 +104,17 @@ if {($A_BIT > 4) && ($A_BIT < 11)} {
 	disp_error "A_BIT is not valid"
 }
 
-if {($D_BIT > 11) && ($D_BIT < 25) &&\
-	 ($W_BIT > 11) && ($W_BIT < 21)} {
+if {($D_BIT > 11) && ($D_BIT < 26) &&\
+	 ($W_BIT > 11) && ($W_BIT < 21) &&\
+	 ($H_BIT > 11) && ($H_BIT < 25)} {
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"
+	puts $f_def "`define H_BIT $H_BIT"
 	puts $f_def " "
 	puts $f_def "`define MAX_D $MAX_D"
 	puts $f_def "`define MAX_W $MAX_W"
+	puts $f_def "`define MAX_H $MAX_H"
 	puts $f_def " "
 	puts $f_def "/*******************************************/"
 	puts $f_def " "
@@ -159,9 +125,44 @@ if {($D_BIT > 11) && ($D_BIT < 25) &&\
 close $f_def
 
 puts "generate MIF for ROM and TXT for matlab..."
-	generate_mif 0 $W_BIT $DEPTH_ROM $BANK_SIZE
-	generate_mif 1 $W_BIT $DEPTH_ROM $BANK_SIZE
 
+for {set j 0} {$j < 2} {incr j} {
+	if {$j == 0} {
+	# for FPGA
+		set f_mif [open sin.mif w]
+	# for matlab
+		set f_txt [open matlab/sin.txt w]
+	} elseif {$j == 1} {
+		set f_mif [open cos.mif w]
+		set f_txt [open matlab/cos.txt w]
+	}
+		
+	puts $f_mif "WIDTH=$W_BIT;"
+	puts $f_mif "DEPTH=$DEPTH_ROM;"
+	puts $f_mif " "
+	puts $f_mif "ADDRESS_RADIX=UNS;"
+	puts $f_mif "DATA_RADIX=DEC;"
+	puts $f_mif " "
+	puts $f_mif "CONTENT BEGIN"
+	
+	set pi 3.1415926535
+	
+	for {set i 0} {$i < $DEPTH_ROM} {incr i} {
+		if {$j == 0} {
+			set data [expr round(sin(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
+		} elseif {$j == 1} {
+			set data [expr round(cos(2*$pi*$i/$BANK_SIZE)*pow(2, $W_BIT - 2))]
+		}
+		puts $f_mif "\t$i\t:\t$data;"
+		puts $f_txt "$data"
+	}
+	
+	puts $f_mif "END;"
+	
+	close $f_mif
+	close $f_txt
+}
+	
 # ================================================================================= #
 # 										compile and copy scripts: 										#
 # ================================================================================= #

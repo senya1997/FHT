@@ -8,8 +8,7 @@ module fht_top #(parameter D_BIT = `D_BIT, A_BIT = `A_BIT, W_BIT = `W_BIT,
 	input iSTART, // after load point in RAM(A) required issue strobe on 'iSTART'
 	
 	input [3 : 0] iWE, // 'WE' is signal of 'bank choice'
-	input [D_BIT - 1 : 0] iDATA, // still not extended data from ADC
-//	input signed [`D_BIT - 2 : 0] iDATA,
+	input signed [D_BIT - 1 : 0] iDATA,
 	input [A_BIT - 1 : 0] iADDR_WR, // max = N/N_bank
 	
 	input [A_BIT - 1 : 0] iADDR_RD_0,

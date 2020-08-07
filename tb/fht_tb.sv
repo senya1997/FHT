@@ -22,7 +22,9 @@ real temp;
 bit start;
 bit ram_sel;
 	
-bit signed [`D_BIT - 2 : 0] data_adc, disp_data; // '-2' because data from ADC don't have bit expansion
+bit signed [`ADC_WIDTH - 1 : 0] data_adc; // '-2' because data from ADC don't have bit expansion
+bit signed [`D_BIT - 1 : 0] disp_data;
+
 bit [`A_BIT - 1 : 0] addr_rd [0 : 3];
 bit [`A_BIT - 1 : 0] addr_wr;
 bit [3 : 0] we;
@@ -124,7 +126,7 @@ initial begin
 // IFHT:
 	#(`TACT);
 	$display("\tRewrite RAM data from bit rev to norm order for IFHT, time: %t\n", $time);
-	BIT_REV_TO_NORM;
+	BIT_REV_TO_NORM(0);
 
 	$display("\n\tstart IFHT, time: %t\n", $time);
 	flag_cp_matlab = 0;
@@ -137,7 +139,7 @@ initial begin
 	wait(RDY);
 	$display("\tfinish IFHT, time: %t\n", $time);
 	
-	BIT_REV_TO_NORM;
+	BIT_REV_TO_NORM(1);
 	
 	`ifdef LAST_STAGE_ODD
 		SAVE_RAM_DATA("ram_ia.txt", 0);
@@ -265,7 +267,7 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 	cnt_er = 0;
 endtask
 
-task BIT_REV_TO_NORM;
+task BIT_REV_TO_NORM(input bit iSIG); // choose signal type: FHT (0) or signal after IFHT (1)
 	int temp_data[4];
 
 // buf RAM for transmit data from bit rev order to norm before start IFHT:
@@ -309,13 +311,23 @@ task BIT_REV_TO_NORM;
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
 		begin
-			temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
-			temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
-			temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
-			temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
-
-			disp_data = temp_data[0] << 10;
-
+			if(iSIG)
+				begin
+					temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
+					temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
+					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
+					temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
+					
+					disp_data = temp_data[0];
+				end
+			else
+				begin
+					temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
+					temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
+					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
+					temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
+				end
+				
 			for(i = 0; i < 4; i = i + 1)
 				begin
 					data_adc = temp_data[i];
@@ -377,7 +389,7 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iSTART(start),
 	
 	.iWE(we),
-	.iDATA({data_adc[15], data_adc}),
+	.iDATA({{(`D_BIT - `ADC_WIDTH){data_adc[`ADC_WIDTH - 1]}}, data_adc}),
 	.iADDR_WR(addr_wr),
 	
 	.iADDR_RD_0(addr_rd[0]),

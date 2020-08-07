@@ -81,7 +81,7 @@ module fht_ram #(parameter D_BIT = 17, A_BIT = 8, DEPTH = 256)(
 				.clocken1 (1'b1),
 				.clocken2 (1'b1),
 				.clocken3 (1'b1),
-				.data_b ({17{1'b1}}),
+				.data_b ({D_BIT{1'b1}}),
 				.eccstatus (),
 				.q_a (),
 				.rden_a (1'b1),
