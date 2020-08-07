@@ -67,14 +67,15 @@ set_current_revision fht;
 # 	7	  | 512	|
 # 	8	  | 1024	|
 # 	9	  | 2048	|
+# 	10	  | 4096	|
 #---------------
 
 # ADC data bit width
 	set D_BIT 16
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
-	set A_BIT 8
+	set A_BIT 10
 # twiddle coefficient data bit width
-	set W_BIT 12
+	set W_BIT 15
 
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER
@@ -118,7 +119,7 @@ puts " "
 puts "writing defines..."
 set f_def [open $path_def r+]
 
-if {($A_BIT > 4) && ($A_BIT < 10)} {
+if {($A_BIT > 4) && ($A_BIT < 11)} {
 	puts $f_def "/*******************************************/"
 	puts $f_def "/* auto generated defines (do not modify): */"
 	puts $f_def "/*******************************************/"
@@ -164,39 +165,39 @@ puts "generate MIF for ROM and TXT for matlab..."
 # ================================================================================= #
 # 										compile and copy scripts: 										#
 # ================================================================================= #
-	
-if {[string equal $compile -c]} {
+
 # check testbench defines for define which turn off part of RTL	
-	set f_def [open $path_def r]
-	set flag_def_exist 0
+set f_def [open $path_def r]
+set flag_def_exist 0
+
+while {[gets $f_def temp_str] >= 0} {
+# find define string and ind of first character
+# find '//' and check that comment ind of first character is smaller than previously found index
+	set ind_def [string first $name_def $temp_str]
+	set ind_com [string first // $temp_str]
 	
-	while {[gets $f_def temp_str] >= 0} {
-	# find define string and ind of first character
-	# find '//' and check that comment ind of first character is smaller than previously found index
-		set ind_def [string first $name_def $temp_str]
-		set ind_com [string first // $temp_str]
-		
-		if {$ind_def != -1} {
-			set flag_def_exist 1
-		
-			if {$ind_com != -1} {
-				if {$ind_com > $ind_def} {
-					disp_warning "$name_def is enabled"
-				}
-			} else {
+	if {$ind_def != -1} {
+		set flag_def_exist 1
+	
+		if {$ind_com != -1} {
+			if {$ind_com > $ind_def} {
 				disp_warning "$name_def is enabled"
 			}
-			
-			break
+		} else {
+			disp_warning "$name_def is enabled"
 		}
+		
+		break
 	}
-	
-	if {$flag_def_exist == 0} {
-		disp_error "'$name_def' define was not found in $path_def"
-	}
-	
-	close $f_def
-	
+}
+
+if {$flag_def_exist == 0} {
+	disp_error "'$name_def' define was not found in $path_def"
+}
+
+close $f_def
+
+if {[string equal $compile -c]} {
 	puts "compiling..."
 	execute_flow -compile;
 	

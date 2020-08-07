@@ -2,18 +2,18 @@
 /* auto generated defines (do not modify): */
 /*******************************************/
  
-`define N 1024
-`define BANK_SIZE 256
-`define DEPTH_ROM 64
-`define LAST_STAGE 9
+`define N 4096
+`define BANK_SIZE 1024
+`define DEPTH_ROM 256
+`define LAST_STAGE 11
 `define LAST_STAGE_ODD
  
 `define D_BIT 17
-`define A_BIT 8
-`define W_BIT 13
+`define A_BIT 10
+`define W_BIT 16
  
 `define MAX_D 32768
-`define MAX_W 2048
+`define MAX_W 16384
  
 /*******************************************/
  
@@ -21,7 +21,11 @@
  
  
  
-//`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
+ 
+ 
+ 
+ 
+ //`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
 `define COMPARE_WITH_MATLAB
 
 `ifdef MODEL_TECH

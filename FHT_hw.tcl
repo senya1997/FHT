@@ -155,10 +155,10 @@ set_parameter_property A_BIT DEFAULT_VALUE 8
 set_parameter_property A_BIT DISPLAY_NAME "Address width"
 set_parameter_property A_BIT DESCRIPTION "Defines number of point transform (N = 4*2^(A_BIT)), \
 															it is depth of 1 of 4 bank RAM \
-															(A_BIT - N; 5 - 128; 6 - 256; 7 - 512; 8 - 1024; 9 - 2048)"
+															(A_BIT - N; 5 - 128; 6 - 256; 7 - 512; 8 - 1024; 9 - 2048; 10 - 4096)"
 set_parameter_property A_BIT TYPE INTEGER
 set_parameter_property A_BIT UNITS bits
-set_parameter_property A_BIT ALLOWED_RANGES 5:9
+set_parameter_property A_BIT ALLOWED_RANGES 5:10
 set_parameter_property A_BIT HDL_PARAMETER true
 
 add_parameter D_BIT INTEGER 16
