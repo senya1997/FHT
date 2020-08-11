@@ -9,6 +9,7 @@ bit reset;
 bit signed [`D_BIT - 1 : 0] data [0 : 2];
 bit signed [`W_BIT - 1 : 0] sin;
 bit signed [`W_BIT - 1 : 0] cos;
+bit signed [`D_BIT - 1 : 0] res [0 : 1];
 
 wire signed [`D_BIT - 1 : 0] RESULT [0 : 1];
 
@@ -17,6 +18,18 @@ byte temp_byte;
 real sin_buf, cos_buf;
 
 int cnt_er, cnt_of;
+
+function real F_BIT_TO_REAL(input [`D_BIT - 1 : 0] iDATA);
+	real temp;
+	shortint k;
+begin
+	temp = 0;
+	for (k = 0; k < (`D_BIT - `ADC_WIDTH); k = k + 1) 
+		temp = temp + iDATA[`D_BIT - `ADC_WIDTH -(k+1)]*1.0/(2^(-(k+1)));
+	
+	F_BIT_TO_REAL = iDATA[`D_BIT - 1 : `D_BIT - 16] + temp;
+end
+endfunction
 
 initial begin
 	$timeformat(-6, 3, " us", 6);
@@ -108,33 +121,33 @@ end
 
 task DISP_INPUT;
 	$display("\n\n\tinput signals, time: %t", $time);
-	$display("\t\tDATA: x0 = %6d,", data[0], "\tx1 = %6d,", data[1], "\tx2 = %6d", data[2]);
+	$display("\t\tDATA: x0 = %9.3f,", F_BIT_TO_REAL(data[0]), "\tx1 = %9.3f,", F_BIT_TO_REAL(data[1]), "\tx2 = %9.3f", F_BIT_TO_REAL(data[2]));
 	$display("\t\tCOEF: sin = %6d,", sin, "\tcos = %6d", cos);
 endtask
 
 task DISP_RESULT;
-	bit signed [`D_BIT + `W_BIT : 0] ext_buf; 
-	
 	real temp;
 	real ref_0, ref_1;
 	real er_0, er_1;
 
 	$display("\treference/output signals:");
-					
-		ext_buf = cos*data[1] + sin*data[2];
-		temp = ext_buf*1.0/`MAX_W;
+	temp = (cos*F_BIT_TO_REAL(data[1]) + sin*F_BIT_TO_REAL(data[2]))*1.0/`MAX_W;
+	
 	// $display("\t\tnormalize mult REF = %9.5f", temp);
 	// $display("\t\tnormalize mult RES = %5d\n", BUT.ROUND_SUM_MUL);
 	
-	ref_0 = (data[0] + temp)/2.0;
-	ref_1 = (data[0] - temp)/2.0;
+	ref_0 = (F_BIT_TO_REAL(data[0]) + temp)/2.0;
+	ref_1 = (F_BIT_TO_REAL(data[0]) - temp)/2.0;
+	
+	res[0] = F_BIT_TO_REAL(RESULT[0]);
+	res[1] = F_BIT_TO_REAL(RESULT[1]);
 	
 	$display("\t\tREF: y0 = %9.3f\t\t\ty1 = %9.3f", ref_0, ref_1);
-	$display("\t\tRES: y0 = %5d\t\t\ty1 = %5d", RESULT[0], RESULT[1]);
+	$display("\t\tRES: y0 = %9.3f\t\t\ty1 = %9.3f", res[0], res[1]);
 	
 	$display("\terror (subtraction of res and ref signals), time: %t", $time);
-		er_0 = RESULT[0] - ref_0; // value of error
-		er_1 = RESULT[1] - ref_1;
+		er_0 = res[0] - ref_0; // value of error
+		er_1 = res[1] - ref_1;
 	if(((er_0*er_0) >= 1) | ((er_1*er_1) >= 1)) // abs value
 		begin
 			cnt_er = cnt_er + 1;
@@ -142,8 +155,8 @@ task DISP_RESULT;
 		end
 	else 
 		$display("\t\tERR: er_0 = %6.4f, er_1 = %6.4f", er_0, er_1);
-	if((RESULT[0] > (`MAX_D - 1)) | (RESULT[0] < (-`MAX_D)) |
-	   (RESULT[1] > (`MAX_D - 1)) | (RESULT[1] < (-`MAX_D)))
+	if((res[0] > (`MAX_D - 1)) | (res[0] < (-`MAX_D)) |
+	   (res[1] > (`MAX_D - 1)) | (res[1] < (-`MAX_D)))
 		begin
 			cnt_of = cnt_of + 1;
 			$display("***\t\tOVERFLOW OUTPUT");

@@ -31,7 +31,7 @@ set_current_revision fht;
 #---------------
 
 # ADC data bit width
-	set D_BIT 16
+	set D_BIT 24
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
 	set A_BIT 9
 # twiddle coefficient data bit width
@@ -54,14 +54,14 @@ set path_def ./fht_defines.v
 # ================================================================================= #
 
 # add expansion bit (for avoid overflow from 'max_negative_num*(-1)' and for use shift operating on division)
-	set D_BIT [expr $D_BIT + 1]
+	#set D_BIT [expr $D_BIT + 1]
 	set W_BIT [expr $W_BIT + 1]
 	
 # read input keys from cmd
 	set compile [lindex $argv 0]
 
 # calculate defines	
-	set MAX_D [expr round(pow(2, $D_BIT - 2))]
+	set MAX_D [expr round(pow(2, $D_BIT - 1))]
 	set MAX_W [expr round(pow(2, $W_BIT - 2))]
 	set MAX_H [expr round(pow(2, $H_BIT - 1))]
 

@@ -22,8 +22,10 @@ real temp;
 bit start;
 bit ram_sel;
 	
-bit signed [`ADC_WIDTH - 1 : 0] data_adc; // '-2' because data from ADC don't have bit expansion
-bit signed [`D_BIT - 1 : 0] disp_data;
+bit signed [`ADC_WIDTH - 1 : 0] data_buf; // '-2' because data from ADC don't have bit expansion
+bit signed [`D_BIT - 1 : 0] data_fixp;
+
+bit signed [`ADC_WIDTH - 1 : 0] disp_data;
 
 bit [`A_BIT - 1 : 0] addr_rd [0 : 3];
 bit [`A_BIT - 1 : 0] addr_wr;
@@ -81,7 +83,9 @@ initial begin
 			
 			for(i = 0; i < 4; i = i + 1)
 				begin
-					data_adc = temp_data[i];
+					data_buf = temp_data[i];
+					data_fixp = {data_buf[`ADC_WIDTH - 1], data_buf, {(`D_BIT - `ADC_WIDTH){1'b0}}};
+					
 					addr_wr = j;
 					
 				// save input data from ADC require bitreverse bank counter
@@ -114,10 +118,14 @@ initial begin
 	
 	`ifdef LAST_STAGE_ODD
 		SAVE_RAM_DATA("ram_a.txt", 0);
-		COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_a.txt");
+		`ifdef COMPARE_WITH_MATLAB
+			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_a.txt");
+		`endif
 	`elsif LAST_STAGE_EVEN
 		SAVE_RAM_DATA("ram_b.txt", 1);
-		COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_b.txt");
+		`ifdef COMPARE_WITH_MATLAB
+			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_b.txt");
+		`endif
 	`endif
 	
 	$display("\n\t\t\t\tCOMPLETE\n");
@@ -269,7 +277,8 @@ endtask
 
 task BIT_REV_TO_NORM(input bit iSIG); // choose signal type: FHT (0) or signal after IFHT (1)
 	int temp_data[4];
-
+	bit signed [`D_BIT - 1 : 0] data_ext_buf;
+	
 // buf RAM for transmit data from bit rev order to norm before start IFHT:
 	logic signed [`D_BIT - 1 : 0] ram_buf_0 [0 : `BANK_SIZE - 1];
 	logic signed [`D_BIT - 1 : 0] ram_buf_1 [0 : `BANK_SIZE - 1];
@@ -318,7 +327,8 @@ task BIT_REV_TO_NORM(input bit iSIG); // choose signal type: FHT (0) or signal a
 					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
 					temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
 					
-					disp_data = temp_data[0];
+					data_ext_buf = temp_data[0];
+					disp_data = data_ext_buf[`D_BIT - 1 : `D_BIT - `ADC_WIDTH];
 				end
 			else
 				begin
@@ -330,7 +340,7 @@ task BIT_REV_TO_NORM(input bit iSIG); // choose signal type: FHT (0) or signal a
 				
 			for(i = 0; i < 4; i = i + 1)
 				begin
-					data_adc = temp_data[i];
+					data_fixp = temp_data[i];
 					addr_wr = j;
 					
 					we[i] = 1'b1;
@@ -389,7 +399,7 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iSTART(start),
 	
 	.iWE(we),
-	.iDATA({{(`D_BIT - `ADC_WIDTH){data_adc[`ADC_WIDTH - 1]}}, data_adc}),
+	.iDATA(data_fixp),
 	.iADDR_WR(addr_wr),
 	
 	.iADDR_RD_0(addr_rd[0]),
