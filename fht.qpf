@@ -19,13 +19,14 @@
 #
 # Quartus II 64-Bit
 # Version 14.1.0 Build 186 12/03/2014 SJ Full Version
-# Date created = 19:53:17  May 10, 2020
+# Date created = 19:49:17  August 20, 2020
 #
 # -------------------------------------------------------------------------- #
 
 QUARTUS_VERSION = "14.1"
-DATE = "19:53:17  May 10, 2020"
+DATE = "19:49:17  August 20, 2020"
 
 # Revisions
 
 PROJECT_REVISION = "fht"
+PROJECT_REVISION = "fht_but_round"

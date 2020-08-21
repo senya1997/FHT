@@ -1,7 +1,13 @@
 `timescale 1ns/1ns
 `include "../fht_defines.v"
 
+package fli;
+	import "DPI-C" function mti_Cmd(input string cmd);
+endpackage
+
 module fht_but_tb;
+
+import fli::*;
 
 bit clk;
 bit reset;
@@ -9,7 +15,6 @@ bit reset;
 bit signed [`D_BIT - 1 : 0] data [0 : 2];
 bit signed [`W_BIT - 1 : 0] sin;
 bit signed [`W_BIT - 1 : 0] cos;
-bit signed [`D_BIT - 1 : 0] res [0 : 1];
 
 wire signed [`D_BIT - 1 : 0] RESULT [0 : 1];
 
@@ -19,15 +24,17 @@ real sin_buf, cos_buf;
 
 int cnt_er, cnt_of;
 
-function real F_BIT_TO_REAL(input [`D_BIT - 1 : 0] iDATA);
+function real F_BIT_TO_REAL(input bit signed [`D_BIT - 1 : 0] iDATA);
+	bit signed [`ADC_WIDTH - 1 : 0] data_int;
 	real temp;
 	shortint k;
 begin
 	temp = 0;
 	for (k = 0; k < (`D_BIT - `ADC_WIDTH); k = k + 1) 
-		temp = temp + iDATA[`D_BIT - `ADC_WIDTH -(k+1)]*1.0/(2^(-(k+1)));
+		temp = temp + iDATA[`D_BIT - `ADC_WIDTH -(k+1)]*1.0/(2**(k+1));
 	
-	F_BIT_TO_REAL = iDATA[`D_BIT - 1 : `D_BIT - 16] + temp;
+	data_int = iDATA[`D_BIT - 1 : `D_BIT - `ADC_WIDTH];
+	F_BIT_TO_REAL = data_int + temp;
 end
 endfunction
 
@@ -68,11 +75,6 @@ initial begin
 			// cos = temp - 1;
 			cos = (temp_byte == 0) ? ($sqrt(`MAX_W*`MAX_W - sin*sin)) : ($sqrt(`MAX_W*`MAX_W - sin*sin) * temp_byte);
 			
-			// data[1] = 0;
-			// data[2] = 2;
-			// sin = 12288;
-			// cos = 0;
-			
 			data[0] = #(`TACT) $signed($random)%(`MAX_D);
 				if(data[0] == `MAX_D) data[0] = data[0] - 1;
 				
@@ -82,7 +84,7 @@ initial begin
 		end
 	
 	$display("\n\t\t\tpress 'run' to continue\n");
-	$stop;
+	void'(mti_Cmd("stop -sync"));
 	
 	#(5*`TACT);
 	
@@ -116,7 +118,7 @@ initial begin
 	#(5*`TACT);
 	$display("\n\n\t\t\tCOMPLETE\n");
 	
-	mti_fli::mti_Cmd("stop -sync");
+	void'(mti_Cmd("stop -sync"));
 end
 
 task DISP_INPUT;
@@ -129,7 +131,8 @@ task DISP_RESULT;
 	real temp;
 	real ref_0, ref_1;
 	real er_0, er_1;
-
+	real res [0 : 1];
+	
 	$display("\treference/output signals:");
 	temp = (cos*F_BIT_TO_REAL(data[1]) + sin*F_BIT_TO_REAL(data[2]))*1.0/`MAX_W;
 	

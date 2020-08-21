@@ -277,7 +277,6 @@ endtask
 
 task BIT_REV_TO_NORM(input bit iSIG); // choose signal type: FHT (0) or signal after IFHT (1)
 	int temp_data[4];
-	bit signed [`D_BIT - 1 : 0] data_ext_buf;
 	
 // buf RAM for transmit data from bit rev order to norm before start IFHT:
 	logic signed [`D_BIT - 1 : 0] ram_buf_0 [0 : `BANK_SIZE - 1];
@@ -322,13 +321,12 @@ task BIT_REV_TO_NORM(input bit iSIG); // choose signal type: FHT (0) or signal a
 		begin
 			if(iSIG)
 				begin
-					temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
-					temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
-					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
-					temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)] << (`LAST_STAGE + 1);
+					temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)] ;
+					temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)] ;
+					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)] ;
+					temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
 					
-					data_ext_buf = temp_data[0];
-					disp_data = data_ext_buf[`D_BIT - 1 : `D_BIT - `ADC_WIDTH];
+					disp_data = ram_buf_0[F_BIT_REV(cnt_rev)];
 				end
 			else
 				begin

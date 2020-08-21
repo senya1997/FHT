@@ -104,7 +104,7 @@ if {($A_BIT > 4) && ($A_BIT < 11)} {
 	disp_error "A_BIT is not valid"
 }
 
-if {($D_BIT > 11) && ($D_BIT < 26) &&\
+if {($D_BIT > 11) && ($D_BIT < 28) &&\
 	 ($W_BIT > 11) && ($W_BIT < 21) &&\
 	 ($H_BIT > 11) && ($H_BIT < 25)} {
 	puts $f_def "`define D_BIT $D_BIT"
