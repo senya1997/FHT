@@ -8,18 +8,18 @@
 `define LAST_STAGE 10
 `define LAST_STAGE_EVEN
  
-`define D_BIT 24
+`define D_BIT 27
 `define A_BIT 9
 `define W_BIT 13
 `define H_BIT 16
  
-`define MAX_D 8388608
+`define MAX_D 67108864
 `define MAX_W 2048
 `define MAX_H 32768
  
 /*******************************************/
  
- 
+
  
 //`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
 //`define COMPARE_WITH_MATLAB
@@ -39,7 +39,8 @@
 `endif		
 
 	`define ADC_WIDTH 16
-
+	`define MAX_ADC_D (2**(`ADC_WIDTH - 1))
+	
 	`define TACT 20
 	`define HALF_TACT `TACT/2 
 

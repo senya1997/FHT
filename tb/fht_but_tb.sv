@@ -24,6 +24,7 @@ real sin_buf, cos_buf;
 
 int cnt_er, cnt_of;
 
+// convert from type 'reg' with fixed point to 'real':
 function real F_BIT_TO_REAL(input bit signed [`D_BIT - 1 : 0] iDATA);
 	bit signed [`ADC_WIDTH - 1 : 0] data_int;
 	real temp;
@@ -65,9 +66,9 @@ initial begin
 	repeat(`NUM_OF_RPT)
 		begin
 			data[1] = $signed($random)%(`MAX_D);
-				if(data[1] == `MAX_D) data[1] = data[1] - 1;
+				if(data[1] == -`MAX_D) data[1] = data[1] + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
 			data[2] = $signed($random)%(`MAX_D);
-				if(data[2] == `MAX_D) data[2] = data[2] - 1;
+				if(data[2] == -`MAX_D) data[2] = data[2] + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
 			
 			sin = $signed($random)%(`MAX_W);
 				temp_byte = $signed($random)%(2);
@@ -76,7 +77,7 @@ initial begin
 			cos = (temp_byte == 0) ? ($sqrt(`MAX_W*`MAX_W - sin*sin)) : ($sqrt(`MAX_W*`MAX_W - sin*sin) * temp_byte);
 			
 			data[0] = #(`TACT) $signed($random)%(`MAX_D);
-				if(data[0] == `MAX_D) data[0] = data[0] - 1;
+				if(data[0] == -`MAX_D) data[0] = data[0] + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
 				
 			DISP_INPUT;
 			#(`TACT);
@@ -95,15 +96,15 @@ initial begin
 		begin
 			for(j = 0; j < 8; j++)
 				begin
-					if(cnt[1]) data[1] = `MAX_D - 1; else data[1] = -`MAX_D;
-					if(cnt[2]) data[2] = `MAX_D - 1; else data[2] = -`MAX_D;
+					if(cnt[1]) data[1] = `MAX_D; else data[1] = -`MAX_D + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
+					if(cnt[2]) data[2] = `MAX_D; else data[2] = -`MAX_D + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
 			
 						GET_SPEC_ANG(j, `MAX_W, cos_buf, sin_buf);
 					sin = sin_buf;
 					cos = cos_buf;
 					
 					#(`TACT); 
-					if(cnt[0]) data[0] = `MAX_D - 1; else data[0] = -`MAX_D;
+					if(cnt[0]) data[0] = `MAX_D; else data[0] = -`MAX_D + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}}; 
 					
 					DISP_INPUT;
 					#(`TACT);
@@ -123,7 +124,7 @@ end
 
 task DISP_INPUT;
 	$display("\n\n\tinput signals, time: %t", $time);
-	$display("\t\tDATA: x0 = %9.3f,", F_BIT_TO_REAL(data[0]), "\tx1 = %9.3f,", F_BIT_TO_REAL(data[1]), "\tx2 = %9.3f", F_BIT_TO_REAL(data[2]));
+	$display("\t\tDATA: x0 = %9.6f,", F_BIT_TO_REAL(data[0]), "\tx1 = %9.6f,", F_BIT_TO_REAL(data[1]), "\tx2 = %9.6f", F_BIT_TO_REAL(data[2]));
 	$display("\t\tCOEF: sin = %6d,", sin, "\tcos = %6d", cos);
 endtask
 
@@ -145,8 +146,8 @@ task DISP_RESULT;
 	res[0] = F_BIT_TO_REAL(RESULT[0]);
 	res[1] = F_BIT_TO_REAL(RESULT[1]);
 	
-	$display("\t\tREF: y0 = %9.3f\t\t\ty1 = %9.3f", ref_0, ref_1);
-	$display("\t\tRES: y0 = %9.3f\t\t\ty1 = %9.3f", res[0], res[1]);
+	$display("\t\tREF: y0 = %9.6f\t\t\ty1 = %9.6f", ref_0, ref_1);
+	$display("\t\tRES: y0 = %9.6f\t\t\ty1 = %9.6f", res[0], res[1]);
 	
 	$display("\terror (subtraction of res and ref signals), time: %t", $time);
 		er_0 = res[0] - ref_0; // value of error
@@ -154,12 +155,14 @@ task DISP_RESULT;
 	if(((er_0*er_0) >= 1) | ((er_1*er_1) >= 1)) // abs value
 		begin
 			cnt_er = cnt_er + 1;
-			$display("***\t\tERROR: er_0 = %6.4f, er_1 = %6.4f", er_0, er_1);
+			$display("***\t\tERROR: er_0 = %6.6f, er_1 = %6.6f", er_0, er_1);
 		end
-	else 
-		$display("\t\tERR: er_0 = %6.4f, er_1 = %6.4f", er_0, er_1);
-	if((res[0] > (`MAX_D - 1)) | (res[0] < (-`MAX_D)) |
-	   (res[1] > (`MAX_D - 1)) | (res[1] < (-`MAX_D)))
+	else $display("\t\tERR: er_0 = %6.6f, er_1 = %6.6f", er_0, er_1);
+		
+	if((res[0] > (`MAX_ADC_D)) | (res[0] < (-`MAX_ADC_D)) |
+	   (res[1] > (`MAX_ADC_D)) | (res[1] < (-`MAX_ADC_D)) |
+	   (ref_0 > (`MAX_ADC_D)) | (ref_0 < (-`MAX_ADC_D)) |
+	   (ref_1 > (`MAX_ADC_D)) | (ref_1 < (-`MAX_ADC_D)))
 		begin
 			cnt_of = cnt_of + 1;
 			$display("***\t\tOVERFLOW OUTPUT");

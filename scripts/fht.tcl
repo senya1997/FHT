@@ -31,7 +31,7 @@ set_current_revision fht;
 #---------------
 
 # ADC data bit width
-	set D_BIT 24
+	set D_BIT 27
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
 	set A_BIT 9
 # twiddle coefficient data bit width
