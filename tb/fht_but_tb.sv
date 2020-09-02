@@ -25,7 +25,7 @@ real sin_buf, cos_buf;
 int cnt_er, cnt_of;
 
 // convert from type 'reg' with fixed point to 'real':
-function real F_BIT_TO_REAL(input bit signed [`D_BIT - 1 : 0] iDATA);
+function real F_REG_TO_REAL(input bit signed [`D_BIT - 1 : 0] iDATA);
 	bit signed [`ADC_WIDTH - 1 : 0] data_int;
 	real temp;
 	shortint k;
@@ -35,7 +35,7 @@ begin
 		temp = temp + iDATA[`D_BIT - `ADC_WIDTH -(k+1)]*1.0/(2**(k+1));
 	
 	data_int = iDATA[`D_BIT - 1 : `D_BIT - `ADC_WIDTH];
-	F_BIT_TO_REAL = data_int + temp;
+	F_REG_TO_REAL = data_int + temp;
 end
 endfunction
 
@@ -124,7 +124,7 @@ end
 
 task DISP_INPUT;
 	$display("\n\n\tinput signals, time: %t", $time);
-	$display("\t\tDATA: x0 = %9.6f,", F_BIT_TO_REAL(data[0]), "\tx1 = %9.6f,", F_BIT_TO_REAL(data[1]), "\tx2 = %9.6f", F_BIT_TO_REAL(data[2]));
+	$display("\t\tDATA: x0 = %9.6f,", F_REG_TO_REAL(data[0]), "\tx1 = %9.6f,", F_REG_TO_REAL(data[1]), "\tx2 = %9.6f", F_REG_TO_REAL(data[2]));
 	$display("\t\tCOEF: sin = %6d,", sin, "\tcos = %6d", cos);
 endtask
 
@@ -135,16 +135,16 @@ task DISP_RESULT;
 	real res [0 : 1];
 	
 	$display("\treference/output signals:");
-	temp = (cos*F_BIT_TO_REAL(data[1]) + sin*F_BIT_TO_REAL(data[2]))*1.0/`MAX_W;
+	temp = (cos*F_REG_TO_REAL(data[1]) + sin*F_REG_TO_REAL(data[2]))*1.0/`MAX_W;
 	
 	// $display("\t\tnormalize mult REF = %9.5f", temp);
 	// $display("\t\tnormalize mult RES = %5d\n", BUT.ROUND_SUM_MUL);
 	
-	ref_0 = (F_BIT_TO_REAL(data[0]) + temp)/2.0;
-	ref_1 = (F_BIT_TO_REAL(data[0]) - temp)/2.0;
+	ref_0 = (F_REG_TO_REAL(data[0]) + temp)/2.0;
+	ref_1 = (F_REG_TO_REAL(data[0]) - temp)/2.0;
 	
-	res[0] = F_BIT_TO_REAL(RESULT[0]);
-	res[1] = F_BIT_TO_REAL(RESULT[1]);
+	res[0] = F_REG_TO_REAL(RESULT[0]);
+	res[1] = F_REG_TO_REAL(RESULT[1]);
 	
 	$display("\t\tREF: y0 = %9.6f\t\t\ty1 = %9.6f", ref_0, ref_1);
 	$display("\t\tRES: y0 = %9.6f\t\t\ty1 = %9.6f", res[0], res[1]);

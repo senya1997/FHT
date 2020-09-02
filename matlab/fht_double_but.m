@@ -19,8 +19,8 @@ mul_y = (cos_x(2)*y(2) + sin_x(2)*y(3))/w_amp;
 
 %mul_y =(-sinx(1)*y(2) + cosx(1)*y(3))/w_amp;
 
-fht_double_but(1) = round((x(1) + mul_x)/2);
-fht_double_but(2) = round((x(1) - mul_x)/2);
+fht_double_but(1) = (x(1) + mul_x)/2;
+fht_double_but(2) = (x(1) - mul_x)/2;
 
-fht_double_but(3) = round((y(1) + mul_y)/2);
-fht_double_but(4) = round((y(1) - mul_y)/2);
+fht_double_but(3) = (y(1) + mul_y)/2;
+fht_double_but(4) = (y(1) - mul_y)/2;

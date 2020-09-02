@@ -40,6 +40,26 @@ integer i;
 	end
 endfunction
 
+// convert from type 'reg' with fixed point to 'real':
+function real F_REG_TO_REAL(input bit signed [`D_BIT - 1 : 0] iDATA);
+	bit signed [`ADC_WIDTH - 1 : 0] data_int;
+	real temp;
+	shortint k;
+begin
+	temp = 0;
+	for (k = 0; k < (`D_BIT - `ADC_WIDTH); k = k + 1) 
+		temp = temp + iDATA[`D_BIT - `ADC_WIDTH -(k+1)]*1.0/(2**(k+1));
+	
+	data_int = iDATA[`D_BIT - 1 : `D_BIT - `ADC_WIDTH];
+	F_REG_TO_REAL = data_int + temp;
+end
+endfunction
+
+function real F_ABS(input real data);
+	if(data < 0) F_ABS = -data;
+	else F_ABS = data;
+endfunction
+
 initial begin
 	$timeformat(-6, 3, " us", 6);
 	clk = 1;
@@ -53,7 +73,8 @@ initial begin
 end
 
 initial begin
-	int file_data, scan_data, temp_data[4];
+	int file_data, scan_data;
+	real temp_data[4];
 	
 	`ifdef TEST_MIXER
 		$display("\n\n\t\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
@@ -77,7 +98,7 @@ initial begin
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
 		begin
-			scan_data = $fscanf(file_data, "%d\t%d\t%d\t%d\n", temp_data[0], temp_data[1], temp_data[2], temp_data[3]);
+			scan_data = $fscanf(file_data, "%f\t%f\t%f\t%f\n", temp_data[0], temp_data[1], temp_data[2], temp_data[3]);
 			
 			disp_data = temp_data[0];
 			
@@ -234,7 +255,8 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 			
 			for(cnt_bank = 0; cnt_bank < 4; cnt_bank = cnt_bank + 1) 
 				begin
-					$fwrite(f_ram, "%d", buf_signed[cnt_bank], "\t\t");
+					// $fwrite(f_ram, "%6.6f", F_REG_TO_REAL(buf_signed[cnt_bank]), "\t\t");
+					$fwrite(f_ram, "%6.6f", F_REG_TO_REAL(buf_signed[cnt_bank]), "\t");
 				end
 				
 			$fwrite(f_ram, "\n");
@@ -245,8 +267,8 @@ endtask
 
 task COMPARE_MATLAB_RAM(input string name_ref, name);
 	int file_ref, file;
-	int temp_ref [4];
-	int temp [4];
+	real temp_ref [4];
+	real temp [4];
 	int scan [2];
 	
 	file_ref =	$fopen(name_ref, "r");
@@ -254,19 +276,19 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1)
 		begin
-			scan[0] = $fscanf(file_ref, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
-			scan[1] = $fscanf(file, "%d\t%d\t%d\t%d\n", temp[0], temp[1], temp[2], temp[3]);
+			scan[0] = $fscanf(file_ref, "%f\t%f\t%f\t%f\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+			scan[1] = $fscanf(file, "%f\t%f\t%f\t%f\n", temp[0], temp[1], temp[2], temp[3]);
 
-			if((temp_ref[0] == temp[0]) & (temp_ref[1] == temp[1]) &
-			   (temp_ref[2] == temp[2]) & (temp_ref[3] == temp[3]))
-				$display("\tLine %3d: data_0: %4d, data_1: %4d, data_2: %4d, data_3: %4d", 
+			if((F_ABS(temp_ref[0] - temp[0]) < `ERROR_THRESHOLD) & (F_ABS(temp_ref[1] - temp[1]) < `ERROR_THRESHOLD) &
+			   (F_ABS(temp_ref[2] - temp[2]) < `ERROR_THRESHOLD) & (F_ABS(temp_ref[3] - temp[3]) < `ERROR_THRESHOLD))
+				$display("\tLine %3d:\tdata_0: %6.6f,\t\tdata_1: %6.6f,\t\tdata_2: %6.6f,\t\tdata_3: %6.6f", 
 							j, temp[0], temp[1], temp[2], temp[3]);
 			else
 				begin
 					cnt_er = cnt_er + 1;
-					$display(" ***\tLine %3d: data_0: %4d, data_1: %4d, data_2: %4d, data_3: %4d", 
+					$display(" ***\tLine %3d:\tdata_0: %6.6f,\t\tdata_1: %6.6f,\t\tdata_2: %6.6f,\t\tdata_3: %6.6f", 
 								j, temp[0], temp[1], temp[2], temp[3]);
-					$display(" ***\t     REF: data_0: %4d, data_1: %4d, data_2: %4d, data_3: %4d", 
+					$display(" ***\t     REF:\tdata_0: %6.6f,\t\tdata_1: %6.6f,\t\tdata_2: %6.6f,\t\tdata_3: %6.6f", 
 								temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 				end			
 		end
@@ -321,9 +343,9 @@ task BIT_REV_TO_NORM(input bit iSIG); // choose signal type: FHT (0) or signal a
 		begin
 			if(iSIG)
 				begin
-					temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)] ;
-					temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)] ;
-					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)] ;
+					temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
+					temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
+					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
 					temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
 					
 					disp_data = ram_buf_0[F_BIT_REV(cnt_rev)];
