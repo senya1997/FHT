@@ -19,19 +19,17 @@ set_current_revision fht;
 
 # keys: -c (compile and copy .sdo, .vo for modelsim)
 
-#---------------
-# A_BIT |  N	|
-#---------------
-#	5	  | 128	|
-# 	6	  | 256	|
-# 	7	  | 512	|
-# 	8	  | 1024	|
-# 	9	  | 2048	|
-# 	10	  | 4096	|
-#---------------
+#----------------------
+# A_BIT |  N	| D_BIT |
+#----------------------|
+#	5	  | 128	|	23   |
+# 	6	  | 256	|	24   |
+# 	7	  | 512	|	25   |
+# 	8	  | 1024	|	26   |
+# 	9	  | 2048	|	27   |
+# 	10	  | 4096	|	28   |
+#----------------------
 
-# ADC data bit width
-	set D_BIT 26
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
 	set A_BIT 9
 # twiddle coefficient data bit width
@@ -54,7 +52,9 @@ set path_def ./fht_defines.v
 # ================================================================================= #
 
 # add expansion bit (for avoid overflow from 'max_negative_num*(-1)' and for use shift operating on division)
+	#set D_BIT 27
 	#set D_BIT [expr $D_BIT + 1]
+	set D_BIT [expr $A_BIT + 18]
 	set W_BIT [expr $W_BIT + 1]
 	
 # read input keys from cmd
@@ -82,7 +82,7 @@ puts " "
 puts "writing defines..."
 set f_def [open $path_def r+]
 
-if {($A_BIT > 4) && ($A_BIT < 11)} {
+if {($A_BIT > 3) && ($A_BIT < 11)} {
 	puts $f_def "/*******************************************/"
 	puts $f_def "/* auto generated defines (do not modify): */"
 	puts $f_def "/*******************************************/"

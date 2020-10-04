@@ -1,6 +1,8 @@
 `timescale 1ns/1ns
 `include "../fht_defines.v"
 
+`define EXT_BIT 0 
+
 package fli;
 	import "DPI-C" function mti_Cmd(input string cmd);
 endpackage
@@ -14,11 +16,6 @@ bit reset;
 
 bit flag_cp_matlab = 1; // for turn off COMPARE_MATLAB_RAM on IFHT stage
 
-int i, j;
-int cnt_er;
-
-real temp;
-
 bit start;
 bit ram_sel;
 	
@@ -31,7 +28,13 @@ bit [`A_BIT - 1 : 0] addr_rd [0 : 3];
 bit [`A_BIT - 1 : 0] addr_wr;
 bit [3 : 0] we;
 
-wire RDY;
+wire RDY_FHT, RDY_IFHT;
+
+int i, j;
+int cnt_st_er, cnt_all_er; // counters of stage and all errors
+
+real temp;
+real max_er, av_er; // max and avarage error
 
 function [`A_BIT - 1 : 0] F_BIT_REV(input [`A_BIT - 1 : 0] iDATA);
 integer i;
@@ -74,7 +77,17 @@ end
 
 initial begin
 	int file_data, scan_data;
-	real temp_data[4];
+	int temp_data[4];
+	
+// buf RAM for transmit data from bit rev order to norm before start IFHT:
+	logic signed [`D_BIT - 1 : 0] ram_buf_0 [0 : `BANK_SIZE - 1];
+	logic signed [`D_BIT - 1 : 0] ram_buf_1 [0 : `BANK_SIZE - 1];
+	logic signed [`D_BIT - 1 : 0] ram_buf_2 [0 : `BANK_SIZE - 1];
+	logic signed [`D_BIT - 1 : 0] ram_buf_3 [0 : `BANK_SIZE - 1];
+	
+	logic signed [`D_BIT + `EXT_BIT - 1 : 0] ram_buf_0_ext [0 : `BANK_SIZE - 1];
+	
+	bit [`A_BIT - 1 : 0] cnt_rev;
 	
 	`ifdef TEST_MIXER
 		$display("\n\n\t\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
@@ -85,6 +98,10 @@ initial begin
 	`ifdef COMPARE_WITH_MATLAB
 		$display("\t\tRAM compare with 'txt' file from matlab");
 	`endif
+	
+	cnt_all_er = 0;
+	max_er = 0;
+	av_er = 0;
 	
 	ram_sel = 1'b1;
 	start = 1'b0;
@@ -131,11 +148,13 @@ initial begin
 	start = 1'b0;
 		#(`TACT);
 
-	wait(RDY);
+	wait(RDY_FHT);
 	$display("\n\tfinish FHT, time: %t\n", $time);
 	
-	$display("\n\t\t\tpress 'run' to continue\n");
-	void'(mti_Cmd("stop -sync"));
+	`ifdef EN_BREAKPOINT
+		$display("\n\t\t\tpress 'run' to continue\n");
+		void'(mti_Cmd("stop -sync"));
+	`endif
 	
 	`ifdef LAST_STAGE_ODD
 		SAVE_RAM_DATA("ram_a.txt", 0);
@@ -149,13 +168,68 @@ initial begin
 		`endif
 	`endif
 	
-	$display("\n\t\t\t\tCOMPLETE\n");
-	void'(mti_Cmd("stop -sync"));
+	$display("\n\tmax error (compared RAM with matlab) in all transfer: %6.6f, time: %t", max_er, $time);
+	$display("\tavarage error in all transfer: %6.6f, time: %t", av_er/cnt_all_er, $time);
+	
+	`ifdef EN_BREAKPOINT
+		$display("\n\t\t\tpress 'run' to continue\n");
+		void'(mti_Cmd("stop -sync"));
+	`endif
 	
 // IFHT:
 	#(`TACT);
 	$display("\tRewrite RAM data from bit rev to norm order for IFHT, time: %t\n", $time);
-	BIT_REV_TO_NORM(0);
+	
+	for(j = 0; j < `BANK_SIZE; j = j + 1) 
+		begin
+			`ifdef LAST_STAGE_ODD
+				`ifdef RAM_BUG
+					ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[j];
+				`else
+					ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+				`endif
+			`elsif LAST_STAGE_EVEN
+				`ifdef RAM_BUG
+					ram_buf_0[j] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_1[j] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_2[j] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[j];
+					ram_buf_3[j] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[j];
+				`else
+					ram_buf_0[j] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_1[j] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_2[j] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+					ram_buf_3[j] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+				`endif
+			`endif
+		end	
+
+	cnt_rev = 0;
+	
+	for(j = 0; j < `BANK_SIZE; j = j + 1) 
+		begin
+			temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
+			temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
+			temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
+			temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
+				
+			for(i = 0; i < 4; i = i + 1)
+				begin
+					data_fixp = temp_data[i];
+					addr_wr = j;
+					
+					we[i] = 1'b1;
+						#(`TACT);
+					we[i] = 1'b0;
+				end
+				
+			cnt_rev = cnt_rev + 1;
+		end
 
 	$display("\n\tstart IFHT, time: %t\n", $time);
 	flag_cp_matlab = 0;
@@ -165,10 +239,37 @@ initial begin
 	start = 1'b0;
 		#(`TACT);
 
-	wait(RDY);
+	wait(RDY_IFHT);
 	$display("\tfinish IFHT, time: %t\n", $time);
 	
-	BIT_REV_TO_NORM(1);
+	for(j = 0; j < `BANK_SIZE; j = j + 1) 
+		begin
+			`ifdef LAST_STAGE_ODD
+				`ifdef RAM_BUG
+					ram_buf_0_ext[j] = IFHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
+				`else
+					ram_buf_0_ext[j] = IFHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+				`endif
+			`elsif LAST_STAGE_EVEN
+				`ifdef RAM_BUG
+					ram_buf_0_ext[j] = IFHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
+				`else
+					ram_buf_0_ext[j] = IFHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
+				`endif
+			`endif
+		end	
+
+	cnt_rev = 0;
+	
+	for(j = 0; j < `BANK_SIZE; j = j + 1) 
+		begin
+			disp_data = ram_buf_0_ext[F_BIT_REV(cnt_rev)][`ADC_WIDTH - 1: 0]; // width of 'disp_data' => cut RAM data ? 
+			cnt_rev = cnt_rev + 1;
+			
+			#(4*`TACT);
+		end
+		
+	disp_data = 0;
 	
 	`ifdef LAST_STAGE_ODD
 		SAVE_RAM_DATA("ram_ia.txt", 0);
@@ -185,7 +286,7 @@ always@(FHT.CONTROL.cnt_stage)begin
 	string str_stage;
 	integer int_stage;
 	
-	if(!RDY & flag_cp_matlab)
+	if(!RDY_FHT & flag_cp_matlab)
 		begin
 			$display("\n\t\t\t\t%2d stage FHT\n", FHT.CONTROL.cnt_stage);
 			
@@ -205,8 +306,10 @@ always@(FHT.CONTROL.cnt_stage)begin
 				COMPARE_MATLAB_RAM(str_temp_ref, str_temp);
 			`endif
 	
-			$display("\n\t\t\tpress 'run' to continue\n");
-			void'(mti_Cmd("stop -sync"));
+			`ifdef EN_BREAKPOINT
+				$display("\n\t\t\tpress 'run' to continue\n");
+				void'(mti_Cmd("stop -sync"));
+			`endif
 		end
 end
 
@@ -267,9 +370,13 @@ endtask
 
 task COMPARE_MATLAB_RAM(input string name_ref, name);
 	int file_ref, file;
-	real temp_ref [4];
-	real temp [4];
 	int scan [2];
+	
+	real temp [4];
+	real temp_ref [4];
+	real temp_er [4];
+	
+	real max_row_er; // max error on this row
 	
 	file_ref =	$fopen(name_ref, "r");
 	file = 		$fopen(name, "r");
@@ -279,99 +386,36 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 			scan[0] = $fscanf(file_ref, "%f\t%f\t%f\t%f\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 			scan[1] = $fscanf(file, "%f\t%f\t%f\t%f\n", temp[0], temp[1], temp[2], temp[3]);
 
-			if((F_ABS(temp_ref[0] - temp[0]) < `ERROR_THRESHOLD) & (F_ABS(temp_ref[1] - temp[1]) < `ERROR_THRESHOLD) &
-			   (F_ABS(temp_ref[2] - temp[2]) < `ERROR_THRESHOLD) & (F_ABS(temp_ref[3] - temp[3]) < `ERROR_THRESHOLD))
-				$display("\tLine %3d:\tdata_0: %6.6f,\t\tdata_1: %6.6f,\t\tdata_2: %6.6f,\t\tdata_3: %6.6f", 
+			max_row_er = 0;
+
+			for(i = 0; i < 4; i = i + 1)
+				begin
+					temp_er[i] = F_ABS(temp_ref[i] - temp[i]);
+					if(temp_er[i] > max_row_er) max_row_er = temp_er[i];
+				end
+
+			if((temp_er[0] < `ACCURACY) & (temp_er[1] < `ACCURACY) & (temp_er[2] < `ACCURACY) & (temp_er[3] < `ACCURACY))
+				$display("\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
 							j, temp[0], temp[1], temp[2], temp[3]);
 			else
 				begin
-					cnt_er = cnt_er + 1;
-					$display(" ***\tLine %3d:\tdata_0: %6.6f,\t\tdata_1: %6.6f,\t\tdata_2: %6.6f,\t\tdata_3: %6.6f", 
+					for(i = 0; i < 4; i = i + 1)
+						if(temp_er[i] > max_er) max_er = temp_er[i];
+					
+					av_er = av_er + max_row_er;
+					
+					cnt_st_er = cnt_st_er + 1;
+					$display(" ***\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
 								j, temp[0], temp[1], temp[2], temp[3]);
-					$display(" ***\t     REF:\tdata_0: %6.6f,\t\tdata_1: %6.6f,\t\tdata_2: %6.6f,\t\tdata_3: %6.6f", 
+					$display(" ***\t     REF:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
 								temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 				end			
 		end
 	
-	$display("\n\tnumber of errors compare RAM with matlab in this stage: %4d, time: %t", cnt_er, $time);
-	cnt_er = 0;
-endtask
-
-task BIT_REV_TO_NORM(input bit iSIG); // choose signal type: FHT (0) or signal after IFHT (1)
-	int temp_data[4];
+	$display("\n\tnumber of errors compare RAM with matlab in this stage: %4d, time: %t", cnt_st_er, $time);
 	
-// buf RAM for transmit data from bit rev order to norm before start IFHT:
-	logic signed [`D_BIT - 1 : 0] ram_buf_0 [0 : `BANK_SIZE - 1];
-	logic signed [`D_BIT - 1 : 0] ram_buf_1 [0 : `BANK_SIZE - 1];
-	logic signed [`D_BIT - 1 : 0] ram_buf_2 [0 : `BANK_SIZE - 1];
-	logic signed [`D_BIT - 1 : 0] ram_buf_3 [0 : `BANK_SIZE - 1];
-	
-	bit [`A_BIT - 1 : 0] cnt_rev;
-
-	for(j = 0; j < `BANK_SIZE; j = j + 1) 
-		begin
-			`ifdef LAST_STAGE_ODD
-				`ifdef RAM_BUG
-					ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
-					ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[j];
-					ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[j];
-					ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[j];
-				`else
-					ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-				`endif
-			`elsif LAST_STAGE_EVEN
-				`ifdef RAM_BUG
-					ram_buf_0[j] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.mem_data[j];
-					ram_buf_1[j] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.mem_data[j];
-					ram_buf_2[j] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.mem_data[j];
-					ram_buf_3[j] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.mem_data[j];
-				`else
-					ram_buf_0[j] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					ram_buf_1[j] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					ram_buf_2[j] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-					ram_buf_3[j] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.altsyncram_component.m_non_arria10.altsyncram_inst.mem_data[j];
-				`endif
-			`endif
-		end	
-
-	cnt_rev = 0;
-	
-	for(j = 0; j < `BANK_SIZE; j = j + 1) 
-		begin
-			if(iSIG)
-				begin
-					temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
-					temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
-					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
-					temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
-					
-					disp_data = ram_buf_0[F_BIT_REV(cnt_rev)];
-				end
-			else
-				begin
-					temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
-					temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
-					temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
-					temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
-				end
-				
-			for(i = 0; i < 4; i = i + 1)
-				begin
-					data_fixp = temp_data[i];
-					addr_wr = j;
-					
-					we[i] = 1'b1;
-						#(`TACT);
-					we[i] = 1'b0;
-				end
-				
-			cnt_rev = cnt_rev + 1;
-		end
-		
-	disp_data = 0;
+	cnt_all_er = cnt_all_er + cnt_st_er;
+	cnt_st_er = 0;
 endtask
 
 /*
@@ -432,7 +476,31 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.oDATA_2(),
 	.oDATA_3(),
 	
-	.oRDY(RDY)
+	.oRDY(RDY_FHT)
+);
+
+fht_top #(.D_BIT(`D_BIT + `EXT_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
+			.MIF_SIN(`MIF_SIN), .MIF_COS(`MIF_COS)) IFHT(
+	.iCLK(clk),
+	.iRESET(reset),
+	
+	.iSTART(start),
+	
+	.iWE(we),
+	.iDATA({{`EXT_BIT{data_fixp[`D_BIT - 1]}}, data_fixp}),
+	.iADDR_WR(addr_wr),
+	
+	.iADDR_RD_0(addr_rd[0]),
+	.iADDR_RD_1(addr_rd[1]),
+	.iADDR_RD_2(addr_rd[2]),
+	.iADDR_RD_3(addr_rd[3]),
+	
+	.oDATA_0(),
+	.oDATA_1(),
+	.oDATA_2(),
+	.oDATA_3(),
+	
+	.oRDY(RDY_IFHT)
 );
 
 endmodule

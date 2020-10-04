@@ -57,21 +57,23 @@
 
  	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUM = EXT_X0 + sum_mul;
  	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUB = EXT_X0 - sum_mul;
- 	/*
-	wire POS_LHALF_SUM = (~EXT_SUM[D_BIT + W_BIT - 2] & EXT_SUM[W_BIT - 2]); // '+' & '>= 0.5'
-	wire NEG_LHALF_SUM = ( EXT_SUM[D_BIT + W_BIT - 2] & EXT_SUM[W_BIT - 2 : 0] > {1'b1, {(W_BIT - 2){1'b0}}}); // '-' & '> 0.5'
+ 	
+	`ifdef ROUND_FHT
+		wire POS_LHALF_SUM = (~EXT_SUM[D_BIT + W_BIT - 2] & EXT_SUM[W_BIT - 2]); // '+' & '>= 0.5'
+		wire NEG_LHALF_SUM = ( EXT_SUM[D_BIT + W_BIT - 2] & EXT_SUM[W_BIT - 2 : 0] > {1'b1, {(W_BIT - 2){1'b0}}}); // '-' & '> 0.5'
 
-	wire POS_LHALF_SUB = (~EXT_SUB[D_BIT + W_BIT - 2] & EXT_SUB[W_BIT - 2]); // '+' & '>= 0.5'
-	wire NEG_LHALF_SUB = ( EXT_SUB[D_BIT + W_BIT - 2] & EXT_SUB[W_BIT - 2 : 0] > {1'b1, {(W_BIT - 2){1'b0}}}); // '-' & '> 0.5'
+		wire POS_LHALF_SUB = (~EXT_SUB[D_BIT + W_BIT - 2] & EXT_SUB[W_BIT - 2]); // '+' & '>= 0.5'
+		wire NEG_LHALF_SUB = ( EXT_SUB[D_BIT + W_BIT - 2] & EXT_SUB[W_BIT - 2 : 0] > {1'b1, {(W_BIT - 2){1'b0}}}); // '-' & '> 0.5'
+		
+		wire signed [D_BIT - 1 : 0] ROUND_SUM = (POS_LHALF_SUM | NEG_LHALF_SUM) ? (EXT_SUM[D_BIT + W_BIT - 2 : W_BIT - 1] + 1'b1) : 
+																											EXT_SUM[D_BIT + W_BIT - 2 : W_BIT - 1];
+		wire signed [D_BIT - 1 : 0] ROUND_SUB = (POS_LHALF_SUB | NEG_LHALF_SUB) ? (EXT_SUB[D_BIT + W_BIT - 2 : W_BIT - 1] + 1'b1) : 
+																											EXT_SUB[D_BIT + W_BIT - 2 : W_BIT - 1];
+	`else
+		wire signed [D_BIT - 1 : 0] ROUND_SUM = EXT_SUM[D_BIT + W_BIT - 2 : W_BIT - 1];
+		wire signed [D_BIT - 1 : 0] ROUND_SUB = EXT_SUB[D_BIT + W_BIT - 2 : W_BIT - 1];
+	`endif
 	
-	wire signed [D_BIT - 1 : 0] ROUND_SUM = (POS_LHALF_SUM | NEG_LHALF_SUM) ? (EXT_SUM[D_BIT + W_BIT - 2 : W_BIT - 1] + 1'b1) : 
-																										EXT_SUM[D_BIT + W_BIT - 2 : W_BIT - 1];
-	wire signed [D_BIT - 1 : 0] ROUND_SUB = (POS_LHALF_SUB | NEG_LHALF_SUB) ? (EXT_SUB[D_BIT + W_BIT - 2 : W_BIT - 1] + 1'b1) : 
-																										EXT_SUB[D_BIT + W_BIT - 2 : W_BIT - 1];
-	*/
-	wire signed [D_BIT - 1 : 0] ROUND_SUM = EXT_SUM[D_BIT + W_BIT - 2 : W_BIT - 1];
-	wire signed [D_BIT - 1 : 0] ROUND_SUB = EXT_SUB[D_BIT + W_BIT - 2 : W_BIT - 1];
-																									
  	always@(posedge iCLK or negedge iRESET)begin
  		if(!iRESET) sum_mul <= 0;
  		else sum_mul <= EXT_SUM_MUL;
