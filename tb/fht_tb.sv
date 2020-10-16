@@ -1,8 +1,6 @@
 `timescale 1ns/1ns
 `include "../fht_defines.v"
 
-`define EXT_BIT 0 
-
 package fli;
 	import "DPI-C" function mti_Cmd(input string cmd);
 endpackage
@@ -85,7 +83,7 @@ initial begin
 	logic signed [`D_BIT - 1 : 0] ram_buf_2 [0 : `BANK_SIZE - 1];
 	logic signed [`D_BIT - 1 : 0] ram_buf_3 [0 : `BANK_SIZE - 1];
 	
-	logic signed [`D_BIT + `EXT_BIT - 1 : 0] ram_buf_0_ext [0 : `BANK_SIZE - 1];
+	logic signed [`D_BIT - 1 : 0] ram_buf_0_ext [0 : `BANK_SIZE - 1];
 	
 	bit [`A_BIT - 1 : 0] cnt_rev;
 	
@@ -95,8 +93,11 @@ initial begin
 		$display("\n\n\t\t\t\tSTART TEST FHT\n");
 	`endif
 	
+	$display("\terror between reference signal and result must be less then `ACCURACY defines: %6.6f", `ACCURACY);
+	$display("\tif error too big or there is overflow - in console its marked by '***'");
+	
 	`ifdef COMPARE_WITH_MATLAB
-		$display("\t\tRAM compare with 'txt' file from matlab");
+		$display("\n\tRAM compare with 'txt' file from matlab");
 	`endif
 	
 	cnt_all_er = 0;
@@ -109,7 +110,7 @@ initial begin
 	#(10*`TACT);
 
 // save ADC data line by line (row by row):	
-	$display("\twrite ADC data point in RAM, time: %t\n", $time);
+	$display("\n\twrite ADC data point in RAM, time: %t\n", $time);
 	file_data = $fopen("../../fht/matlab/init_ram.txt", "r");
 	disp_data = 0;
 	
@@ -122,7 +123,7 @@ initial begin
 			for(i = 0; i < 4; i = i + 1)
 				begin
 					data_buf = temp_data[i];
-					data_fixp = {data_buf[`ADC_WIDTH - 1], data_buf, {(`D_BIT - `ADC_WIDTH){1'b0}}};
+					data_fixp = {data_buf, {(`D_BIT - `ADC_WIDTH){1'b0}}};
 					
 					addr_wr = j;
 					
@@ -168,17 +169,23 @@ initial begin
 		`endif
 	`endif
 	
-	$display("\n\tmax error (compared RAM with matlab) in all transfer: %6.6f, time: %t", max_er, $time);
-	$display("\tavarage error in all transfer: %6.6f, time: %t", av_er/cnt_all_er, $time);
+	`ifdef COMPARE_WITH_MATLAB
+		$display("\n\tmax error (compared RAM with matlab) in all transfer: %6.6f", max_er);
+		
+		if(cnt_all_er == 0) $display("\tavarage error in all transfer: 0.000000\n");
+		else $display("\tavarage error in all transfer: %6.6f\n", av_er/cnt_all_er);
+		
+		$display("\ttotal amount of errors: %d", cnt_all_er);
+	`endif
 	
 	`ifdef EN_BREAKPOINT
-		$display("\n\t\t\tpress 'run' to continue\n");
+		$display("\n\t\t\tpress 'run' to continue");
 		void'(mti_Cmd("stop -sync"));
 	`endif
 	
 // IFHT:
 	#(`TACT);
-	$display("\tRewrite RAM data from bit rev to norm order for IFHT, time: %t\n", $time);
+	$display("\n\tRewrite RAM data from bit rev to norm order for IFHT, time: %t\n", $time);
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
 		begin
@@ -479,7 +486,7 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.oRDY(RDY_FHT)
 );
 
-fht_top #(.D_BIT(`D_BIT + `EXT_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
+fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
 			.MIF_SIN(`MIF_SIN), .MIF_COS(`MIF_COS)) IFHT(
 	.iCLK(clk),
 	.iRESET(reset),
@@ -487,7 +494,7 @@ fht_top #(.D_BIT(`D_BIT + `EXT_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iSTART(start),
 	
 	.iWE(we),
-	.iDATA({{`EXT_BIT{data_fixp[`D_BIT - 1]}}, data_fixp}),
+	.iDATA(data_fixp),
 	.iADDR_WR(addr_wr),
 	
 	.iADDR_RD_0(addr_rd[0]),

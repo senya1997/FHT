@@ -13,7 +13,7 @@ file_def = mopen('../fht_defines.v', 'r');
 Fd = 44100;
 bias = 0;
 
-max_amp = 15000; // unsigned 16 bit ADC <=> 65535
+max_amp = 15000; // signed 16 bit ADC <=> 32767
 
 max_freq_1 = 1000; // in Hz
 max_freq_2 = 3000;

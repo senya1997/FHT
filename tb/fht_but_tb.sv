@@ -20,7 +20,9 @@ wire signed [`D_BIT - 1 : 0] RESULT [0 : 1];
 
 // real temp;
 byte temp_byte;
+
 real sin_buf, cos_buf;
+real max_er, av_er; // max and avarage error
 
 int cnt_er, cnt_of;
 
@@ -39,6 +41,11 @@ begin
 end
 endfunction
 
+function real F_ABS(input real data);
+	if(data < 0) F_ABS = -data;
+	else F_ABS = data;
+endfunction
+
 initial begin
 	$timeformat(-6, 3, " us", 6);
 	clk = 1;
@@ -53,12 +60,15 @@ end
 
 initial begin
 	shortint i, j;
-	bit [2 : 0] cnt;
+	bit [1 : 0] cnt;
+	
+	max_er = 0;
+	av_er = 0;
 	
 	#(5*`TACT); // pause before start
 	
-	$display("\n\n\t\tSTART TEST ONE '2 DOT' BUTTERFLY");
-	$display("\n\terror between reference signal and result must be less then '1'");
+	$display("\n\n\t\tSTART TEST '2 DOT' BUTTERFLY");
+	$display("\n\terror between reference signal and result must be less then `ACCURACY defines: %6.6f", `ACCURACY);
 	$display("\tif error too big or there is overflow - in console its marked by '***'");
 	
 	cnt_er = 0;
@@ -66,9 +76,9 @@ initial begin
 	repeat(`NUM_OF_RPT)
 		begin
 			data[1] = $signed($random)%(`MAX_D);
-				if(data[1] == -`MAX_D) data[1] = data[1] + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
+				if(data[1] == `MAX_D) data[1] = data[1] - 1'b1;
 			data[2] = $signed($random)%(`MAX_D);
-				if(data[2] == -`MAX_D) data[2] = data[2] + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
+				if(data[2] == `MAX_D) data[2] = data[2] - 1'b1;
 			
 			sin = $signed($random)%(`MAX_W);
 				temp_byte = $signed($random)%(2);
@@ -77,35 +87,41 @@ initial begin
 			cos = (temp_byte == 0) ? ($sqrt(`MAX_W*`MAX_W - sin*sin)) : ($sqrt(`MAX_W*`MAX_W - sin*sin) * temp_byte);
 			
 			data[0] = #(`TACT) $signed($random)%(`MAX_D);
-				if(data[0] == -`MAX_D) data[0] = data[0] + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
+				if(data[0] == `MAX_D) data[0] = data[0] - 1'b1;
 				
 			DISP_INPUT;
 			#(`TACT);
 			DISP_RESULT;
 		end
 	
-	$display("\n\t\t\tpress 'run' to continue\n");
-	void'(mti_Cmd("stop -sync"));
+	`ifdef EN_BREAKPOINT
+		$display("\n\t\t\tpress 'run' to continue\n");
+		void'(mti_Cmd("stop -sync"));
+	`endif
 	
 	#(5*`TACT);
 	
 	$display("\n\n\n\t\tTEST ON SPEC ANGLES\n");
 	
 	cnt = 0;
-	for(i = 0; i < 8; i++)
+	data[0] = 0; // max value of data recieve on '0' stage, on this stage 'X(0) = 0'
+	
+	for(i = 0; i < 4; i++)
 		begin
 			for(j = 0; j < 8; j++)
 				begin
-					if(cnt[1]) data[1] = `MAX_D; else data[1] = -`MAX_D + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
-					if(cnt[2]) data[2] = `MAX_D; else data[2] = -`MAX_D + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}};
+					if(cnt[0]) data[1] = {1'b0, {(`ADC_WIDTH - 1){1'b1}}, {(`D_BIT - `ADC_WIDTH){1'b0}}};
+					else data[1] = `MAX_D + {1'b1, {(`D_BIT - `ADC_WIDTH){1'b0}}};
+					
+					if(cnt[1]) data[2] = {1'b0, {(`ADC_WIDTH - 1){1'b1}}, {(`D_BIT - `ADC_WIDTH){1'b0}}};
+					else data[2] = `MAX_D + {1'b1, {(`D_BIT - `ADC_WIDTH){1'b0}}};
 			
-						GET_SPEC_ANG(j, `MAX_W, cos_buf, sin_buf);
+					GET_SPEC_ANG(j, `MAX_W, cos_buf, sin_buf);
+					
 					sin = sin_buf;
 					cos = cos_buf;
 					
-					#(`TACT); 
-					if(cnt[0]) data[0] = `MAX_D; else data[0] = -`MAX_D + {1'b1, {(`MAX_D - `ADC_WIDTH){1'b0}}}; 
-					
+					#(`TACT);
 					DISP_INPUT;
 					#(`TACT);
 					DISP_RESULT;
@@ -113,8 +129,13 @@ initial begin
 			cnt = cnt + 1;
 		end
 	
-	$display("\n\n\tTotal amount of errors: %6d", cnt_er);
-	$display("\tTotal amount of overflows: %6d", cnt_of);
+	$display("\n\n\ttotal amount of errors: %6d", cnt_er);
+	$display("\ttotal amount of overflows: %6d", cnt_of);
+	
+	$display("\n\tmax error: %6.6f", max_er);
+	
+	if(cnt_er == 0) $display("\tavarage error: 0.000000");
+	else $display("\tavarage error: %6.6f\n", av_er/cnt_er);
 	
 	#(5*`TACT);
 	$display("\n\n\t\t\tCOMPLETE\n");
@@ -150,19 +171,25 @@ task DISP_RESULT;
 	$display("\t\tRES: y0 = %9.6f\t\t\ty1 = %9.6f", res[0], res[1]);
 	
 	$display("\terror (subtraction of res and ref signals), time: %t", $time);
-		er_0 = res[0] - ref_0; // value of error
-		er_1 = res[1] - ref_1;
-	if(((er_0*er_0) >= 1) | ((er_1*er_1) >= 1)) // abs value
+		er_0 = F_ABS(res[0] - ref_0); // abs value of error
+		er_1 = F_ABS(res[1] - ref_1);
+	if((er_0 > `ACCURACY) | (er_1 > `ACCURACY))
 		begin
 			cnt_er = cnt_er + 1;
 			$display("***\t\tERROR: er_0 = %6.6f, er_1 = %6.6f", er_0, er_1);
+			
+			if(er_0 > er_1) av_er = av_er + er_0;
+			else av_er = av_er + er_1;
+				
+			if(er_0 > max_er) max_er = er_0;
+			else if(er_1 > max_er) max_er = er_1;
 		end
 	else $display("\t\tERR: er_0 = %6.6f, er_1 = %6.6f", er_0, er_1);
 		
-	if((res[0] > (`MAX_ADC_D)) | (res[0] < (-`MAX_ADC_D)) |
-	   (res[1] > (`MAX_ADC_D)) | (res[1] < (-`MAX_ADC_D)) |
-	   (ref_0 > (`MAX_ADC_D)) | (ref_0 < (-`MAX_ADC_D)) |
-	   (ref_1 > (`MAX_ADC_D)) | (ref_1 < (-`MAX_ADC_D)))
+	if((res[0] > `MAX_ADC_D) | (res[0] < -`MAX_ADC_D) |
+	   (res[1] > `MAX_ADC_D) | (res[1] < -`MAX_ADC_D) |
+	   (ref_0 > `MAX_ADC_D) | (ref_0 < -`MAX_ADC_D) |
+	   (ref_1 > `MAX_ADC_D) | (ref_1 < -`MAX_ADC_D))
 		begin
 			cnt_of = cnt_of + 1;
 			$display("***\t\tOVERFLOW OUTPUT");

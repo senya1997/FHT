@@ -20,6 +20,7 @@ wire [`A_BIT - 1 : 0] ADDR_COEF;
 
 int f_addr_rd, f_addr_wr;
 int cnt_er_rd, cnt_er_wr;
+int cnt_er;
 
 string str_temp;
 
@@ -40,11 +41,13 @@ end
 
 initial begin
 	start = 1'b0;
+	
 	cnt_er_rd = 0;
 	cnt_er_wr = 0;
+	cnt_er = 0;
 	
 	#(100*`TACT);
-	$display("\n\n\t\t\t\tSTART TEST CONTROL FHT\n");
+	$display("\n\n\t\t\tSTART TEST CONTROL FHT\n");
 	
 	`ifdef COMPARE_WITH_MATLAB
 		$display("\tread and write address compare with 'txt' file from matlab");
@@ -73,8 +76,10 @@ initial begin
 		$display("\t\tnumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
 			cnt_er_rd = 0;
 			cnt_er_wr = 0;
+	
+		$display("\n\t\ttotal amount of errors: %d", cnt_er);
 	`endif
-		
+	
 	#(100*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
 	void'(mti_Cmd("stop -sync"));
@@ -102,8 +107,11 @@ always@(CONTROL.cnt_stage)begin
 					cnt_er_wr = 0;
 			`endif
 			
-			$display("\n\t\t\tpress 'run' to continue\n");
+			`ifdef EN_BREAKPOINT
+				$display("\n\t\t\tpress 'run' to continue\n");
 				void'(mti_Cmd("stop -sync"));
+			`endif
+			
 			$display("\n\t%2d stage FHT, time: %t\n", CONTROL.cnt_stage, $time);
 		end
 end
@@ -132,6 +140,8 @@ task COMPARE_MATLAB_ADDR(
 			if(rd_wr) cnt_er_wr = cnt_er_wr + 1;
 			else cnt_er_rd = cnt_er_rd + 1;
 			
+			cnt_er = cnt_er + 1;
+			
 			$display(" ***\tREF:\tr/w: %1d,\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d, time: %t", 
 									rd_wr, temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3], $time);
 			$display(" ***\t\t\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d", 
@@ -139,7 +149,7 @@ task COMPARE_MATLAB_ADDR(
 		end
 endtask
 
-fht_control CONTROL(
+fht_control #(.A_BIT(`A_BIT)) CONTROL(
 	.iCLK(clk),
 	.iRESET(reset),
 	

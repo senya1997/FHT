@@ -21,11 +21,12 @@
  
 
  
+
 //`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
 //`define EN_BREAKPOINT
 `define COMPARE_WITH_MATLAB
 
-//`define ROUND_FHT			// enable round in FHT butterfly
+`define ROUND_FHT				// enable round in FHT butterfly
 //`define ROUND_FHT_CONV	// enable round in conv calc
 `define USE_2_RAM_FOR_COEF // formula conv: Z(i) = 0.5*(X(i)*(I(i) + I(-i)) + X(-i)*(I(i) - I(-i)))
 									// '(I(i) + I(-i))' and '(I(i) - I(-i))' can be calc in advance but it 
@@ -48,8 +49,8 @@
 	`define TACT 20
 	`define HALF_TACT `TACT/2 
 
-	`define NUM_OF_RPT 20 // number of repeat butterfly test
+	`define NUM_OF_RPT 30 // number of repeat butterfly test
 
-	`define ACCURACY 0.001
+	`define ACCURACY 0.0001 // for all tests (butterfly, FHT)
 	
 `define RAM_BUG // if modelsim issue error 'Unresolved reference to...' try to switch this define
