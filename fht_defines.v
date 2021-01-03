@@ -19,15 +19,15 @@
  
 /*******************************************/
  
-
  
-
+ 
+ 
 //`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
-//`define EN_BREAKPOINT
+`define EN_BREAKPOINT
 `define COMPARE_WITH_MATLAB
 
 `define ROUND_FHT				// enable round in FHT butterfly
-//`define ROUND_FHT_CONV	// enable round in conv calc
+`define ROUND_FHT_CONV	// enable round in conv calc
 `define USE_2_RAM_FOR_COEF // formula conv: Z(i) = 0.5*(X(i)*(I(i) + I(-i)) + X(-i)*(I(i) - I(-i)))
 									// '(I(i) + I(-i))' and '(I(i) - I(-i))' can be calc in advance but it 
 									// require 2 RAM N point, or use 1 RAM but requre direct calc coef and

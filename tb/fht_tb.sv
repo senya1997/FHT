@@ -94,7 +94,7 @@ initial begin
 	`endif
 	
 	$display("\terror between reference signal and result must be less then `ACCURACY defines: %6.6f", `ACCURACY);
-	$display("\tif error too big or there is overflow - in console its marked by '***'");
+	$display("\tif error too big - in console its marked by '***'");
 	
 	`ifdef COMPARE_WITH_MATLAB
 		$display("\n\tRAM compare with 'txt' file from matlab");

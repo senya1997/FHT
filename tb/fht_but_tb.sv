@@ -186,10 +186,10 @@ task DISP_RESULT;
 		end
 	else $display("\t\tERR: er_0 = %6.6f, er_1 = %6.6f", er_0, er_1);
 		
-	if((res[0] > `MAX_ADC_D) | (res[0] < -`MAX_ADC_D) |
-	   (res[1] > `MAX_ADC_D) | (res[1] < -`MAX_ADC_D) |
-	   (ref_0 > `MAX_ADC_D) | (ref_0 < -`MAX_ADC_D) |
-	   (ref_1 > `MAX_ADC_D) | (ref_1 < -`MAX_ADC_D))
+	if((res[0] > `MAX_ADC_D - 1) | (res[0] < -`MAX_ADC_D) |
+	   (res[1] > `MAX_ADC_D - 1) | (res[1] < -`MAX_ADC_D) |
+	   (ref_0 > `MAX_ADC_D - 1) | (ref_0 < -`MAX_ADC_D) |
+	   (ref_1 > `MAX_ADC_D - 1) | (ref_1 < -`MAX_ADC_D))
 		begin
 			cnt_of = cnt_of + 1;
 			$display("***\t\tOVERFLOW OUTPUT");
