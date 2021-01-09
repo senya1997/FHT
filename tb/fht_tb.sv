@@ -225,6 +225,9 @@ initial begin
 			temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
 			temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
 				
+			$display("\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
+							j, F_REG_TO_REAL(temp_data[0]), F_REG_TO_REAL(temp_data[1]), F_REG_TO_REAL(temp_data[2]), F_REG_TO_REAL(temp_data[3]));
+				
 			for(i = 0; i < 4; i = i + 1)
 				begin
 					data_fixp = temp_data[i];
@@ -237,7 +240,7 @@ initial begin
 				
 			cnt_rev = cnt_rev + 1;
 		end
-
+	
 	$display("\n\tstart IFHT, time: %t\n", $time);
 	flag_cp_matlab = 0;
 	
@@ -325,7 +328,7 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 	int f_ram;
 	shortint cnt_bank, cnt_data;
 	
-	$display("\tsave RAM in files: '%s'\n", name);
+	$display("\tsave RAM in files: '%s', time: %t\n", name, $time);
 	
 	f_ram = $fopen(name, "w");
 	

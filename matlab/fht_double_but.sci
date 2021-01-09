@@ -1,9 +1,9 @@
 function [out_but] = fht_double_but(x, y, sinx, cosx, w_amp) // length 'x' = 8: double DHT-4
 //function [out_but] = fht_double_but(x, y, n_x, N)
 pi = 3.14159;
-
-// test mixers:
 /*
+// test mixers:
+
 out_but(1) = x(1);
 out_but(2) = x(2);
 

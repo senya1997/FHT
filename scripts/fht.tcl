@@ -31,7 +31,7 @@ set_current_revision fht;
 #----------------------
 
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
-	set A_BIT 9
+	set A_BIT 4
 # twiddle coefficient data bit width
 	set W_BIT 12
 # impulse coefficient data bit width
@@ -68,7 +68,9 @@ set path_def ./fht_defines.v
 	set N [expr round(4*pow(2, $A_BIT))] 
 	set BANK_SIZE [expr $N/4]
 
+	set WIDTH_RAM			[expr round(log($N)/log(2))]
 	set DEPTH_ROM			[expr round(pow(2, $A_BIT - 2))]
+	
 	set LAST_STAGE			[expr round(log($N)/log(2) - 1)] 
 
 puts " "
@@ -89,6 +91,7 @@ if {($A_BIT > 3) && ($A_BIT < 11)} {
 	puts $f_def " "
 	puts $f_def "`define N $N"
 	puts $f_def "`define BANK_SIZE $BANK_SIZE"
+	puts $f_def "`define WIDTH_RAM $WIDTH_RAM"
 	puts $f_def "`define DEPTH_ROM $DEPTH_ROM"
 	puts $f_def "`define LAST_STAGE $LAST_STAGE"
 	
