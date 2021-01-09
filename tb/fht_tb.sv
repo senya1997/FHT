@@ -150,6 +150,8 @@ initial begin
 		#(`TACT);
 
 	wait(RDY_FHT);
+	#(`TACT);
+	
 	$display("\n\tfinish FHT, time: %t\n", $time);
 	
 	`ifdef EN_BREAKPOINT
@@ -158,14 +160,14 @@ initial begin
 	`endif
 	
 	`ifdef LAST_STAGE_ODD
-		SAVE_RAM_DATA("ram_a.txt", 0);
+		SAVE_RAM_DATA("fht_ram.txt", 0);
 		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_a.txt");
+			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "fht_ram.txt");
 		`endif
 	`elsif LAST_STAGE_EVEN
-		SAVE_RAM_DATA("ram_b.txt", 1);
+		SAVE_RAM_DATA("fht_ram.txt", 1);
 		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "ram_b.txt");
+			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "fht_ram.txt");
 		`endif
 	`endif
 	
@@ -281,12 +283,6 @@ initial begin
 		
 	disp_data = 0;
 	
-	`ifdef LAST_STAGE_ODD
-		SAVE_RAM_DATA("ram_ia.txt", 0);
-	`elsif LAST_STAGE_EVEN
-		SAVE_RAM_DATA("ram_ib.txt", 1);
-	`endif
-	
 	$display("\n\t\t\t\tCOMPLETE\n");
 	void'(mti_Cmd("stop -sync"));
 end
@@ -325,12 +321,18 @@ end
 
 task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 	bit signed [`D_BIT - 1 : 0] buf_signed [0 : 3];
-	int f_ram;
+	
+	string str_temp;
+	
+	int f_ram, f_ram_reg;
 	shortint cnt_bank, cnt_data;
 	
 	$display("\tsave RAM in files: '%s', time: %t\n", name, $time);
 	
+	str_temp = {"reg_", name};
+	
 	f_ram = $fopen(name, "w");
+	f_ram_reg = $fopen(str_temp, "w"); // data for convolution
 	
 	for(cnt_data = 0; cnt_data < `BANK_SIZE; cnt_data = cnt_data + 1)
 		begin
@@ -370,12 +372,15 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 				begin
 					// $fwrite(f_ram, "%6.6f", F_REG_TO_REAL(buf_signed[cnt_bank]), "\t\t");
 					$fwrite(f_ram, "%6.6f", F_REG_TO_REAL(buf_signed[cnt_bank]), "\t");
+					$fwrite(f_ram_reg, "%d", buf_signed[cnt_bank], "\t");
 				end
 				
 			$fwrite(f_ram, "\n");
+			$fwrite(f_ram_reg, "\n");
 		end
 		
 	$fclose(f_ram);
+	$fclose(f_ram_reg);
 endtask
 
 task COMPARE_MATLAB_RAM(input string name_ref, name);
