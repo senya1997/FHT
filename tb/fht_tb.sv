@@ -227,8 +227,8 @@ initial begin
 			temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
 			temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
 				
-			$display("\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
-							j, F_REG_TO_REAL(temp_data[0]), F_REG_TO_REAL(temp_data[1]), F_REG_TO_REAL(temp_data[2]), F_REG_TO_REAL(temp_data[3]));
+			//$display("\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
+			//				j, F_REG_TO_REAL(temp_data[0]), F_REG_TO_REAL(temp_data[1]), F_REG_TO_REAL(temp_data[2]), F_REG_TO_REAL(temp_data[3]));
 				
 			for(i = 0; i < 4; i = i + 1)
 				begin

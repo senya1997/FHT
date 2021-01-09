@@ -22,11 +22,11 @@
  
  
 //`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
-//`define EN_BREAKPOINT
+//`define EN_BREAKPOINT // enable breakpoint between stages in modelsim
 `define COMPARE_WITH_MATLAB
 
 `define ROUND_FHT			// enable round in FHT butterfly
-//`define ROUND_FHT_CONV	// enable round in conv calc
+`define ROUND_FHT_CONV	// enable round in conv calc
 //`define USE_2_RAM_FOR_COEF	// formula conv: Z(i) = 0.5*(X(i)*(I(i) + I(-i)) + X(-i)*(I(i) - I(-i)))
 										// '(I(i) + I(-i))' and '(I(i) - I(-i))' can be calc in advance but it 
 										// require 2 RAM N point, or use 1 RAM but requre direct calc coef and
@@ -40,10 +40,13 @@
 	`define MIF_SIN "./sin.mif"
 	`define MIF_COS "./cos.mif"
 // `define MIF_IMP "./imp.mif"
-`endif		
+`endif
 
+	`define Nx 1026				// number of signal point must be large then 'Nh' or 'N/2' (full RAM FHT - N point)
+	`define Nh (`N - `Nx + 1)	// number of impulse point
+	
 	`define ADC_WIDTH 16
-	`define MAX_ADC_D (2**(`ADC_WIDTH - 1))
+	`define MAX_ADC_D (2**(`ADC_WIDTH - 1)) // module from +/- max number
 	
 	`define TACT 20
 	`define HALF_TACT `TACT/2 

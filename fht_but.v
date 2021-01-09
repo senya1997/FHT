@@ -59,7 +59,7 @@ reg signed [D_BIT - 1 : 0] sub_buf;
  	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUB = EXT_X0 - sum_mul;
  	
 	`ifdef ROUND_FHT
-		wire POS_LHALF_SUM = (~EXT_SUM[D_BIT + W_BIT - 2] & EXT_SUM[W_BIT - 2]); // '+' & '>= 0.5'
+		wire POS_LHALF_SUM = (~EXT_SUM[D_BIT + W_BIT - 2] & EXT_SUM[W_BIT - 2]); // ????? '+' & '>= 0.5'
 		wire NEG_LHALF_SUM = ( EXT_SUM[D_BIT + W_BIT - 2] & EXT_SUM[W_BIT - 2 : 0] > {1'b1, {(W_BIT - 2){1'b0}}}); // '-' & '> 0.5'
 
 		wire POS_LHALF_SUB = (~EXT_SUB[D_BIT + W_BIT - 2] & EXT_SUB[W_BIT - 2]); // '+' & '>= 0.5'
