@@ -31,11 +31,9 @@ set_current_revision fht;
 #----------------------
 
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
-	set A_BIT 4
+	set A_BIT 9
 # twiddle coefficient data bit width
 	set W_BIT 12
-# impulse coefficient data bit width
-	set H_BIT 16
 	
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER
@@ -63,7 +61,6 @@ set path_def ./fht_defines.v
 # calculate defines	
 	set MAX_D [expr round(pow(2, $D_BIT - 1))]
 	set MAX_W [expr round(pow(2, $W_BIT - 2))]
-	set MAX_H [expr round(pow(2, $H_BIT - 1))]
 
 	set N [expr round(4*pow(2, $A_BIT))] 
 	set BANK_SIZE [expr $N/4]
@@ -85,9 +82,9 @@ puts "writing defines..."
 set f_def [open $path_def r+]
 
 if {($A_BIT > 3) && ($A_BIT < 11)} {
-	puts $f_def "/*******************************************/"
-	puts $f_def "/* auto generated defines (do not modify): */"
-	puts $f_def "/*******************************************/"
+	puts $f_def "/***************************************************************/"
+	puts $f_def "/*				auto generated defines (do not modify):				*/"
+	puts $f_def "/***************************************************************/"
 	puts $f_def " "
 	puts $f_def "`define N $N"
 	puts $f_def "`define BANK_SIZE $BANK_SIZE"
@@ -113,16 +110,14 @@ if {($D_BIT > 11) && ($D_BIT < 28) &&\
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"
-	puts $f_def "`define H_BIT $H_BIT"
 	puts $f_def " "
 	puts $f_def "`define MAX_D $MAX_D"
 	puts $f_def "`define MAX_W $MAX_W"
-	puts $f_def "`define MAX_H $MAX_H"
 	puts $f_def " "
-	puts $f_def "/*******************************************/"
+	puts $f_def "/***************************************************************/"
 	puts $f_def " "
 } else {
-	disp_error "Input parameters is not correct"
+	disp_error "Input parameters is incorrect"
 }
 
 close $f_def

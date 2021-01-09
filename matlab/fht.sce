@@ -7,13 +7,16 @@ clc;
     //test = 'const';
     //test = 'num';
 
-// variables:
+/*****************************************************************************************/
+/*                                       variables:                                      */
+/*****************************************************************************************/
+
 file_def = mopen('../fht_defines.v', 'r');
 
 Fd = 44100;
 bias = 0;
 
-max_amp = 15000; // signed 16 bit ADC <=> 32767
+max_amp = 10922; // signed 16 bit ADC <=> 32767/3, cause pseudorand signal have 3 harmonic
 
 max_freq_1 = 1000; // in Hz
 max_freq_2 = 3000;
@@ -22,6 +25,10 @@ max_freq_3 = 5000;
 bias_freq = 100; // in Hz
 
 max_phase = 180; // in grad
+
+threshold = 10; // max error between FFT and FHT that display index of error data
+
+/************************************ read defines ***************************************/
 
 flag_N = 0;
 flag_w_amp = 0;
@@ -323,9 +330,9 @@ mclose(file_addr_wr);
     xgrid(2);
     
     i = 1;
-    threshold = 10;
-    [max_err(i), ind_max_err(i)] = max(err_line);
+    mprintf('\nindexes of output FHT data that have error large then %d:\n\n', threshold);
     
+    [max_err(i), ind_max_err(i)] = max(err_line);
     while(max_err(i) > threshold)
         i = i + 1;
         
@@ -334,10 +341,8 @@ mclose(file_addr_wr);
     end
     
     ind_max_err = gsort(ind_max_err, 'g', 'i');
-    mprintf("\n");
-    
     for i = 1:length(ind_max_err)
-        mprintf("%d\n", ind_max_err(i)); 
+        mprintf("\t%d\n", ind_max_err(i)); 
     end
     
 mclose('all');

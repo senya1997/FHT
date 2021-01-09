@@ -275,7 +275,7 @@ initial begin
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
 		begin
-			disp_data = ram_buf_0_ext[F_BIT_REV(cnt_rev)][`ADC_WIDTH - 1: 0]; // width of 'disp_data' => cut RAM data ? 
+			disp_data = ram_buf_0_ext[F_BIT_REV(cnt_rev)][`ADC_WIDTH - 1 : 0]; // width of 'disp_data' => cut RAM data ? 
 			cnt_rev = cnt_rev + 1;
 			
 			#(4*`TACT);
