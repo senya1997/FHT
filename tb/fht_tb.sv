@@ -478,8 +478,16 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iSTART(start),
 	
 	.iWE(we),
-	.iDATA(data_fixp),
-	.iADDR_WR(addr_wr),
+	
+	.iDATA_0(data_fixp),
+	.iDATA_1(data_fixp),
+	.iDATA_2(data_fixp),
+	.iDATA_3(data_fixp),
+	
+	.iADDR_WR_0(addr_wr),
+	.iADDR_WR_1(addr_wr),
+	.iADDR_WR_2(addr_wr),
+	.iADDR_WR_3(addr_wr),
 	
 	.iADDR_RD_0(addr_rd[0]),
 	.iADDR_RD_1(addr_rd[1]),
@@ -502,8 +510,16 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iSTART(start),
 	
 	.iWE(we),
-	.iDATA(data_fixp),
-	.iADDR_WR(addr_wr),
+
+	.iDATA_0(data_fixp),
+	.iDATA_1(data_fixp),
+	.iDATA_2(data_fixp),
+	.iDATA_3(data_fixp),
+	
+	.iADDR_WR_0(addr_wr),
+	.iADDR_WR_1(addr_wr),
+	.iADDR_WR_2(addr_wr),
+	.iADDR_WR_3(addr_wr),
 	
 	.iADDR_RD_0(addr_rd[0]),
 	.iADDR_RD_1(addr_rd[1]),

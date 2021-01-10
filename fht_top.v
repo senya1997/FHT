@@ -8,8 +8,16 @@ module fht_top #(parameter D_BIT = `D_BIT, A_BIT = `A_BIT, W_BIT = `W_BIT,
 	input iSTART, // after load point in RAM(A) required issue strobe on 'iSTART'
 	
 	input [3 : 0] iWE, // 'WE' is signal of 'bank choice'
-	input signed [D_BIT - 1 : 0] iDATA,
-	input [A_BIT - 1 : 0] iADDR_WR, // max = N/N_bank
+	
+	input signed [D_BIT - 1 : 0] iDATA_0,
+	input signed [D_BIT - 1 : 0] iDATA_1,
+	input signed [D_BIT - 1 : 0] iDATA_2,
+	input signed [D_BIT - 1 : 0] iDATA_3,
+	
+	input [A_BIT - 1 : 0] iADDR_WR_0,
+	input [A_BIT - 1 : 0] iADDR_WR_1,
+	input [A_BIT - 1 : 0] iADDR_WR_2,
+	input [A_BIT - 1 : 0] iADDR_WR_3,
 	
 	input [A_BIT - 1 : 0] iADDR_RD_0,
 	input [A_BIT - 1 : 0] iADDR_RD_1,
@@ -42,17 +50,21 @@ wire [A_BIT - 1 : 0] ADDR_WR [0 : 3];
 	wire signed [D_BIT - 1 : 0] DATA_RAM_A_BUT [0 : 3];
 	wire signed [D_BIT - 1 : 0] DATA_RAM_B_BUT [0 : 3];
 	wire signed [D_BIT - 1 : 0] DATA_BUT_RAM [0 : 3];
-	
-genvar k;
-generate
-	for(k = 0; k < 4; k = k + 1)
-		begin: data_addr_wr
-			assign ADDR_WR[k] = 		SOURCE_CONT ? iADDR_WR : ADDR_WR_CTRL[k];
-		
-			assign DATA_RAM_A[k] =	SOURCE_CONT ? iDATA : DATA_BUT_RAM[k];
-			assign DATA_BUT[k] =		SOURCE_DATA ? DATA_RAM_B_BUT[k] : DATA_RAM_A_BUT[k];
-		end
-endgenerate
+
+assign DATA_BUT[0] =		SOURCE_DATA ? DATA_RAM_B_BUT[0] : DATA_RAM_A_BUT[0];
+assign DATA_BUT[1] =		SOURCE_DATA ? DATA_RAM_B_BUT[1] : DATA_RAM_A_BUT[1];
+assign DATA_BUT[2] =		SOURCE_DATA ? DATA_RAM_B_BUT[2] : DATA_RAM_A_BUT[2];
+assign DATA_BUT[3] =		SOURCE_DATA ? DATA_RAM_B_BUT[3] : DATA_RAM_A_BUT[3];
+
+assign DATA_RAM_A[0] =	SOURCE_CONT ? iDATA_0 : DATA_BUT_RAM[0];
+assign DATA_RAM_A[1] =	SOURCE_CONT ? iDATA_1 : DATA_BUT_RAM[1];
+assign DATA_RAM_A[2] =	SOURCE_CONT ? iDATA_2 : DATA_BUT_RAM[2];
+assign DATA_RAM_A[3] =	SOURCE_CONT ? iDATA_3 : DATA_BUT_RAM[3];
+
+assign ADDR_WR[0] = 		SOURCE_CONT ? iADDR_WR_0 : ADDR_WR_CTRL[0];
+assign ADDR_WR[1] = 		SOURCE_CONT ? iADDR_WR_1 : ADDR_WR_CTRL[1];
+assign ADDR_WR[2] = 		SOURCE_CONT ? iADDR_WR_2 : ADDR_WR_CTRL[2];
+assign ADDR_WR[3] = 		SOURCE_CONT ? iADDR_WR_3 : ADDR_WR_CTRL[3];
 
 wire WE_A, WE_B;
 wire [3 : 0] WE;
