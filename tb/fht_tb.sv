@@ -111,7 +111,7 @@ initial begin
 
 // save ADC data line by line (row by row):	
 	$display("\n\twrite ADC data point in RAM, time: %t\n", $time);
-	file_data = $fopen("../../fht/matlab/init_ram.txt", "r");
+	file_data = $fopen(`FHT_INIT_RAM, "r");
 	disp_data = 0;
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
@@ -160,12 +160,12 @@ initial begin
 	`endif
 	
 	`ifdef LAST_STAGE_ODD
-		SAVE_RAM_DATA("fht_ram.txt", 0);
+		SAVE_RAM_DATA(`FHT_DONE_RAM, 0);
 		`ifdef COMPARE_WITH_MATLAB
 			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "fht_ram.txt");
 		`endif
 	`elsif LAST_STAGE_EVEN
-		SAVE_RAM_DATA("fht_ram.txt", 1);
+		SAVE_RAM_DATA(`FHT_DONE_RAM, 1);
 		`ifdef COMPARE_WITH_MATLAB
 			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "fht_ram.txt");
 		`endif

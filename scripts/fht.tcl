@@ -30,10 +30,14 @@ set_current_revision fht;
 # 	10	  | 4096	|	28   |
 #----------------------
 
+# ADC bit resolution
+	set ADC_BIT 16
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
 	set A_BIT 9
 # twiddle coefficient data bit width
 	set W_BIT 12
+# number of signal point going on FHT, must be large then 'Nh' and 'N/2' (full RAM FHT - N point)
+	set Nx 1026
 	
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER
@@ -64,7 +68,12 @@ set path_def ./fht_defines.v
 
 	set N [expr round(4*pow(2, $A_BIT))] 
 	set BANK_SIZE [expr $N/4]
-
+	
+	# number of impulse point
+		set Nh [expr $N - $Nx + 1]
+	# module from +/- max number
+		set MAX_ADC_D [expr round(pow(2, $ADC_BIT - 1))]
+		
 	set WIDTH_RAM			[expr round(log($N)/log(2))]
 	set DEPTH_ROM			[expr round(pow(2, $A_BIT - 2))]
 	
@@ -81,12 +90,15 @@ puts " "
 puts "writing defines..."
 set f_def [open $path_def r+]
 
-if {($A_BIT > 3) && ($A_BIT < 11)} {
-	puts $f_def "/***************************************************************/"
-	puts $f_def "/*				auto generated defines (do not modify):				*/"
-	puts $f_def "/***************************************************************/"
+if {($A_BIT > 3) && ($A_BIT < 11) &&\
+	 ($Nx > $Nh) && ($Nx > [expr $N/2])} {
+	puts $f_def "/*****************************************************************************************************************/"
+	puts $f_def "/*												auto generated defines (do not modify):												  */"
+	puts $f_def "/*****************************************************************************************************************/"
 	puts $f_def " "
 	puts $f_def "`define N $N"
+	puts $f_def "`define Nx $Nx"
+	puts $f_def "`define Nh $Nh"
 	puts $f_def "`define BANK_SIZE $BANK_SIZE"
 	puts $f_def "`define WIDTH_RAM $WIDTH_RAM"
 	puts $f_def "`define DEPTH_ROM $DEPTH_ROM"
@@ -101,20 +113,19 @@ if {($A_BIT > 3) && ($A_BIT < 11)} {
 	
 	puts $f_def " "
 } else {
-	disp_error "A_BIT is not valid"
+	disp_error "Input parameters is incorrect"
 }
 
 if {($D_BIT > 11) && ($D_BIT < 28) &&\
-	 ($W_BIT > 11) && ($W_BIT < 21) &&\
-	 ($H_BIT > 11) && ($H_BIT < 25)} {
+	 ($W_BIT > 11) && ($W_BIT < 21)} {
+	puts $f_def "`define ADC_WIDTH $ADC_BIT"
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"
 	puts $f_def " "
+	puts $f_def "`define MAX_ADC_D $MAX_ADC_D"
 	puts $f_def "`define MAX_D $MAX_D"
 	puts $f_def "`define MAX_W $MAX_W"
-	puts $f_def " "
-	puts $f_def "/***************************************************************/"
 	puts $f_def " "
 } else {
 	disp_error "Input parameters is incorrect"
