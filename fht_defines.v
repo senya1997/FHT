@@ -67,7 +67,7 @@
 //`define EN_BREAKPOINT
 `define COMPARE_WITH_MATLAB
 
-`define RAM_BUG // if modelsim issue error 'Unresolved reference to...' try to switch this define
+//`define RAM_BUG // if modelsim issue error 'Unresolved reference to...' try to switch this define
 
 `define ROUND_FHT			// enable round in FHT butterfly
 `define ROUND_FHT_CONV	// enable round in conv calc

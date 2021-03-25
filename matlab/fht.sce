@@ -3,9 +3,9 @@ mclose('all');
 clc;
 
 // choose test signal:
-    //test = 'sin';
+    test = 'sin';
     //test = 'imp';
-    test = 'signal';
+    //test = 'signal';
     //test = 'const';
     //test = 'num';
 
@@ -183,10 +183,10 @@ clear line;
 clear k;
 clear signal;
 
-figure;
-title('Test signal:');
+scf(); clf();
+xtitle("Test signal:", " Time, sec", " Amp");
     plot(time, test_signal);
-xgrid(2);
+xgrid(1);
 
 clear time;
 
@@ -372,20 +372,21 @@ mclose(file_addr_wr);
     clear cnt;
 
     ram_err = abs(ram_fft - ram_fht);
-    err_line = abs(fft_line - fht_line);
+    err_line = abs(fft_line - fht_line)*100/max(fht_line);
     
-    figure;
-    title('Compare FHT and FFT with error (abs value of substract):');
-        plot(fft_line);
-        plot(fht_line, 'g');
-        plot(err_line, 'r');        
-    legend(['FFT'; 'FHT'; 'Error']);
-    xgrid(2);
+    scf(); clf();
+    subplot(2,1,1);
+    xtitle("Compare FHT and FFT:", " Num point", " Amp");
+        plot(fft_line, 'thickness', 1.5);
+        plot(fht_line, 'g', 'thickness', 1.5);
+    legend(['FFT'; 'FHT']);
+    xgrid(1);
     
-    figure;
-    title('Error:');
-        plot(err_line);
-    xgrid(2);
+    subplot(2,1,2);
+    xtitle("Error:", " Num point", " Precent");
+    title('');
+        plot(err_line, 'thickness', 1.5);
+    xgrid(1);
     
     i = 1;
     mprintf('\nindexes of output FHT data that have error large then %d:\n\n', threshold);
