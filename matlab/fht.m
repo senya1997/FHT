@@ -4,9 +4,9 @@ clc;
 close all;
 
 %% choose test signal:
-    test = 'sin';       % sine in 3 harmonics
+    %test = 'sin';       % sine in 3 harmonics
     %test = 'imp';      % impulse response
-    %test = 'signal';   % real signal from 'wav'
+    test = 'signal';   % real signal from 'wav'
     %test = 'const';    % const bias
     %test = 'num';      % linear increase signal from '0' to 'N - 1'
 
@@ -31,7 +31,7 @@ max_freq_3 = 5000;
 bias_freq = 100; % in Hz
 max_phase = 180; % in grad
 
-threshold = 0.1; % in precent max error between FFT and FHT that save index of error data
+threshold = 0.2; % in precent max error between FFT and FHT that save index of error data
 save_err_ind = 'Y'; % save index of error data in file (Y/N, append to exist file)
 
 %% read files:

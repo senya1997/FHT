@@ -77,8 +77,13 @@
 										// require 2 RAM N point, or use 1 RAM but requre direct calc coef and
 										//	use more resources with 1 tact delay in calc module (don't use)
 
-`define TACT 20
-`define HALF_TACT `TACT/2 
+`define CLK_FREQ 50 // MHz
 
+`define TACT		$ceil(1000/`CLK_FREQ) // ns
+`define HALF_TACT	$ceil(`TACT/2)
+/*
+`define TACT 21
+`define HALF_TACT `TACT/2 
+*/
 `define NUM_OF_RPT 30	// number of repeat butterfly test
 `define ACCURACY 0.0001	// for all tests (butterfly, FHT)

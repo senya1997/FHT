@@ -1,4 +1,4 @@
-set path_to_quartus "C:/intelFPGA_lite/18.1/quartus"
+set path_to_quartus "D:/Program Files/altera/14.1/quartus"
 
 vlib lpm_ver
 vlib altera_mf_ver

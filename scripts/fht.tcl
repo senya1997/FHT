@@ -37,7 +37,9 @@ set_current_revision fht;
 # twiddle coefficient data bit width
 	set W_BIT 12
 # number of signal point going on FHT, must be large then 'Nh' and 'N/2' (full RAM FHT - N point)
+	#set Nx 33
 	set Nx 1026
+	#set Nx 513
 	
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER
@@ -91,7 +93,7 @@ puts "writing defines..."
 set f_def [open $path_def r+]
 
 if {($A_BIT > 3) && ($A_BIT < 11) &&\
-	 ($Nx > $Nh) && ($Nx > [expr $N/2])} {
+	 ($Nx > $Nh) && ($Nx > [expr $N/2]) && ($Nx < $N)} {
 	puts $f_def "/*****************************************************************************************************************/"
 	puts $f_def "/*												auto generated defines (do not modify):												  */"
 	puts $f_def "/*****************************************************************************************************************/"
