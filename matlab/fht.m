@@ -13,8 +13,8 @@ close all;
 %% variables:
 file_def = fopen('../fht_defines.v', 'r');
 
-dir_imp =       '../../fht_conv/matlab/h.txt'; % size Nh
-dir_signal =    '../../fht_conv/matlab/x.txt'; % size Nx
+dir_imp =       '../../gcpu/matlab/conv/h.txt'; % size Nh
+dir_signal =    '../../gcpu/matlab/conv/x.txt'; % size Nx
 
 N_bank = 4; % defines by architecture of transform in FPGA (don't change for this config)
 
@@ -139,20 +139,20 @@ for i = 1:N_bank
             case 'sin'
                 test_signal(k) = round(signal(k));
             case 'imp'
-                line = strtod(fgetl(file_imp, 1));
+                line = fgetl(file_imp);
             
                 if(k > Nh)
                     test_signal(k) = 0;
                 else
-                    test_signal(k) = line;
+                    test_signal(k) = str2double(line);
                 end
             case 'signal'
-                line = strtod(fgetl(file_signal, 1));
+                line = fgetl(file_signal);
             
                 if(k > Nx)
                     test_signal(k) = 0;
                 else
-                    test_signal(k) = line;
+                    test_signal(k) = str2double(line);
                 end
             case 'const'
                 test_signal(k) = bias;
