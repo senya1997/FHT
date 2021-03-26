@@ -3,6 +3,11 @@ clc;
 
 close all;
 
+err_ind = load('err_ind.txt');
+
+fft_math = load('fft_cp.txt');
+fft_math = fft_math';
+
 fht_math = load('ram.txt');
 fht_fpga = load('../../modelsim/fht/fht_ram.txt');
 
@@ -11,7 +16,7 @@ row = length(fht_math);
 N = N_bank*row;
 last_stage = log(N)/log(2) - 1; % numbers start from zero
 
-% from matrix to line:
+%% from matrix to line:
     cnt = 1;
     
     fht_math_buf(1:N) = 0;
@@ -24,7 +29,7 @@ last_stage = log(N)/log(2) - 1; % numbers start from zero
         cnt = cnt + 1;
     end
 
-% change index order (bit reverse):
+%% change index order (bit reverse):
     cnt = 1;
     
     fht_math(1:row, 1:N_bank) = 0;
@@ -53,10 +58,28 @@ last_stage = log(N)/log(2) - 1; % numbers start from zero
     clear cnt;
 
 err_line = abs(fht_math_line - fht_fpga_line)*100/max(abs(fht_fpga_line));
+%err_line = abs(fft_math - fht_fpga_line)*100/max(abs(fht_fpga_line));
 
 fclose('all');
     
-% graphics
+%% graphics
+err_ind = sort(err_ind);
+
+figure;
+subplot(2,1,1);
+    histogram(err_ind, 16);
+xlim([0 N]);
+title('Error indexes:');
+ylabel('Number of errors');
+xlabel('Index');
+grid on;
+
+subplot(2,1,2);
+    plot(err_ind, 'o', 'MarkerSize', 3);
+xlabel('Number');
+ylabel('Index');
+grid on;
+
 figure;
 subplot(2,1,1);
     plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);

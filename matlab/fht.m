@@ -4,11 +4,11 @@ clc;
 close all;
 
 %% choose test signal:
-    test = 'sin';
-    %test = 'imp';
-    %test = 'signal';
-    %test = 'const';
-    %test = 'num';
+    test = 'sin';       % sine in 3 harmonics
+    %test = 'imp';      % impulse response
+    %test = 'signal';   % real signal from 'wav'
+    %test = 'const';    % const bias
+    %test = 'num';      % linear increase signal from '0' to 'N - 1'
 
 %% variables:
 file_def = fopen('../fht_defines.v', 'r');
@@ -21,17 +21,19 @@ N_bank = 4; % defines by architecture of transform in FPGA (don't change for thi
 Fd = 44100;
 bias = 0;
 
+rand_sin = 'Y'; % generate rand sine harm or determine by defined value (Y/N)
 max_amp = 10922; % signed 16 bit ADC <=> 32767/3, cause pseudorand signal have 3 harmonic
 
 max_freq_1 = 1000; % in Hz
-max_freq_2 = 3000;
+max_freq_2 = 2000;
 max_freq_3 = 5000;
 
 bias_freq = 100; % in Hz
 max_phase = 180; % in grad
 
-threshold = 5; % max error between FFT and FHT that display index of error data
-    
+threshold = 0.1; % in precent max error between FFT and FHT that save index of error data
+save_err_ind = 'Y'; % save index of error data in file (Y/N, append to exist file)
+
 %% read files:
 flag_N = 0;
 
@@ -90,6 +92,12 @@ phase(1:3) = [  round(rand()*max_phase),...
                 round(rand()*max_phase),...
                 round(rand()*max_phase)];
 
+if(rand_sin == 'N')
+    amp(1:3)        = [round(max_amp), round(max_amp/2), round(max_amp/4)];
+    frequency(1:3)	= [max_freq_1, max_freq_2, max_freq_3];
+    phase(1:3)      = [max_phase, max_phase, max_phase];
+end
+            
 clear max_amp; clear max_phase; clear bias_freq;
 clear max_freq_1; clear max_freq_2; clear max_freq_3;
 
@@ -147,7 +155,7 @@ for i = 1:N_bank
                     test_signal(k) = line;
                 end
             case 'const'
-                test_signal(k) = 100;
+                test_signal(k) = bias;
             case 'num'
                 test_signal(k) = k - 1;
         end
@@ -185,6 +193,8 @@ for i = 1:row
     ram_fft(i, 1:4) = real(temp_fft((1 + (i-1)*4) : (4*i))) - imag(temp_fft((1 + (i-1)*4) : (4*i)));
 end
   
+fft_line = real(temp_fft) - imag(temp_fft);
+
 %% fht:
 sin_x = load('sin.txt');
 cos_x = load('cos.txt');
@@ -282,7 +292,7 @@ for stage = 1:last_stage % without 0 stage
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
             end
             %{
-            if(stage == last_stage) then
+            if(stage == last_stage)
                 fprintf('x0 = %d, x1 = %d, x2 = %d; y0 = %d, y1 = %d, y2 = %d; num_coef = %d\n', temp_input, num_coef-1);
             end
             %}
@@ -331,14 +341,24 @@ for stage = 1:last_stage % without 0 stage
 end
 
 file_ram = fopen('ram.txt', 'w');
+file_fft_cp = fopen('fft_cp.txt', 'w'); % for compare in analys
+
 for i = 1 : row
     fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
 end
 
-clear temp;
+for i = 1 : N
+   fprintf(file_fft_cp, '%6.6f\n', fft_line(i)); 
+end
 
 fclose(file_addr_rd); 
 fclose(file_addr_wr); 
+
+fclose(file_ram); 
+fclose(file_fft_cp); 
+
+clear file_addr_rd; clear file_addr_wr;
+clear temp; clear file_ram; clear file_fft_cp;
 
 %% get norm order in RAM
 % from matrix to line:
@@ -355,9 +375,7 @@ fclose(file_addr_wr);
     cnt = 1;
     ram_fht(1:row, 1:N_bank) = 0;
     
-    fft_line = real(temp_fft) - imag(temp_fft);
     fht_line(1:N) = 0;
-    
     for i = 1:row
         ram_fht(i, 1:4) = [ram_buf(bin2dec(fliplr(dec2bin(cnt-1, last_stage+1))) + 1),... % cnt+0-1
                            ram_buf(bin2dec(fliplr(dec2bin(cnt,	 last_stage+1))) + 1),... % cnt+1-1
@@ -370,22 +388,30 @@ fclose(file_addr_wr);
 
     clear cnt;
 
-err_line = abs(fft_line - fht_line)*100/max(abs(fht_line));
+err_line = abs(fft_line - fht_line)*100/max(abs(fht_line));  % in precent
+err_line_buf = err_line;
 
 i = 1;
-fprintf('\nindexes of output FHT data that have error large then %d:\n\n', threshold);
+[max_err(i), ind_max_err(i)] = max(err_line_buf);
+err_line_buf(ind_max_err(i)) = 0;
 
-[max_err(i), ind_max_err(i)] = max(err_line);
 while(max_err(i) > threshold)
     i = i + 1;
 
-    [max_err(i), ind_max_err(i)] = max(err_line);
-    err_line(ind_max_err(i)) = 0;
+    [max_err(i), ind_max_err(i)] = max(err_line_buf);
+    err_line_buf(ind_max_err(i)) = 0;
 end
 
-ind_max_err = sort(ind_max_err, 1);
-for i = 1:length(ind_max_err)
-    fprintf('\t%d\n', ind_max_err(i)); 
+if((i ~= 1) && (save_err_ind == 'Y'))
+    file_err = fopen('err_ind.txt', 'a');
+
+    ind_max_err = sort(ind_max_err);
+    for i = 1:length(ind_max_err)
+        fprintf(file_err, '%d\n', ind_max_err(i));
+    end
+    
+    fclose(file_err);
+    clear file_err;
 end
 
 fclose('all');
@@ -412,7 +438,7 @@ legend(['FFT'; 'FHT']);
 grid on;
 
 subplot(2,1,2);
-    plot((0 : N - 1), err_line);
+    plot((0 : N - 1), err_line, 'o-', 'MarkerSize', 2);
 xlim([0 N]);
 title('Error:');
 xlabel('Num point');
@@ -432,7 +458,7 @@ legend(['FFT'; 'FHT']);
 grid on;
 
 subplot(2,1,2);
-    plot((0 : N - 1), err_line);
+    plot((0 : N - 1), err_line, 'o-', 'MarkerSize', 2);
 xlim([0 N/8 - 1]);
 title('Error:');
 xlabel('Num point');
