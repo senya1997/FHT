@@ -4,9 +4,9 @@ clc;
 close all;
 
 %% choose test signal:
-    %test = 'sin';       % sine in 3 harmonics
+    test = 'sin';       % sine in 3 harmonics
     %test = 'imp';      % impulse response
-    test = 'signal';   % real signal from 'wav'
+    %test = 'signal';   % real signal from 'wav'
     %test = 'const';    % const bias
     %test = 'num';      % linear increase signal from '0' to 'N - 1'
 
@@ -432,7 +432,7 @@ hold on;
     plot((0 : N - 1), fht_line, 'o-', 'MarkerSize', 2);
 xlim([0 N]);
 title('Compare FHT and FFT:');
-xlabel('Num point');
+xlabel('Num of point');
 ylabel('Amp');
 legend(['FFT'; 'FHT']);
 grid on;
@@ -441,7 +441,7 @@ subplot(2,1,2);
     plot((0 : N - 1), err_line, 'o-', 'MarkerSize', 2);
 xlim([0 N]);
 title('Error:');
-xlabel('Num point');
+xlabel('Num of point');
 ylabel('Precent');
 grid on;
 
@@ -452,7 +452,7 @@ hold on;
     plot((0 : N - 1), fht_line, 'o-', 'MarkerSize', 2);
 xlim([0 N/8 - 1]);
 title('Compare FHT and FFT:');
-xlabel('Num point');
+xlabel('Num of point');
 ylabel('Amp');
 legend(['FFT'; 'FHT']);
 grid on;
@@ -461,6 +461,6 @@ subplot(2,1,2);
     plot((0 : N - 1), err_line, 'o-', 'MarkerSize', 2);
 xlim([0 N/8 - 1]);
 title('Error:');
-xlabel('Num point');
+xlabel('Num of point');
 ylabel('Precent');
 grid on;
