@@ -15,16 +15,18 @@
 `define D_BIT 27
 `define A_BIT 9
 `define W_BIT 13
+`define IMP_BIT 16
  
 `define MAX_ADC_D 32768
 `define MAX_D 67108864
 `define MAX_W 2048
  
-
-
-
-
-
+ 
+ 
+ 
+ 
+ 
+ 
 /*****************************************************************************************************************/
 /*																	work directories:															  */
 /*****************************************************************************************************************/
@@ -77,7 +79,7 @@
 										// require 2 RAM N point, or use 1 RAM but requre direct calc coef and
 										//	use more resources with 1 tact delay in calc module (don't use)
 
-`define CLK_FREQ 50 // MHz
+`define CLK_FREQ 100 // MHz
 
 `define TACT		$ceil(1000/`CLK_FREQ) // ns
 `define HALF_TACT	$ceil(`TACT/2)

@@ -36,6 +36,8 @@ set_current_revision fht;
 	set A_BIT 9
 # twiddle coefficient data bit width
 	set W_BIT 12
+# impulses coefficient data bit width
+	set IMP_BIT 16
 # number of signal point going on FHT, must be large then 'Nh' and 'N/2' (full RAM FHT - N point)
 	#set Nx 33
 	set Nx 1026
@@ -124,6 +126,7 @@ if {($D_BIT > 11) && ($D_BIT < 28) &&\
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"
+	puts $f_def "`define IMP_BIT $IMP_BIT"
 	puts $f_def " "
 	puts $f_def "`define MAX_ADC_D $MAX_ADC_D"
 	puts $f_def "`define MAX_D $MAX_D"
