@@ -5,69 +5,91 @@
 #include <verilated.h> // Defines common routines
 #include <verilated_vcd_c.h>
 
+#include "../inc/defines.h"
+
 int main(int argc, char **argv) {
 
 // init Verilators vars:
 	Verilated::commandArgs(argc, argv);
+	Verilated::traceEverOn(true);  // Verilator must compute traced signals
 
 // create instance of DUT:
 	Vfht_top *top_module = new Vfht_top;
+	VerilatedVcdC *vcd = new VerilatedVcdC;
 
-	VerilatedVcdC* vcd = nullptr;
-    Verilated::traceEverOn(true);  // Verilator must compute traced signals
-
-	vcd = new VerilatedVcdC;
 	top_module->trace(vcd, 99);	// trace 99 levels of hierarchy
 	vcd->open("out.vcd");		// open the dump file
 
-	const int bar_width = 70;
+	#ifdef PROGRESS_BAR
+		const uchar_t bar_width = 70;
 
-	const int finish_t = 1'000'000; // ns
-	const int half_per = 10; // ns
+		uchar_t pos;
+		float prog = 0.0f;
+	#endif
+
+	const uchar_t half_per = 10; // ns
+	const uint64_t finish_time = 1'000'000; // ns
 
 // vars:
-	double prog = 0.0;
-	int pos;
+	uchar_t cnt_clk = 0;
+	uint64_t vtime = 0;
 
-	vluint64_t vtime = 0; // unsigned long int
-
-	int clock = 0;
-	int rst = 1;
+// ports:
+	uint32_t clock = 0;
+	uint32_t rst = 1;
 
 	std::cout << "\n\tStart FHT tb\n";
-	std::cout << "\nProgress:\n";
-	while(!Verilated::gotFinish())
+	std::cout << "\nProgress:\n\n";
+
+// init:
+	top_module->iCLK = clock;
+	top_module->iRESET = rst;
+
+// reset:
+	while(vtime < 70)
 	{
-		if(vtime%half_per == 0) clock ^= 1;
+		if(cnt_clk == half_per) clock ^= 1;
 
 		if((vtime >= 5*half_per) & (vtime < 7*half_per)) rst = 0;
 		else rst = 1;
 
-		top_module->iRESET = rst;
 		top_module->iCLK = clock;
+		top_module->iRESET = rst;
 
-		top_module->eval();
+		vtime++;
+		cnt_clk++;
+	}
+
+// main:
+	while(vtime < finish_time)
+	{
+		if(cnt_clk == half_per) clock ^= 1;
+
+		top_module->iCLK = clock;
+		top_module->iRESET = rst;
+
+		top_module->eval(); // calculate rtl logic
 		vcd->dump(vtime);
 
 		vtime++;
+		cnt_clk++;
 
-	// progress:
-		pos = bar_width * prog;
+	#ifdef PROGRESS_BAR
+		pos = (int)((float)bar_width * prog);
 
-		std::cout << "[";
+		std::cout << "\t[";
 		for(int i = 0; i < bar_width; ++i)
 		{
 			if (i < pos) std::cout << "=";
 			else if (i == pos) std::cout << ">";
 			else std::cout << " ";
 		}
-		std::cout << "]" << int(prog * 100.0) << " %\r";
+		std::cout << "]" << (int)(prog * 100.0f) << " %\r";
 		std::cout.flush();
 
-		prog = (double)vtime/finish_t;
+		prog = (float)vtime/finish_time;
+	#endif
 
-	// end:
-		if(vtime > finish_t) break;
 	}
 
 	top_module->final();
@@ -75,6 +97,7 @@ int main(int argc, char **argv) {
 	if(vcd) vcd->close();
 
 	delete top_module;
+	delete vcd;
 
 	std::cout << "\n\n\tDone\n";
 
