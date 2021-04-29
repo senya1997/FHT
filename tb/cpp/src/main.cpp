@@ -38,9 +38,6 @@ int main(int argc, char **argv) {
 	std::cout << "\nProgress:\n";
 	while(!Verilated::gotFinish())
 	{
-		std::cout << "[";
-		vtime++;
-
 		if(vtime%half_per == 0) clock ^= 1;
 
 		if((vtime >= 5*half_per) & (vtime < 7*half_per)) rst = 0;
@@ -52,21 +49,25 @@ int main(int argc, char **argv) {
 		top_module->eval();
 		vcd->dump(vtime);
 
+		vtime++;
+
+	// progress:
 		pos = bar_width * prog;
 
+		std::cout << "[";
 		for(int i = 0; i < bar_width; ++i)
 		{
 			if (i < pos) std::cout << "=";
 			else if (i == pos) std::cout << ">";
 			else std::cout << " ";
 		}
-
-		std::cout << "] %d %%\r" << int(prog * 100.0);
+		std::cout << "]" << int(prog * 100.0) << " %\r";
 		std::cout.flush();
 
-		if(vtime > finish_t) break;
-
 		prog = (double)vtime/finish_t;
+
+	// end:
+		if(vtime > finish_t) break;
 	}
 
 	top_module->final();
@@ -77,5 +78,5 @@ int main(int argc, char **argv) {
 
 	std::cout << "\n\n\tDone\n";
 
-	exit(EXIT_SUCCESS);
+	return 0;
 }

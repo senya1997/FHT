@@ -3,8 +3,8 @@ CC = g++
 SRC = src/main.cpp
 HEADER = obj_dir/Vfht_top.h
 
-OBJ = obj/main.o 
-ALL_OBJ = obj/verilated.o obj/verilated_vcd_c.o $(OBJ)
+OBJ = obj/main.o
+ADD_OBJ = obj/verilated.o obj/verilated_vcd_c.o
 
 PATH_INC = C:/msys64/mingw64/share/verilator/include
 
@@ -18,15 +18,17 @@ PATH_LIB = obj_dir/Vfht_top__ALL.a
 
 all: fht_tb
 
-fht_tb: $(ALL_OBJ) $(PATH_LIB)
-	$(CC) -o fht_tb -I$(PATH_INC) $(ALL_OBJ) $(PATH_LIB)
+fht_tb: $(ADD_OBJ) $(PATH_LIB) $(SRC) $(HEADER)
+	$(CC) -Wall -o fht_tb -I$(PATH_INC) $(SRC) $(ADD_OBJ) $(PATH_LIB)
 
-obj/verilated.o obj/verilated_vcd_c.o: $(PATH_VERILATED) $(PATH_VCD) $(PATH_VERILATED_H) $(PATH_VCD_H)
-	$(CC) -o obj/verilated_vcd_c.o -I$(PATH_INC) -c $(PATH_VCD)
-	$(CC) -o obj/verilated.o -I$(PATH_INC) -c $(PATH_VERILATED)
+obj/verilated.o: $(PATH_VERILATED) $(PATH_VERILATED_H)
+	$(CC) -Wall -o obj/verilated.o -I$(PATH_INC) -c $(PATH_VERILATED)
+	
+obj/verilated_vcd_c.o: $(PATH_VCD) $(PATH_VCD_H)
+	$(CC) -Wall -o obj/verilated_vcd_c.o -I$(PATH_INC) -c $(PATH_VCD)
 
-$(OBJ): $(SRC) $(HEADER) $(PATH_VERILATED_H) $(PATH_VCD_H) 
-	$(CC) -o $(OBJ) -c $(SRC)
+#$(OBJ): $(SRC) $(HEADER) $(PATH_VERILATED_H) $(PATH_VCD_H) 
+#	$(CC) -Wall -o $(OBJ) -c $(SRC)
 	
 clean: 
 	rm -rf obj/*.o *.exe
