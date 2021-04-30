@@ -1,9 +1,9 @@
 *.exe
 
+*.vcd
+*.wlf
+
 *.txt
-**/*.txt
-**/**/*.txt
-**/**/**/*.txt
 
 # Created by https://www.gitignore.io/api/matlab,csharp
 # Edit at https://www.gitignore.io/?templates=matlab,csharp
@@ -70,54 +70,15 @@ config.properties
 **/**/**/config.properties
 **/**/**/**/config.properties
 
-**/**/*.o
-**/**/*.afx
-**/**/*.crf
-**/**/*.htm
-**/**/*.tra
-**/**/*.dep
-**/**/*.lst
-
+*.o
 *.ddb
-**/*.ddb
-**/**/*.ddb
-**/**/**/*.ddb
-
 *.sld
-**/*.sld
-**/**/*.sld
-**/**/**/*.sld
 *.ipch
-**/*.ipch
-**/**/*.ipch
-**/**/**/*.ipch
-
 *.sdf
-**/*.sdf
-**/**/*.sdf
-**/**/**/*.sdf
-
 *.dpf
-**/*.dpf
-**/**/*.dpf
-**/**/**/*.dpf
-
 *.opensdf
-**/*.opensdf
-**/**/*.opensdf
-**/**/**/*.opensdf
-
 *_dspbuilder/*
-**/*_dspbuilder/*
-**/**/*_dspbuilder/*
-**/**/**/*_dspbuilder/*
-**/**/**/**/*_dspbuilder/*
-
 *.cdf
-**/*.cdf
-**/**/*.cdf
-**/**/**/*.cdf
-
 *.map
 *sopc_*
 *.jdi
@@ -145,6 +106,7 @@ config.properties
 *.stp
 
 ################ ignore Quartus II generated folders ################
+
 db/
 incremental_db/
 simulation/
@@ -163,33 +125,34 @@ timing/
 **/**/timing/
 **/**/*_sim/
 
-**/**/*.jic
-**/**/*.map
-**/**/*sopc_*
-**/**/*.jdi
-**/**/*.ptf.*
-**/**/*.sof
-**/**/*.pof
-**/**/*.qws
-**/**/*.smsg
-**/**/*_inst.vhd
-**/**/*_generation_script*
-**/**/*.done
-**/**/*.qarlog
-**/**/*.rpt
-**/**/*.summary
-**/**/*.qws
-**/**/*.cmp
-**/**/*.eqn
-**/**/*.html
-**/**/*.bak
-**/**/*.qar
-**/**/*.sopc_builder
+*.jic
+*.map
+*sopc_*
+*.jdi
+*.ptf.*
+*.sof
+*.pof
+*.qws
+*.smsg
+*_inst.vhd
+*_generation_script*
+*.done
+*.qarlog
+*.rpt
+*.summary
+*.qws
+*.cmp
+*.eqn
+*.html
+*.bak
+*.qar
+*.sopc_builder
 
-**/**/*~
-**/**/*.pin
+*~
+*.pin
 
 ############################# modelsim ##############################
+
 **/wlft*
 **/_lib1*
 
@@ -197,100 +160,45 @@ verilog.psm
 verilog.prw
 _primary*
 
-**/*.jic
-**/*.map
-
-**/*sopc_*
-**/*.jdi
-**/*.ptf.*
-**/*.sof
-**/*.pof
-**/*.qws
-**/*.smsg
-**/*_inst.vhd
-**/*_generation_script*
-**/*.done
-**/*.qarlog
-**/*.rpt
-**/*.summary
-**/*.qws
-**/*.cmp
-**/*.eqn
-**/*.html
 **/*.jpg
-**/*.bak
-**/*.qar
-**/*.sopc_builder
 
-**/*~
-**/*.pin
 *.mpf
 *.mti
-**/*.mpf
-**/*.mti
-**/**/*.mpf
-**/**/*.mti
 
 wlf*
-**/wlf*
-**/**/wlf*
 work/_lib1_*
-**/work/_lib1_*
-**/**/work/_lib1_*
-**/**/**/work/_lib1_*
 work/*
-**/work/*
-**/**/work/*
-**/**/**/work/*
 
 **/*.stp
-**/**/*.stp
-**/**/**/*.stp
 *.vstf
-**/*.vstf
-**/**/*.vstf
 **/*.cr.mti
-*.mti
-**/*.mti
-**/**/*.mti
-**/**/**/*.mti
-
-
 *.class
-**/*.class
-**/**/*.class
-**/**/**/*.class
 
 bin/*
 **/bin/*
 **/**/bin/*
 **/**/**/bin/*
 **/**/**/**/bin/*
-**/**/**/**/**/bin/*
 obj/*
 **/obj/*
 **/**/obj/*
 **/**/**/obj/*
 **/**/**/**/obj/*
-**/**/**/**/**/obj/*
 
 *.suo
 **/.suo
 **/**/.suo
 **/**/**/.suo
 **/**/**/**/.suo
-**/**/**/**/**/.suo
 
 greybox_tmp/*
 **/greybox_tmp/*
 **/**/greybox_tmp/*
 **/**/**/greybox_tmp/*
 **/**/**/**/greybox_tmp/*
-**/**/**/**/**/greybox_tmp/*
 
 _UpgradeReport_Files/*
 **/_UpgradeReport_Files/*
 **/**/_UpgradeReport_Files/*
 **/**/**/_UpgradeReport_Files/*
 **/**/**/**/_UpgradeReport_Files/*
-**/**/**/**/**/_UpgradeReport_Files/*

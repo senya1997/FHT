@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 			else if (i == pos) std::cout << ">";
 			else std::cout << " ";
 		}
-		std::cout << "]" << (uchar_t)(prog * 100.0f) << " %\r";
+		std::cout << "]" << (uint32_t)(prog * 100.0f) << " %\r";
 		std::cout.flush();
 
 		prog = (float)vtime/finish_time;

@@ -44,10 +44,9 @@
 	
 # main files:
     OUT := fht_tb
-	
-	# auto forming:
-	    SRC := 
-	    HEADER := 
+
+	SRC := ../src/*.cpp
+	HEADER := $(VH) ../inc/*.h
 
 #===================================================================================================#
 #											make:													#
@@ -55,20 +54,22 @@
 
 all: $(OUT)
 
-$(OUT): $(VOBJ) ../src/*.cpp ../inc/*.h $(VH) $(VLIB)
-	$(GXX) $(CMPL_INF) $(OPT_LVL) $(DBG_LVL) -o $(OUT) -I$(PATH_VINC) ../src/*.cpp $(VOBJ) $(VLIB)
+$(OUT): $(VOBJ) $(SRC) $(HEADER)  $(VLIB)
+	$(GXX) $(CMPL_INF) $(OPT_LVL) $(DBG_LVL) -o $(OUT) -I$(PATH_VINC) $(SRC) $(VOBJ) $(VLIB)
 
 $(VOBJ): $(VCMPL)
 	for vsrc in $(VNAME); do \
-		$(GXX) $(CMPL_INF) $(OPT_LVL) $(DBG_LVL) -o $(addprefix ../obj/, $(addsuffix .o, $$vsrc)) -I$(PATH_VINC) -c $(addprefix $(PATH_VINC), $(addsuffix .cpp, $$vsrc)) ; \
+		$(GXX) $(CMPL_INF) $(OPT_LVL) $(DBG_LVL) \
+		-o $(addprefix ../obj/, $(addsuffix .o, $$vsrc)) -I$(PATH_VINC) \
+		-c $(addprefix $(PATH_VINC), $(addsuffix .cpp, $$vsrc)) ; \
 	done
 
-#$(VLIB):
-#	cd../../..
-#	$(VERILATOR) $(CMPL_INF) -I$(PATH_MF) --timescale-override $(TIMESCALE) --trace --hierarchical --build -cc $(TOP_MODULE).v
-#	cd obj_dir
-#	make -f V$(TOP_MODULE).mk
-#	cd ../tb/cpp/debug
+$(VLIB):
+	cd../../..
+	$(VERILATOR) $(CMPL_INF) -I$(PATH_MF) --timescale-override $(TIMESCALE) --trace --hierarchical --build -cc $(TOP_MODULE).v
+	cd obj_dir
+	make -f V$(TOP_MODULE).mk
+	cd ../tb/cpp/debug
 	
 clean:
 	rm -rf ../obj/*.o *.exe
