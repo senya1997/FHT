@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../obj_dir/Vfht_top.h"
+#include "../../../obj_dir/Vfht_top.h"
 
 #include <verilated.h> // Defines common routines
 #include <verilated_vcd_c.h>
@@ -48,7 +48,11 @@ int main(int argc, char **argv) {
 // reset:
 	while(vtime < 70)
 	{
-		if(cnt_clk == half_per) clock ^= 1;
+		if(cnt_clk == half_per)
+		{
+			cnt_clk = 0;
+			clock ^= 1;
+		}
 
 		if((vtime >= 5*half_per) & (vtime < 7*half_per)) rst = 0;
 		else rst = 1;
@@ -63,7 +67,11 @@ int main(int argc, char **argv) {
 // main:
 	while(vtime < finish_time)
 	{
-		if(cnt_clk == half_per) clock ^= 1;
+		if(cnt_clk == half_per)
+		{
+			cnt_clk = 0;
+			clock ^= 1;
+		}
 
 		top_module->iCLK = clock;
 		top_module->iRESET = rst;
@@ -75,7 +83,7 @@ int main(int argc, char **argv) {
 		cnt_clk++;
 
 	#ifdef PROGRESS_BAR
-		pos = (int)((float)bar_width * prog);
+		pos = (uchar_t)((float)bar_width * prog);
 
 		std::cout << "\t[";
 		for(int i = 0; i < bar_width; ++i)
@@ -84,7 +92,7 @@ int main(int argc, char **argv) {
 			else if (i == pos) std::cout << ">";
 			else std::cout << " ";
 		}
-		std::cout << "]" << (int)(prog * 100.0f) << " %\r";
+		std::cout << "]" << (uchar_t)(prog * 100.0f) << " %\r";
 		std::cout.flush();
 
 		prog = (float)vtime/finish_time;
