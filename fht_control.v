@@ -177,7 +177,7 @@ wire EN_BIAS_ODD =	(EN_BIAS & (cnt_sector[0] == 1));
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 0;
 	else if(EOF_STAGE_1) size_bias_rd <= 1;
-	else if(CHOOSE_EN_NEW_BIAS_RD & NEW_BIAS_RD & clk_2) size_bias_rd = (size_bias_rd << 1);
+	else if(CHOOSE_EN_NEW_BIAS_RD & NEW_BIAS_RD & clk_2) size_bias_rd <= (size_bias_rd << 1);
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -185,8 +185,8 @@ always@(posedge iCLK or negedge iRESET)begin
 	else if(EOF_STAGE_1) cnt_bias_rd <= 2;
 	else if(CHOOSE_EN_NEW_BIAS_RD & clk_2)
 		begin
-			if(NEW_BIAS_RD) cnt_bias_rd = size_bias_rd - 1'b1;
-			else cnt_bias_rd = cnt_bias_rd - 2;
+			if(NEW_BIAS_RD) cnt_bias_rd <= size_bias_rd - 1'b1;
+			else cnt_bias_rd <= cnt_bias_rd - 2;
 		end
 end
 

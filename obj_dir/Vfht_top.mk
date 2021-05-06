@@ -10,7 +10,7 @@ default: Vfht_top__ALL.a
 # Perl executable (from $PERL)
 PERL = perl
 # Path to Verilator kit (from $VERILATOR_ROOT)
-VERILATOR_ROOT = /mingw64/share/verilator
+VERILATOR_ROOT = /usr/share/verilator
 # SystemC include directory with systemc.h (from $SYSTEMC_INCLUDE)
 SYSTEMC_INCLUDE ?= 
 # SystemC library directory with libsystemc.a (from $SYSTEMC_LIBDIR)
@@ -24,7 +24,7 @@ VM_SP_OR_SC = $(VM_SC)
 # Deprecated
 VM_PCLI = 1
 # Deprecated: SystemC architecture to find link library path (from $SYSTEMC_ARCH)
-VM_SC_TARGET_ARCH = mingw32
+VM_SC_TARGET_ARCH = linux
 
 ### Vars...
 # Design prefix (from --prefix)

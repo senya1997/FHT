@@ -54,6 +54,26 @@ void Vfht_top::_settle__TOP__1(Vfht_top__Syms* __restrict vlSymsp) {
         = ((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__cnt_sector_time) 
            == ((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__div) 
                - (IData)(1U)));
+    vlTOPp->fht_top__DOT__WE = ((0xcU & (IData)(vlTOPp->fht_top__DOT__WE)) 
+                                | ((2U & (((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__source_cont)
+                                            ? ((IData)(vlTOPp->iWE) 
+                                               >> 1U)
+                                            : (IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__we_a)) 
+                                          << 1U)) | 
+                                   (1U & ((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__source_cont)
+                                           ? (IData)(vlTOPp->iWE)
+                                           : (IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__we_a)))));
+    vlTOPp->fht_top__DOT__WE = ((3U & (IData)(vlTOPp->fht_top__DOT__WE)) 
+                                | ((8U & (((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__source_cont)
+                                            ? ((IData)(vlTOPp->iWE) 
+                                               >> 3U)
+                                            : (IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__we_a)) 
+                                          << 3U)) | 
+                                   (4U & (((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__source_cont)
+                                            ? ((IData)(vlTOPp->iWE) 
+                                               >> 2U)
+                                            : (IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__we_a)) 
+                                          << 2U))));
     vlTOPp->fht_top__DOT__BUT_BLOCK__DOT__BUT_TO_MIX[1U] 
         = vlTOPp->fht_top__DOT__BUT_BLOCK__DOT__BUT_0__DOT__sub_buf;
     vlTOPp->fht_top__DOT__BUT_BLOCK__DOT__BUT_TO_MIX[0U] 
@@ -62,28 +82,6 @@ void Vfht_top::_settle__TOP__1(Vfht_top__Syms* __restrict vlSymsp) {
         = vlTOPp->fht_top__DOT__BUT_BLOCK__DOT__BUT_1__DOT__sub_buf;
     vlTOPp->fht_top__DOT__BUT_BLOCK__DOT__BUT_TO_MIX[2U] 
         = vlTOPp->fht_top__DOT__BUT_BLOCK__DOT__BUT_1__DOT__sum_buf;
-    vlTOPp->fht_top__DOT__WE = ((0xeU & (IData)(vlTOPp->fht_top__DOT__WE)) 
-                                | (1U & ((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__source_cont)
-                                          ? (IData)(vlTOPp->iWE)
-                                          : (IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__we_a))));
-    vlTOPp->fht_top__DOT__WE = ((0xdU & (IData)(vlTOPp->fht_top__DOT__WE)) 
-                                | (2U & (((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__source_cont)
-                                           ? ((IData)(vlTOPp->iWE) 
-                                              >> 1U)
-                                           : (IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__we_a)) 
-                                         << 1U)));
-    vlTOPp->fht_top__DOT__WE = ((0xbU & (IData)(vlTOPp->fht_top__DOT__WE)) 
-                                | (4U & (((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__source_cont)
-                                           ? ((IData)(vlTOPp->iWE) 
-                                              >> 2U)
-                                           : (IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__we_a)) 
-                                         << 2U)));
-    vlTOPp->fht_top__DOT__WE = ((7U & (IData)(vlTOPp->fht_top__DOT__WE)) 
-                                | (8U & (((IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__source_cont)
-                                           ? ((IData)(vlTOPp->iWE) 
-                                              >> 3U)
-                                           : (IData)(vlTOPp->fht_top__DOT__CONTROL__DOT__we_a)) 
-                                         << 3U)));
     vlTOPp->fht_top__DOT__BUT_BLOCK__DOT__MIX_TO_BUT_0[2U] 
         = vlTOPp->fht_top__DOT__BUT_BLOCK__DOT__MIX_0__DOT__mux_buf
         [2U];

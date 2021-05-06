@@ -24,8 +24,10 @@
 	# required to compile:
 		VSRC := verilated.cpp verilated_vcd_c.cpp
 	
-	PATH_MF := C:/intelFPGA_lite/18.1/quartus/eda/fv_lib/verilog/
-	PATH_VINC := C:/msys64/mingw64/share/verilator/include/
+	#PATH_MF := "C:/intelFPGA_lite/18.1/quartus/eda/fv_lib/verilog"
+	PATH_MF := "D:/Program Files/altera/14.1/quartus/eda/fv_lib/verilog"
+	#PATH_VINC := C:/msys64/mingw64/share/verilator/include/
+	PATH_VINC := C:/msys64/usr/share/verilator/include/
 	
 	
 	# auto forming:
@@ -54,22 +56,16 @@
 
 all: $(OUT)
 
-$(OUT): $(VOBJ) $(SRC) $(HEADER)  $(VLIB)
+$(OUT): $(VOBJ) $(SRC) $(VLIB) $(HEADER)
 	$(GXX) $(CMPL_INF) $(OPT_LVL) $(DBG_LVL) -o $(OUT) -I$(PATH_VINC) $(SRC) $(VOBJ) $(VLIB)
 
 $(VOBJ): $(VCMPL)
-	for vsrc in $(VNAME); do \
+	mkdir -p ../obj
+	for vsrc in $(VNAME) ; do \
 		$(GXX) $(CMPL_INF) $(OPT_LVL) $(DBG_LVL) \
 		-o $(addprefix ../obj/, $(addsuffix .o, $$vsrc)) -I$(PATH_VINC) \
 		-c $(addprefix $(PATH_VINC), $(addsuffix .cpp, $$vsrc)) ; \
 	done
-
-$(VLIB):
-	cd../../..
-	$(VERILATOR) $(CMPL_INF) -I$(PATH_MF) --timescale-override $(TIMESCALE) --trace --hierarchical --build -cc $(TOP_MODULE).v
-	cd obj_dir
-	make -f V$(TOP_MODULE).mk
-	cd ../tb/cpp/debug
 	
 clean:
 	rm -rf ../obj/*.o *.exe

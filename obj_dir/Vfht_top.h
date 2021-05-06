@@ -131,31 +131,31 @@ VL_MODULE(Vfht_top) {
         QData/*40:0*/ fht_top__DOT__BUT_BLOCK__DOT__BUT_1__DOT__EXT_X0;
         QData/*41:0*/ fht_top__DOT__BUT_BLOCK__DOT__BUT_1__DOT__EXT_SUM;
         QData/*41:0*/ fht_top__DOT__BUT_BLOCK__DOT__BUT_1__DOT__EXT_SUB;
-        IData/*26:0*/ fht_top__DOT__DATA_RAM_A[4];
-        IData/*26:0*/ fht_top__DOT__DATA_BUT[4];
-        SData/*8:0*/ fht_top__DOT__ADDR_RD_CTRL[4];
-        SData/*8:0*/ fht_top__DOT__ADDR_WR_CTRL[4];
-        SData/*8:0*/ fht_top__DOT__ADDR_RD[4];
-        SData/*8:0*/ fht_top__DOT__ADDR_WR[4];
-        IData/*26:0*/ fht_top__DOT__DATA_RAM_A_BUT[4];
-        IData/*26:0*/ fht_top__DOT__DATA_RAM_B_BUT[4];
-        IData/*26:0*/ fht_top__DOT__DATA_BUT_RAM[4];
-        SData/*12:0*/ fht_top__DOT__BUT_BLOCK__DOT__sin[2];
-        SData/*12:0*/ fht_top__DOT__BUT_BLOCK__DOT__cos[2];
-        IData/*26:0*/ fht_top__DOT__BUT_BLOCK__DOT__mux_buf[4];
-        IData/*26:0*/ fht_top__DOT__BUT_BLOCK__DOT__MIX_TO_BUT_0[3];
-        IData/*26:0*/ fht_top__DOT__BUT_BLOCK__DOT__MIX_TO_BUT_1[3];
-        IData/*26:0*/ fht_top__DOT__BUT_BLOCK__DOT__BUT_TO_MIX[4];
-        IData/*26:0*/ fht_top__DOT__BUT_BLOCK__DOT__MIX_0__DOT__mux_buf[3];
-        IData/*26:0*/ fht_top__DOT__BUT_BLOCK__DOT__MIX_1__DOT__mux_buf[3];
-        IData/*26:0*/ fht_top__DOT__FHT_RAM_A__DOT__DATA_IN[4];
-        SData/*8:0*/ fht_top__DOT__FHT_RAM_A__DOT__ADDR_RD[4];
-        SData/*8:0*/ fht_top__DOT__FHT_RAM_A__DOT__ADDR_WR[4];
-        IData/*26:0*/ fht_top__DOT__FHT_RAM_A__DOT__DATA_OUT[4];
-        IData/*26:0*/ fht_top__DOT__FHT_RAM_B__DOT__DATA_IN[4];
-        SData/*8:0*/ fht_top__DOT__FHT_RAM_B__DOT__ADDR_RD[4];
-        SData/*8:0*/ fht_top__DOT__FHT_RAM_B__DOT__ADDR_WR[4];
-        IData/*26:0*/ fht_top__DOT__FHT_RAM_B__DOT__DATA_OUT[4];
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__DATA_RAM_A;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__DATA_BUT;
+        VlUnpacked<SData/*8:0*/, 4> fht_top__DOT__ADDR_RD_CTRL;
+        VlUnpacked<SData/*8:0*/, 4> fht_top__DOT__ADDR_WR_CTRL;
+        VlUnpacked<SData/*8:0*/, 4> fht_top__DOT__ADDR_RD;
+        VlUnpacked<SData/*8:0*/, 4> fht_top__DOT__ADDR_WR;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__DATA_RAM_A_BUT;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__DATA_RAM_B_BUT;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__DATA_BUT_RAM;
+        VlUnpacked<SData/*12:0*/, 2> fht_top__DOT__BUT_BLOCK__DOT__sin;
+        VlUnpacked<SData/*12:0*/, 2> fht_top__DOT__BUT_BLOCK__DOT__cos;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__BUT_BLOCK__DOT__mux_buf;
+        VlUnpacked<IData/*26:0*/, 3> fht_top__DOT__BUT_BLOCK__DOT__MIX_TO_BUT_0;
+        VlUnpacked<IData/*26:0*/, 3> fht_top__DOT__BUT_BLOCK__DOT__MIX_TO_BUT_1;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__BUT_BLOCK__DOT__BUT_TO_MIX;
+        VlUnpacked<IData/*26:0*/, 3> fht_top__DOT__BUT_BLOCK__DOT__MIX_0__DOT__mux_buf;
+        VlUnpacked<IData/*26:0*/, 3> fht_top__DOT__BUT_BLOCK__DOT__MIX_1__DOT__mux_buf;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__FHT_RAM_A__DOT__DATA_IN;
+        VlUnpacked<SData/*8:0*/, 4> fht_top__DOT__FHT_RAM_A__DOT__ADDR_RD;
+        VlUnpacked<SData/*8:0*/, 4> fht_top__DOT__FHT_RAM_A__DOT__ADDR_WR;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__FHT_RAM_A__DOT__DATA_OUT;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__FHT_RAM_B__DOT__DATA_IN;
+        VlUnpacked<SData/*8:0*/, 4> fht_top__DOT__FHT_RAM_B__DOT__ADDR_RD;
+        VlUnpacked<SData/*8:0*/, 4> fht_top__DOT__FHT_RAM_B__DOT__ADDR_WR;
+        VlUnpacked<IData/*26:0*/, 4> fht_top__DOT__FHT_RAM_B__DOT__DATA_OUT;
     };
     
     // LOCAL VARIABLES
@@ -163,7 +163,7 @@ VL_MODULE(Vfht_top) {
     CData/*0:0*/ fht_top__DOT__CONTROL__DOT____Vlvbound1;
     CData/*0:0*/ __Vclklast__TOP__iCLK;
     CData/*0:0*/ __Vclklast__TOP__iRESET;
-    CData/*0:0*/ __Vm_traceActivity[3];
+    VlUnpacked<CData/*0:0*/, 3> __Vm_traceActivity;
     
     // INTERNAL VARIABLES
     // Internals; generally not touched by application code

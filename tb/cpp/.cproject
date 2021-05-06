@@ -28,14 +28,14 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1769122686" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1264887274" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;C:\msys64\mingw64\share\verilator\include&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\include\w32api&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\lib\gcc\x86_64-pc-msys\10.2.0\include&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\lib\gcc\x86_64-pc-msys\10.2.0\include\c++&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\lib\gcc\x86_64-pc-msys\10.2.0\include\c++\backward&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\lib\gcc\x86_64-pc-msys\10.2.0\include\c++\x86_64-pc-msys&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\lib\gcc\x86_64-pc-msys\10.2.0\include-fixed&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;C:\msys64\usr\share\verilator\include&quot;"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.optimization.level.672147576" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option defaultValue="gnu.cpp.compiler.debugging.level.max" id="gnu.cpp.compiler.option.debugging.level.866980778" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" valueType="enumerated"/>
@@ -43,6 +43,7 @@
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.linker.1928002577" name="Cross GCC Linker" superClass="cdt.managedbuild.tool.gnu.cross.c.linker"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.linker.73807815" name="Cross G++ Linker" superClass="cdt.managedbuild.tool.gnu.cross.cpp.linker">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="gnu.cpp.link.option.libs.2009018037" name="Libraries (-l)" superClass="gnu.cpp.link.option.libs" valueType="libs"/>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.linker.input.1627898399" superClass="cdt.managedbuild.tool.gnu.cpp.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

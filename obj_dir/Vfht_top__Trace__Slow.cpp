@@ -1212,16 +1212,16 @@ void Vfht_top::traceFullSub0(void* userp, VerilatedVcd* tracep) {
     vluint32_t* const oldp = tracep->oldp(vlSymsp->__Vm_baseCode);
     if (false && oldp) {}  // Prevent unused
     // Variables
-    WData/*95:0*/ __Vtemp1[3];
-    WData/*95:0*/ __Vtemp2[3];
-    WData/*95:0*/ __Vtemp3[3];
-    WData/*95:0*/ __Vtemp4[3];
-    WData/*95:0*/ __Vtemp5[3];
-    WData/*95:0*/ __Vtemp6[3];
-    WData/*127:0*/ __Vtemp7[4];
-    WData/*159:0*/ __Vtemp8[5];
-    WData/*191:0*/ __Vtemp9[6];
-    WData/*95:0*/ __Vtemp10[3];
+    VlWide<3>/*95:0*/ __Vtemp1;
+    VlWide<3>/*95:0*/ __Vtemp2;
+    VlWide<3>/*95:0*/ __Vtemp3;
+    VlWide<3>/*95:0*/ __Vtemp4;
+    VlWide<3>/*95:0*/ __Vtemp5;
+    VlWide<3>/*95:0*/ __Vtemp6;
+    VlWide<4>/*127:0*/ __Vtemp7;
+    VlWide<5>/*159:0*/ __Vtemp8;
+    VlWide<6>/*191:0*/ __Vtemp9;
+    VlWide<3>/*95:0*/ __Vtemp10;
     // Body
     {
         tracep->fullIData(oldp+1,(vlTOPp->fht_top__DOT__DATA_RAM_A_BUT[0]),27);
