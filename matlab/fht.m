@@ -13,8 +13,11 @@ close all;
 %% variables:
 file_def = fopen('../fht_defines.v', 'r');
 
-dir_imp =       '../../gcpu/matlab/conv/h.txt'; % size Nh
-dir_signal =    '../../gcpu/matlab/conv/x.txt'; % size Nx
+dir_imp =       '../../fht_conv/matlab/h.txt'; % size Nh
+dir_signal =    '../../fht_conv/matlab/x.txt'; % size Nx
+
+dir_reg_imp =   '../../fht_conv/matlab/reg_imp_ram.txt'; % save reg ver of FHT for conv test
+dir_reg_fht =   '../../fht_conv/matlab/reg_fht_ram.txt';
 
 N_bank = 4; % defines by architecture of transform in FPGA (don't change for this config)
 
@@ -36,11 +39,11 @@ save_err_ind = 'Y'; % save index of error data in file (Y/N, append to exist fil
 
 %% read files:
 flag_N = 0;
-
 flag_Nx = 0;
 flag_Nh = 0;
-
 flag_w_amp = 0;
+flag_adc_width = 0;
+flag_imp_bit = 0;
 
 while(~feof(file_def))
     line = fgetl(file_def);
@@ -64,18 +67,33 @@ while(~feof(file_def))
         if(strcmp(line(1:14), '`define W_BIT '))
             w_amp = str2double(line(15:16));
             flag_w_amp = 1;
-        end       
+        end
+    end
+    
+    if(length(line) > 18)
+        if(strcmp(line(1:18), '`define ADC_WIDTH '))
+            adc_width = str2double(line(19:20));
+            flag_adc_width = 1;
+        end
+    end
+    
+    if(length(line) > 16)
+        if(strcmp(line(1:16), '`define IMP_BIT '))
+            imp_bit = str2double(line(17:18));
+            flag_imp_bit = 1;
+        end
     end
 end
 
-if(~flag_N || ~flag_w_amp || ~flag_Nx || ~flag_Nh)
+if(~flag_N || ~flag_w_amp || ~flag_Nx || ~flag_Nh || ~flag_adc_width || ~flag_imp_bit)
     error('Error while reading defines');
 end
 
 fclose(file_def);
 
 clear file_def; clear len_line;
-clear flag_N; clear flag_Nx; clear flag_Nh; clear flag_w_amp;
+clear flag_N; clear flag_Nx; clear flag_Nh;
+clear flag_w_amp; clear flag_adc_width; clear flag_imp_bit;
 
 w_amp = 2^(w_amp - 2);
 
@@ -347,6 +365,25 @@ for i = 1 : row
     fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
 end
 
+% save fixed point version of RAM FHT for conv:
+    if(strcmp(test, 'imp'))
+        file_reg = fopen(dir_reg_imp, 'w');
+        reg_ram = round(ram*(2^(imp_bit-1))); % fixed point for FPGA like registers
+
+        for i = 1 : row
+            fprintf(file_reg, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', reg_ram(i, :));
+        end 
+    end
+
+    if(strcmp(test, 'signal'))
+        file_reg = fopen(dir_reg_fht, 'w');
+        reg_ram = round(ram*(2^(adc_width-1))); % fixed point for FPGA like registers
+
+        for i = 1 : row
+            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
+        end 
+    end
+
 for i = 1 : N
    fprintf(file_fft_cp, '%6.6f\n', fft_line(i)); 
 end
@@ -357,7 +394,9 @@ fclose(file_addr_wr);
 fclose(file_ram); 
 fclose(file_fft_cp); 
 
-clear file_addr_rd; clear file_addr_wr;
+fclose(file_reg);
+
+clear file_addr_rd; clear file_addr_wr; clear file_reg;
 clear temp; clear file_ram; clear file_fft_cp;
 
 %% get norm order in RAM

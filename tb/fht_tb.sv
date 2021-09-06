@@ -162,12 +162,12 @@ initial begin
 	`ifdef LAST_STAGE_ODD
 		SAVE_RAM_DATA(`FHT_DONE_RAM, 0);
 		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "fht_ram.txt");
+			COMPARE_MATLAB_RAM(`MATLAB_DONE_RAM, `FHT_DONE_RAM);
 		`endif
 	`elsif LAST_STAGE_EVEN
 		SAVE_RAM_DATA(`FHT_DONE_RAM, 1);
 		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM("../../fht/matlab/ram.txt", "fht_ram.txt");
+			COMPARE_MATLAB_RAM(`MATLAB_DONE_RAM, `FHT_DONE_RAM);
 		`endif
 	`endif
 	

@@ -54,8 +54,8 @@ initial begin
 		$display("\terror marking by '***', r/w = 0 => addr_rd, r/w = 1 => addr_wr\n");
 	`endif
 	
-	f_addr_rd = $fopen("../../fht/matlab/addr_rd.txt", "r");
-	f_addr_wr = $fopen("../../fht/matlab/addr_wr.txt", "r");
+	f_addr_rd = $fopen(`MATLAB_ADDR_RD, "r");
+	f_addr_wr = $fopen(`MATLAB_ADDR_WR, "r");
 	
 		// #1; // if "sdf" is turn off
 	start = 1'b1;
