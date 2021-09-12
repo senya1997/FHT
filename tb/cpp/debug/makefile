@@ -29,7 +29,6 @@
 	#PATH_VINC := C:/msys64/mingw64/share/verilator/include/
 	PATH_VINC := C:/msys64/usr/share/verilator/include/
 	
-	
 	# auto forming:
 	    VH := ../../../obj_dir/V$(TOP_MODULE).h
 	    VLIB := ../../../obj_dir/V$(TOP_MODULE)__ALL.a

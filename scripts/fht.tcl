@@ -11,6 +11,8 @@ proc disp_error msg {
 	return -code error $msg
 }
 
+load_package flow
+project_open fht.qpf
 set_current_revision fht;
 
 # ================================================================================= #
@@ -60,8 +62,11 @@ set path_def ./fht_defines.v
 # add expansion bit (for avoid overflow from 'max_negative_num*(-1)' and for use shift operating on division)
 	#set D_BIT 27
 	#set D_BIT [expr $D_BIT + 1]
-	set D_BIT [expr $A_BIT + 18]
+	set D_BIT [expr $A_BIT + 12]
+	
+	#set D_BIT [expr $A_BIT + 18]
 	set W_BIT [expr $W_BIT + 1]
+	set IMP_BIT [expr $IMP_BIT + 1]
 	
 # read input keys from cmd
 	set compile [lindex $argv 0]
@@ -69,6 +74,7 @@ set path_def ./fht_defines.v
 # calculate defines	
 	set MAX_D [expr round(pow(2, $D_BIT - 1))]
 	set MAX_W [expr round(pow(2, $W_BIT - 2))]
+	set MAX_IMP [expr round(pow(2, $IMP_BIT - 2))]
 
 	set N [expr round(4*pow(2, $A_BIT))] 
 	set BANK_SIZE [expr $N/4]
@@ -131,6 +137,7 @@ if {($D_BIT > 11) && ($D_BIT < 28) &&\
 	puts $f_def "`define MAX_ADC_D $MAX_ADC_D"
 	puts $f_def "`define MAX_D $MAX_D"
 	puts $f_def "`define MAX_W $MAX_W"
+	puts $f_def "`define MAX_IMP $MAX_IMP"
 	puts $f_def " "
 } else {
 	disp_error "Input parameters is incorrect"

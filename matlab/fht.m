@@ -4,7 +4,7 @@ clc;
 close all;
 
 %% choose test signal:
-    %test = 'sin';       % sine in 3 harmonics
+    %test = 'sin';      % sine in 3 harmonics
     %test = 'imp';      % impulse response
     test = 'signal';   % real signal from 'wav'
     %test = 'const';    % const bias
@@ -366,23 +366,39 @@ for i = 1 : row
 end
 
 % save fixed point version of RAM FHT for conv:
+if(strcmp(test, 'imp') || strcmp(test, 'signal'))
+    abs_max_ram = 0;
+    
+    for i = 1 : row
+        if(max(ram(i,:)) > abs(min(ram(i,:))))
+            cur_max_ram = max(ram(i,:));
+        else
+            cur_max_ram = abs(min(ram(i,:)));
+        end
+        
+        if(cur_max_ram > abs_max_ram)
+            abs_max_ram = cur_max_ram;
+        end
+    end
+    
     if(strcmp(test, 'imp'))
         file_reg = fopen(dir_reg_imp, 'w');
-        reg_ram = round(ram*(2^(imp_bit-1))); % fixed point for FPGA like registers
-
-        for i = 1 : row
-            fprintf(file_reg, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', reg_ram(i, :));
-        end 
+        reg_ram = round(ram*(2^(imp_bit - 1))/abs_max_ram); % fixed point for FPGA like registers
     end
 
     if(strcmp(test, 'signal'))
         file_reg = fopen(dir_reg_fht, 'w');
-        reg_ram = round(ram*(2^(adc_width-1))); % fixed point for FPGA like registers
-
-        for i = 1 : row
-            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
-        end 
+        reg_ram = round(ram*(2^(adc_width - 1))/abs_max_ram); % fixed point for FPGA like registers
     end
+    
+    for i = 1 : row
+        fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
+    end
+    
+    fclose(file_reg);
+    clear file_reg;
+    clear abs_max_ram;
+end
 
 for i = 1 : N
    fprintf(file_fft_cp, '%6.6f\n', fft_line(i)); 
@@ -394,9 +410,7 @@ fclose(file_addr_wr);
 fclose(file_ram); 
 fclose(file_fft_cp); 
 
-fclose(file_reg);
-
-clear file_addr_rd; clear file_addr_wr; clear file_reg;
+clear file_addr_rd; clear file_addr_wr; 
 clear temp; clear file_ram; clear file_fft_cp;
 
 %% get norm order in RAM
