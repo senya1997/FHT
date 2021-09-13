@@ -42,7 +42,7 @@ flag_N = 0;
 flag_Nx = 0;
 flag_Nh = 0;
 flag_w_amp = 0;
-flag_adc_width = 0;
+flag_d_bit = 0;
 flag_imp_bit = 0;
 
 while(~feof(file_def))
@@ -64,16 +64,14 @@ while(~feof(file_def))
             flag_Nh = 1;
         end
         
+        if(strcmp(line(1:14), '`define D_BIT '))
+            d_bit = str2double(line(15:16));
+            flag_d_bit = 1;
+        end
+        
         if(strcmp(line(1:14), '`define W_BIT '))
             w_amp = str2double(line(15:16));
             flag_w_amp = 1;
-        end
-    end
-    
-    if(length(line) > 18)
-        if(strcmp(line(1:18), '`define ADC_WIDTH '))
-            adc_width = str2double(line(19:20));
-            flag_adc_width = 1;
         end
     end
     
@@ -85,7 +83,7 @@ while(~feof(file_def))
     end
 end
 
-if(~flag_N || ~flag_w_amp || ~flag_Nx || ~flag_Nh || ~flag_adc_width || ~flag_imp_bit)
+if(~flag_N || ~flag_w_amp || ~flag_Nx || ~flag_Nh || ~flag_d_bit || ~flag_imp_bit)
     error('Error while reading defines');
 end
 
@@ -383,12 +381,12 @@ if(strcmp(test, 'imp') || strcmp(test, 'signal'))
     
     if(strcmp(test, 'imp'))
         file_reg = fopen(dir_reg_imp, 'w');
-        reg_ram = round(ram*(2^(imp_bit - 1))/abs_max_ram); % fixed point for FPGA like registers
+        reg_ram = round(ram*(2^(imp_bit - 2))/abs_max_ram); % fixed point for FPGA like registers without bit ext
     end
 
     if(strcmp(test, 'signal'))
         file_reg = fopen(dir_reg_fht, 'w');
-        reg_ram = round(ram*(2^(adc_width - 1))/abs_max_ram); % fixed point for FPGA like registers
+        reg_ram = round(ram*(2^(d_bit - 1))/abs_max_ram); % fixed point for FPGA like registers
     end
     
     for i = 1 : row

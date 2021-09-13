@@ -62,10 +62,11 @@ set path_def ./fht_defines.v
 # add expansion bit (for avoid overflow from 'max_negative_num*(-1)' and for use shift operating on division)
 	#set D_BIT 27
 	#set D_BIT [expr $D_BIT + 1]
-	set D_BIT [expr $A_BIT + 12]
-	
 	#set D_BIT [expr $A_BIT + 18]
+	
+	set D_BIT [expr $A_BIT + 12]
 	set W_BIT [expr $W_BIT + 1]
+	set CONV_BIT [expr $D_BIT + 4]
 	set IMP_BIT [expr $IMP_BIT + 1]
 	
 # read input keys from cmd
@@ -74,6 +75,7 @@ set path_def ./fht_defines.v
 # calculate defines	
 	set MAX_D [expr round(pow(2, $D_BIT - 1))]
 	set MAX_W [expr round(pow(2, $W_BIT - 2))]
+	set MAX_CONV [expr round(pow(2, $CONV_BIT - 1))]
 	set MAX_IMP [expr round(pow(2, $IMP_BIT - 2))]
 
 	set N [expr round(4*pow(2, $A_BIT))] 
@@ -132,11 +134,13 @@ if {($D_BIT > 11) && ($D_BIT < 28) &&\
 	puts $f_def "`define D_BIT $D_BIT"
 	puts $f_def "`define A_BIT $A_BIT"
 	puts $f_def "`define W_BIT $W_BIT"
+	puts $f_def "`define CONV_BIT $CONV_BIT"
 	puts $f_def "`define IMP_BIT $IMP_BIT"
 	puts $f_def " "
 	puts $f_def "`define MAX_ADC_D $MAX_ADC_D"
 	puts $f_def "`define MAX_D $MAX_D"
 	puts $f_def "`define MAX_W $MAX_W"
+	puts $f_def "`define MAX_CONV $MAX_CONV"
 	puts $f_def "`define MAX_IMP $MAX_IMP"
 	puts $f_def " "
 } else {
