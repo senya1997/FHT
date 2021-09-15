@@ -58,7 +58,10 @@
 `define EN_BREAKPOINT
 `define COMPARE_WITH_MATLAB
 
-// `define RAM_BUG // if modelsim issue error 'Unresolved reference to...' try to switch this define
+// if modelsim issue error 'Unresolved reference to...' try to switch this define:
+	// `define RAM_ACCESS_TB altsyncram_component.mem_data
+	// `define RAM_ACCESS_TB altsyncram_component.m_default.altsyncram_inst.mem_data
+	`define RAM_ACCESS_TB altsyncram_component.m_non_arria10.altsyncram_inst.mem_data
 
 `define ROUND_FHT			// enable round in FHT butterfly
 `define ROUND_FHT_CONV	// enable round in conv calc
