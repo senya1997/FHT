@@ -433,43 +433,6 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 	cnt_st_er = 0;
 endtask
 
-/*
-real f, t, h_t; //frequency, time, time step 
-real fmin,fmax,h; //minimum frequency, maximum frequency, frequency step
-real out;
-
-initial begin
-
-	fmin = 50_000; //Hz
-	fmax = 1_000_000; //Hz
-	h = 1_000; //Hz
-	h_t = 0.000_000_01; //step time = 1/(time scale) (sec)
-	
-	for (f = fmin; f <= fmax; f = f + h) begin
-		for (t = 0; t <= 1/f; t = t + h_t) begin
-			#10 out = signal(f,t);
-			//$display (signal(f,t));			
-		end
-	end
-end
-*/
-
-/*
-package math_pkg;
-  // import dpi task      C Name = SV function name
-  import "DPI" pure function real cos (input real rTheta);
-  import "DPI" pure function real sin (input real rTheta);
-  import "DPI" pure function real log (input real rVal);
-  import "DPI" pure function real log10 (input real rVal);
-endpackage : math_pkg
-
-function real GET_SIN(input real time_s);
-  import math_pkg::*;
-  
-  GET_SIN = `OFFSET + (`AMPL * sin(2*`PI*`FREQ*time_s));
-endfunction
-*/
-
 fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
 			.MIF_SIN(`MIF_SIN), .MIF_COS(`MIF_COS)) FHT(
 	.iCLK(clk),

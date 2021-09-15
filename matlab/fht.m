@@ -5,8 +5,8 @@ close all;
 
 %% choose test signal:
     %test = 'sin';      % sine in 3 harmonics
-    %test = 'imp';      % impulse response
-    test = 'signal';   % real signal from 'wav'
+    test = 'imp';      % impulse response
+    %test = 'signal';   % real signal from 'wav'
     %test = 'const';    % const bias
     %test = 'num';      % linear increase signal from '0' to 'N - 1'
 
@@ -16,7 +16,8 @@ file_def = fopen('../fht_defines.v', 'r');
 dir_imp =       '../../fht_conv/matlab/h.txt'; % size Nh
 dir_signal =    '../../fht_conv/matlab/x.txt'; % size Nx
 
-dir_reg_imp =   '../../fht_conv/matlab/reg_imp_ram.txt'; % save reg ver of FHT for conv test
+dir_reg_imp_p =   '../../fht_conv/matlab/reg_imp_p_ram.txt'; % save reg ver of FHT for conv test
+dir_reg_imp_n =   '../../fht_conv/matlab/reg_imp_n_ram.txt';
 dir_reg_fht =   '../../fht_conv/matlab/reg_fht_ram.txt';
 
 N_bank = 4; % defines by architecture of transform in FPGA (don't change for this config)
@@ -363,40 +364,92 @@ for i = 1 : row
     fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
 end
 
-% save fixed point version of RAM FHT for conv:
-if(strcmp(test, 'imp') || strcmp(test, 'signal'))
-    abs_max_ram = 0;
-    
-    for i = 1 : row
-        if(max(ram(i,:)) > abs(min(ram(i,:))))
-            cur_max_ram = max(ram(i,:));
-        else
-            cur_max_ram = abs(min(ram(i,:)));
-        end
-        
-        if(cur_max_ram > abs_max_ram)
-            abs_max_ram = cur_max_ram;
-        end
-    end
-    
+% save fixed point version of IMP RAM POS/NEG FHT for conv:
     if(strcmp(test, 'imp'))
-        file_reg = fopen(dir_reg_imp, 'w');
-        reg_ram = round(ram*(2^(imp_bit - 2))/abs_max_ram); % fixed point for FPGA like registers without bit ext
+        ram_p(1:row, 1:N_bank) = zeros;
+        ram_n(1:row, 1:N_bank) = zeros;
+
+        ram_p(1, :) = ram(1, :) + ram(1, [1,2,4,3]);
+        ram_p(2, :) = ram(2, :) + ram(2, [4,3,2,1]);
+
+        ram_n(1, :) = ram(1, :) - ram(1, [1,2,4,3]);
+        ram_n(2, :) = ram(2, :) - ram(2, [4,3,2,1]);
+
+        cnt = 3;
+        for i = 2 : 1 : log2(row)
+            for j = (2^i - 1): -1 : (2^(i - 1))
+                ram_p(cnt, :) = ram(cnt, :) + ram(j + 1, [4,3,2,1]);
+                ram_n(cnt, :) = ram(cnt, :) - ram(j + 1, [4,3,2,1]);
+
+                cnt = cnt + 1;
+            end
+        end
+
+        abs_max_ram_p = 0;
+        abs_max_ram_n = 0;
+
+        for i = 1 : row
+            if(max(ram_p(i,:)) > abs(min(ram_p(i,:))))
+                cur_max_ram_p = max(ram_p(i,:));
+            else
+                cur_max_ram_p = abs(min(ram_p(i,:)));
+            end
+
+            if(max(ram_n(i,:)) > abs(min(ram_n(i,:))))
+                cur_max_ram_n = max(ram_n(i,:));
+            else
+                cur_max_ram_n = abs(min(ram_n(i,:)));
+            end
+
+            if(cur_max_ram_p > abs_max_ram_p)
+                abs_max_ram_p = cur_max_ram_p;
+            end
+
+            if(cur_max_ram_n > abs_max_ram_n)
+                abs_max_ram_n = cur_max_ram_n;
+            end
+        end
+
+    % fixed point for FPGA like registers without bit ext:
+        file_reg = fopen(dir_reg_imp_p, 'w');
+        reg_ram = round(ram_p*(2^(imp_bit - 2))/abs_max_ram_p);
+        for i = 1 : row
+            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
+        end
+
+        file_reg = fopen(dir_reg_imp_n, 'w');
+        reg_ram = round(ram_n*(2^(imp_bit - 2))/abs_max_ram_n);
+        for i = 1 : row
+            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
+        end
     end
 
+% save fixed point version of RAM FHT for conv:
     if(strcmp(test, 'signal'))
+        abs_max_ram = 0;
+        
+        for i = 1 : row
+            if(max(ram(i,:)) > abs(min(ram(i,:))))
+                cur_max_ram = max(ram(i,:));
+            else
+                cur_max_ram = abs(min(ram(i,:)));
+            end
+
+            if(cur_max_ram > abs_max_ram)
+                abs_max_ram = cur_max_ram;
+            end
+        end
+
         file_reg = fopen(dir_reg_fht, 'w');
         reg_ram = round(ram*(2^(d_bit - 1))/abs_max_ram); % fixed point for FPGA like registers
+
+        for i = 1 : row
+            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
+        end
     end
-    
-    for i = 1 : row
-        fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
-    end
-    
-    fclose(file_reg);
-    clear file_reg;
-    clear abs_max_ram;
-end
+
+fclose(file_reg);
+clear file_reg;
 
 for i = 1 : N
    fprintf(file_fft_cp, '%6.6f\n', fft_line(i)); 
