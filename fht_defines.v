@@ -12,16 +12,16 @@
 `define LAST_STAGE_ODD
  
 `define ADC_WIDTH 16
-`define D_BIT 20
+`define D_BIT 24
 `define A_BIT 8
 `define W_BIT 13
-`define CONV_BIT 24
+`define CONV_BIT 28
 `define IMP_BIT 17
  
 `define MAX_ADC_D 32768
-`define MAX_D 524288
+`define MAX_D 8388608
 `define MAX_W 2048
-`define MAX_CONV 8388608
+`define MAX_CONV 134217728
 `define MAX_IMP 32768
  
 /*****************************************************************************************************************/

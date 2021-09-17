@@ -1,4 +1,4 @@
-function fht_double_but = fht_double_but(x, y, sin_x, cos_x, w_amp) % length 'x' = 8: double DHT-4
+function F_FHT_BUT = F_FHT_BUT(x, y, sin_x, cos_x, w_amp) % length 'x' = 8: double DHT-4
 
 % test mixers:
 %{
@@ -19,8 +19,8 @@ mul_y = (cos_x(2)*y(2) + sin_x(2)*y(3))/w_amp;
 
 %mul_y =(-sinx(1)*y(2) + cosx(1)*y(3))/w_amp;
 
-fht_double_but(1) = (x(1) + mul_x)/2;
-fht_double_but(2) = (x(1) - mul_x)/2;
+F_FHT_BUT(1) = (x(1) + mul_x)/2;
+F_FHT_BUT(2) = (x(1) - mul_x)/2;
 
-fht_double_but(3) = (y(1) + mul_y)/2;
-fht_double_but(4) = (y(1) - mul_y)/2;
+F_FHT_BUT(3) = (y(1) + mul_y)/2;
+F_FHT_BUT(4) = (y(1) - mul_y)/2;

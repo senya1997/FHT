@@ -49,9 +49,9 @@ set_current_revision fht;
 	set name_def TEST_MIXER
 	
 # path of element that need to copy
-	set path_script	./script
-	set path_modelsim ./../modelsim/fht/
-	set path_sdo		./simulation/modelsim
+	set path_script	script
+	set path_modelsim ../modelsim/fht/
+	set path_sdo		simulation/modelsim
 
 set path_def ./fht_defines.v
 	
@@ -64,7 +64,7 @@ set path_def ./fht_defines.v
 	#set D_BIT [expr $D_BIT + 1]
 	#set D_BIT [expr $A_BIT + 18]
 	
-	set D_BIT [expr $A_BIT + 12]
+	set D_BIT [expr $A_BIT + 16]
 	set W_BIT [expr $W_BIT + 1]
 	set CONV_BIT [expr $D_BIT + 4]
 	set IMP_BIT [expr $IMP_BIT + 1]
@@ -229,21 +229,26 @@ if {[string equal $compile -c]} {
 	
 	puts "copy sdo..."
 	
-	set file_sdo [glob *.sdo]
+	set file_sdo [glob $path_sdo/*.sdo]
 	
-	foreach file [list $file_sdo] {
-	   file copy -force $path_sdo/$file $path_modelsim
+	foreach file $file_sdo {
+	   file copy -force $file $path_modelsim
 	}
 }
 
 puts "copy scripts..."
 
-set file_do [glob *.do]
-set file_tcl [glob *tcl]
+set file_do [glob $path_script/*.do]
+set file_tcl [glob $path_script/*.tcl]
 
-foreach file [list $file_do $file_tcl] {
-   file copy -force $path_script/$file $path_modelsim
+foreach file $file_do {
+   file copy -force $file $path_modelsim
 }
+foreach file $file_tcl {
+   file copy -force $file $path_modelsim
+}
+
+project_close
 
 puts " "
 puts "\tCOMPLETE"
