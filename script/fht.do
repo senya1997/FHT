@@ -16,7 +16,8 @@ vlog -novopt ../../fht/tb/fht_tb.sv
 #simulate
 	#vlog fft_tb.sv
 	#vsim -L altera_mf_ver -L cycloneiv_ver -L cycloneive_ver -L altera_prim_ver -c fht_tb -sv_lib signal -novopt
-	vsim -L altera_mf_ver -L altera_mf -L cycloneiv_ver -L cycloneive_ver -L altera_prim_ver -L lpm_ver -c fht_tb -novopt
+	#vsim -L altera_mf_ver -L altera_mf -L cycloneiv_ver -L cycloneive_ver -L altera_prim_ver -L lpm_ver -c fht_tb -novopt
+	vsim -L altera_mf_ver -novopt
 	
 do ../../fht/tb/wave/top.do
 configure wave -timelineunits us

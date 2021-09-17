@@ -35,21 +35,21 @@ set_current_revision fht;
 # ADC bit resolution
 	set ADC_BIT 16
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
-	set A_BIT 9
+	set A_BIT 8
 # twiddle coefficient data bit width
 	set W_BIT 12
 # impulses coefficient data bit width
 	set IMP_BIT 16
 # number of signal point going on FHT, must be large then 'Nh' and 'N/2' (full RAM FHT - N point)
-	#set Nx 33
-	set Nx 1026
-	#set Nx 513
+	#set Nx 34
+	#set Nx 1026
+	set Nx 514
 	
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER
 	
 # path of element that need to copy
-	set path_script	./scripts
+	set path_script	./script
 	set path_modelsim ./../modelsim/fht/
 	set path_sdo		./simulation/modelsim
 
@@ -228,18 +228,22 @@ if {[string equal $compile -c]} {
 	execute_flow -compile;
 	
 	puts "copy sdo..."
-	file copy -force $path_sdo/fht_v.sdo	$path_modelsim
-	file copy -force $path_sdo/fht.vo		$path_modelsim
+	
+	set file_sdo [glob *.sdo]
+	
+	foreach file [list $file_sdo] {
+	   file copy -force $path_sdo/$file $path_modelsim
+	}
 }
 
 puts "copy scripts..."
 
-file copy -force $path_script/fht_control.do	$path_modelsim
-file copy -force $path_script/fht_but_sdf.do	$path_modelsim
-file copy -force $path_script/fht.do			$path_modelsim
+set file_do [glob *.do]
+set file_tcl [glob *tcl]
 
-file copy -force $path_script/lib_setup.tcl	$path_modelsim
-file copy -force $path_script/src.tcl			$path_modelsim
+foreach file [list $file_do $file_tcl] {
+   file copy -force $path_script/$file $path_modelsim
+}
 
 puts " "
 puts "\tCOMPLETE"
