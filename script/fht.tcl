@@ -1,14 +1,7 @@
-proc disp_warning msg {
-	puts " "
-	puts "WARNING: $msg"
-	puts " "
-	post_message -type warning "$msg"
-}
-
 proc disp_error msg {
 	puts " "
 	post_message -type error $msg
-	return -code error $msg
+	return -code error
 }
 
 load_package flow
@@ -64,7 +57,7 @@ set path_def ./fht_defines.v
 	#set D_BIT [expr $D_BIT + 1]
 	#set D_BIT [expr $A_BIT + 18]
 	
-	set D_BIT [expr $A_BIT + 16]
+	set D_BIT [expr $A_BIT + 12]
 	set W_BIT [expr $W_BIT + 1]
 	set CONV_BIT [expr $D_BIT + 4]
 	set IMP_BIT [expr $IMP_BIT + 1]
@@ -207,10 +200,10 @@ while {[gets $f_def temp_str] >= 0} {
 	
 		if {$ind_com != -1} {
 			if {$ind_com > $ind_def} {
-				disp_warning "$name_def is enabled"
+				post_message -type warning "$name_def is enabled"
 			}
 		} else {
-			disp_warning "$name_def is enabled"
+			post_message -type warning "$name_def is enabled"
 		}
 		
 		break

@@ -8,7 +8,7 @@ add wave -noupdate /fht_control_tb/CONTROL/LAST_STAGE
 add wave -noupdate /fht_control_tb/CONTROL/EOF_STAGE
 add wave -noupdate /fht_control_tb/CONTROL/EOF_READ
 add wave -noupdate /fht_control_tb/CONTROL/SEC_PART_SUBSEC
-add wave -noupdate -radix binary -childformat {{{/fht_control_tb/CONTROL/sec_part_subsec_d[4]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[3]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[2]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[1]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[0]} -radix binary}} -expand -subitemconfig {{/fht_control_tb/CONTROL/sec_part_subsec_d[4]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[3]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[2]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[1]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[0]} {-height 15 -radix binary}} /fht_control_tb/CONTROL/sec_part_subsec_d
+add wave -noupdate -radix binary -childformat {{{/fht_control_tb/CONTROL/sec_part_subsec_d[3]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[2]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[1]} -radix binary} {{/fht_control_tb/CONTROL/sec_part_subsec_d[0]} -radix binary}} -expand -subitemconfig {{/fht_control_tb/CONTROL/sec_part_subsec_d[3]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[2]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[1]} {-height 15 -radix binary} {/fht_control_tb/CONTROL/sec_part_subsec_d[0]} {-height 15 -radix binary}} /fht_control_tb/CONTROL/sec_part_subsec_d
 add wave -noupdate /fht_control_tb/CONTROL/EOF_SECTOR
 add wave -noupdate -color Tan /fht_control_tb/CONTROL/NEW_BIAS_RD
 add wave -noupdate /fht_control_tb/CONTROL/RESET_CNT_RD
@@ -44,8 +44,14 @@ add wave -noupdate -color Gold -radix unsigned /fht_control_tb/CONTROL/addr_coef
 add wave -noupdate -radix unsigned /fht_control_tb/CONTROL/addr_coef_cnt
 add wave -noupdate /fht_control_tb/CONTROL/COEF_EN
 add wave -noupdate /fht_control_tb/CONTROL/rdy
+add wave -noupdate /fht_control_tb/CONTROL/EN_BIAS
+add wave -noupdate /fht_control_tb/CONTROL/CHOOSE_EN_NEW_BIAS_RD
+add wave -noupdate /fht_control_tb/CONTROL/NEW_BIAS_RD
+add wave -noupdate /fht_control_tb/CONTROL/BIAS_RD
+add wave -noupdate /fht_control_tb/CONTROL/clk_2
+add wave -noupdate /fht_control_tb/CONTROL/N_CLK_2
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {23696 ns} 0}
+WaveRestoreCursors {{Cursor 1} {24287 ns} 0}
 quietly wave cursor active 1
 configure wave -namecolwidth 237
 configure wave -valuecolwidth 100
@@ -61,4 +67,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ns} {56480 ns}
+WaveRestoreZoom {24227 ns} {24385 ns}

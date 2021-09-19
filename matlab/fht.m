@@ -4,10 +4,10 @@ clc;
 close all;
 
 %% choose test signal:
-    test = 'sin';      % sine in 3 harmonics
+    %test = 'sin';      % sine in 3 harmonics
     %test = 'imp';      % impulse response
     %test = 'signal';   % real signal from 'wav'
-    %test = 'const';    % const bias
+    test = 'const';    % const bias
     %test = 'num';      % linear increase signal from '0' to 'N - 1'
 
 %% variables:
@@ -25,7 +25,7 @@ dir_def = '../fht_defines.v';
 N_bank = 4; % defines by architecture of transform in FPGA (don't change for this config)
 
 Fd = 44100;
-bias = 0;
+bias = 100;
 
 rand_sin = 'Y'; % generate rand sine harm or determine by defined value (Y/N)
 

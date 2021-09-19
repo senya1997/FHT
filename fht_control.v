@@ -168,6 +168,8 @@ wire signed [A_BIT - 1 : 0] BIAS_WR = SEC_PART_SUBSEC_D ? (addr_wr_cnt - (div >>
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 1)));
 wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? 1'b1 : EOF_SECTOR_1);
 
+wire [A_BIT : 0] SIZE_BIAS_RD_MUL_2 = (size_bias_rd << 1);
+
 wire EN_BIAS = N_CLK_2 & (cnt_sector > 1);
 
 wire EN_BIAS_EVEN =	(EN_BIAS & (cnt_sector[0] == 0));
@@ -177,7 +179,7 @@ wire EN_BIAS_ODD =	(EN_BIAS & (cnt_sector[0] == 1));
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) size_bias_rd <= 0;
 	else if(EOF_STAGE_1) size_bias_rd <= 1;
-	else if(CHOOSE_EN_NEW_BIAS_RD & NEW_BIAS_RD & clk_2) size_bias_rd <= (size_bias_rd << 1);
+	else if(CHOOSE_EN_NEW_BIAS_RD & NEW_BIAS_RD & clk_2) size_bias_rd <= SIZE_BIAS_RD_MUL_2;
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -185,7 +187,7 @@ always@(posedge iCLK or negedge iRESET)begin
 	else if(EOF_STAGE_1) cnt_bias_rd <= 2;
 	else if(CHOOSE_EN_NEW_BIAS_RD & clk_2)
 		begin
-			if(NEW_BIAS_RD) cnt_bias_rd <= size_bias_rd - 1'b1;
+			if(NEW_BIAS_RD) cnt_bias_rd <= SIZE_BIAS_RD_MUL_2 - 1'b1;
 			else cnt_bias_rd <= cnt_bias_rd - 2;
 		end
 end

@@ -12,7 +12,7 @@ project::compileall
 # for upd package in current tb (egg. 'fli::*')
 	vlog -novopt ../../fht/tb/fht_control_tb.sv
 
-vsim -novopt fht_control_tb
+vsim -novopt fht_control_tb -logfile  LOG_FHT_CONTROL.txt
 
 do ../../fht/tb/wave/control.do
 configure wave -timelineunits us
