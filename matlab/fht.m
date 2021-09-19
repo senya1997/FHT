@@ -6,8 +6,8 @@ close all;
 %% choose test signal:
     %test = 'sin';      % sine in 3 harmonics
     %test = 'imp';      % impulse response
-    %test = 'signal';   % real signal from 'wav'
-    test = 'const';    % const bias
+    test = 'signal';   % real signal from 'wav'
+    %test = 'const';    % const bias
     %test = 'num';      % linear increase signal from '0' to 'N - 1'
 
 %% variables:

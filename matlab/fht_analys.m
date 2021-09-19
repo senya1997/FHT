@@ -3,119 +3,91 @@ clc;
 
 close all;
 
-err_ind = load('err_ind.txt');
-
-fft_math = load('fft_cp.txt');
-fft_math = fft_math';
-
-fht_math = load('ram.txt');
-fht_fpga = load('../../modelsim/fht/fht_ram.txt');
-
-N_bank = 4;
-row = length(fht_math);
-N = N_bank*row;
-last_stage = log(N)/log(2) - 1; % numbers start from zero
-
-%% from matrix to line:
-    cnt = 1;
+%% variables:
+    dir_fft_math	= 'fft_cp.txt';
+    dir_fht_math	= 'ram.txt';
+    dir_err_ind     = 'err_ind.txt';
     
-    fht_math_buf(1:N) = 0;
-    fht_fpga_buf(1:N) = 0;
+    dir_fht_fpga	= '../../modelsim/fht/fht_ram.txt';
+
+    N_bank = 4;
+
+%% convert and calc matrix:
+    fht_math = load(dir_fht_math);
+    fht_fpga = load(dir_fht_fpga);
+
+    %fft_math = load(dir_fft_math);
+    %fft_math = fft_math';
+
+    row = length(fht_fpga);
+    N = N_bank*row;
+
+    fht_math_line = F_FHT_RAM_TO_LINE(fht_math);
+    fht_fpga_line = F_FHT_RAM_TO_LINE(fht_fpga);
+
+    err_line = F_ABS_ERR_LINE(fht_math_line, fht_fpga_line);
+    %err_line = F_ABS_ERR_LINE(fft_math, fht_fpga_line);
+
+    err_ind = load(dir_err_ind);
+    err_ind = sort(err_ind);
+
+    fclose('all');
     
-    for i = 1:row
-        fht_math_buf((1 + (i-1)*4) : (4*i)) = fht_math(i, 1:4);
-        fht_fpga_buf((1 + (i-1)*4) : (4*i)) = fht_fpga(i, 1:4);
-        
-        cnt = cnt + 1;
-    end
+%% graphics:
+% errors:
+    figure;
+    subplot(2,1,1);
+        histogram(err_ind, 16);
+    xlim([0 N]);
+    title('Error indexes:');
+    ylabel('Number of errors');
+    xlabel('Index');
+    grid on;
 
-%% change index order (bit reverse):
-    cnt = 1;
-    
-    fht_math(1:row, 1:N_bank) = 0;
-    fht_fpga(1:row, 1:N_bank) = 0;
-    
-    fht_math_line(1:N) = 0;
-    fht_fpga_line(1:N) = 0;
-    
-    for i = 1:row
-        fht_math(i, 1:4) = [fht_math_buf(bin2dec(fliplr(dec2bin(cnt-1,	last_stage+1))) + 1),... % cnt+0-1
-                            fht_math_buf(bin2dec(fliplr(dec2bin(cnt,	last_stage+1))) + 1),... % cnt+1-1
-                            fht_math_buf(bin2dec(fliplr(dec2bin(cnt+1,	last_stage+1))) + 1),... % cnt+2-1
-                            fht_math_buf(bin2dec(fliplr(dec2bin(cnt+2,	last_stage+1))) + 1)];   % cnt+3-1
-                        
-        fht_fpga(i, 1:4) = [fht_fpga_buf(bin2dec(fliplr(dec2bin(cnt-1,	last_stage+1))) + 1),... % cnt+0-1
-                            fht_fpga_buf(bin2dec(fliplr(dec2bin(cnt,	last_stage+1))) + 1),... % cnt+1-1
-                            fht_fpga_buf(bin2dec(fliplr(dec2bin(cnt+1,	last_stage+1))) + 1),... % cnt+2-1
-                            fht_fpga_buf(bin2dec(fliplr(dec2bin(cnt+2,	last_stage+1))) + 1)];   % cnt+3-1
-                        
-        fht_math_line((1 + (i-1)*4) : (4*i)) = fht_math(i, :);
-        fht_fpga_line((1 + (i-1)*4) : (4*i)) = fht_fpga(i, :);
-        
-        cnt = cnt + 4;
-    end
+    subplot(2,1,2);
+        plot(err_ind, 'o', 'MarkerSize', 3);
+    xlabel('Number');
+    ylabel('Index');
+    grid on;
 
-    clear cnt;
+% FHT compare:
+    figure;
+    subplot(2,1,1);
+        plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);
+    hold on;
+        plot((0 : N - 1), fht_fpga_line, 'o-', 'MarkerSize', 2);
+    xlim([0 N]);
+    title('Compare FHT and FFT:');
+    xlabel('Num of point');
+    ylabel('Amp');
+    legend(['Math FHT'; 'FPGA FHT']);
+    grid on;
 
-err_line = abs(fht_math_line - fht_fpga_line)*100/max(abs(fht_fpga_line));
-%err_line = abs(fft_math - fht_fpga_line)*100/max(abs(fht_fpga_line));
+    subplot(2,1,2);
+        plot((0 : N - 1), err_line);
+    xlim([0 N]);
+    title('Error:');
+    xlabel('Num of point');
+    ylabel('Precent');
+    grid on;
 
-fclose('all');
-    
-%% graphics
-err_ind = sort(err_ind);
+% zoom x8 times:
+    figure; 
+    subplot(2,1,1);
+        plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);
+    hold on;
+        plot((0 : N - 1), fht_fpga_line, 'o-', 'MarkerSize', 2);
+    xlim([0 N/8 - 1]);
+    title('Compare FHT and FFT:');
+    xlabel('Num of point');
+    ylabel('Amp');
+    legend(['Math FHT'; 'FPGA FHT']);
+    grid on;
 
-figure;
-subplot(2,1,1);
-    histogram(err_ind, 16);
-xlim([0 N]);
-title('Error indexes:');
-ylabel('Number of errors');
-xlabel('Index');
-grid on;
-
-subplot(2,1,2);
-    plot(err_ind, 'o', 'MarkerSize', 3);
-xlabel('Number');
-ylabel('Index');
-grid on;
-
-figure;
-subplot(2,1,1);
-    plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);
-hold on;
-    plot((0 : N - 1), fht_fpga_line, 'o-', 'MarkerSize', 2);
-xlim([0 N]);
-title('Compare FHT and FFT:');
-xlabel('Num of point');
-ylabel('Amp');
-legend(['Math FHT'; 'FPGA FHT']);
-grid on;
-
-subplot(2,1,2);
-    plot((0 : N - 1), err_line);
-xlim([0 N]);
-title('Error:');
-xlabel('Num of point');
-ylabel('Precent');
-grid on;
-
-figure; % zoom x8 times
-subplot(2,1,1);
-    plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);
-hold on;
-    plot((0 : N - 1), fht_fpga_line, 'o-', 'MarkerSize', 2);
-xlim([0 N/8 - 1]);
-title('Compare FHT and FFT:');
-xlabel('Num of point');
-ylabel('Amp');
-legend(['Math FHT'; 'FPGA FHT']);
-grid on;
-
-subplot(2,1,2);
-    plot((0 : N - 1), err_line);
-xlim([0 N/8 - 1]);
-title('Error:');
-xlabel('Num of point');
-ylabel('Precent');
-grid on;
+    subplot(2,1,2);
+        plot((0 : N - 1), err_line);
+    xlim([0 N/8 - 1]);
+    title('Error:');
+    xlabel('Num of point');
+    ylabel('Precent');
+    grid on;
