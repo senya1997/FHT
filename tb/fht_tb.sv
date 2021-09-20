@@ -29,7 +29,7 @@ bit [3 : 0] we;
 wire RDY_FHT, RDY_IFHT;
 
 int i, j;
-int cnt_st_er, cnt_all_er; // counters of stage and all errors
+int cnt_all_er; // counters of stage and all errors
 
 real temp;
 real max_er, av_er; // max and avarage error
@@ -162,12 +162,12 @@ initial begin
 	`ifdef LAST_STAGE_ODD
 		SAVE_RAM_DATA(`FHT_DONE_RAM, 0);
 		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM(`MATLAB_DONE_RAM, `FHT_DONE_RAM);
+			COMPARE_MATLAB_RAM(`MATLAB_FHT_DONE_RAM, `FHT_DONE_RAM);
 		`endif
 	`elsif LAST_STAGE_EVEN
 		SAVE_RAM_DATA(`FHT_DONE_RAM, 1);
 		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM(`MATLAB_DONE_RAM, `FHT_DONE_RAM);
+			COMPARE_MATLAB_RAM(`MATLAB_FHT_DONE_RAM, `FHT_DONE_RAM);
 		`endif
 	`endif
 	
@@ -347,9 +347,12 @@ task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 	$fclose(f_ram_reg);
 endtask
 
-task COMPARE_MATLAB_RAM(input string name_ref, name);
+task automatic COMPARE_MATLAB_RAM(input string name_ref, name);
 	int file_ref, file;
-	int scan [2];
+	int scan;
+	
+	shortint ik, jk;
+	shortint cnt_st_er = 0;
 	
 	real temp [4];
 	real temp_ref [4];
@@ -357,44 +360,46 @@ task COMPARE_MATLAB_RAM(input string name_ref, name);
 	
 	real max_row_er; // max error on this row
 	
-	file_ref =	$fopen(name_ref, "r");
-	file = 		$fopen(name, "r");
+	file_ref	= $fopen(name_ref, "r");
+	file		= $fopen(name, "r");
 	
-	for(j = 0; j < `BANK_SIZE; j = j + 1)
+	for(jk = 0; jk < `BANK_SIZE; jk = jk + 1)
 		begin
-			scan[0] = $fscanf(file_ref, "%f\t%f\t%f\t%f\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
-			scan[1] = $fscanf(file, "%f\t%f\t%f\t%f\n", temp[0], temp[1], temp[2], temp[3]);
+			scan = $fscanf(file_ref, "%f\t%f\t%f\t%f\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+			scan = $fscanf(file, "%f\t%f\t%f\t%f\n", temp[0], temp[1], temp[2], temp[3]);
 
 			max_row_er = 0;
 
-			for(i = 0; i < 4; i = i + 1)
+			for(ik = 0; ik < 4; ik = ik + 1)
 				begin
-					temp_er[i] = F_ABS(temp_ref[i] - temp[i]);
-					if(temp_er[i] > max_row_er) max_row_er = temp_er[i];
+					temp_er[ik] = F_ABS(temp_ref[ik] - temp[ik]);
+					if(temp_er[ik] > max_row_er) max_row_er = temp_er[ik];
 				end
 
 			if((temp_er[0] < `ACCURACY) & (temp_er[1] < `ACCURACY) & (temp_er[2] < `ACCURACY) & (temp_er[3] < `ACCURACY))
 				$display("\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
-							j, temp[0], temp[1], temp[2], temp[3]);
+							jk, temp[0], temp[1], temp[2], temp[3]);
 			else
 				begin
-					for(i = 0; i < 4; i = i + 1)
-						if(temp_er[i] > max_er) max_er = temp_er[i];
+					for(ik = 0; ik < 4; ik = ik + 1)
+						if(temp_er[ik] > max_er) max_er = temp_er[ik];
 					
 					av_er = av_er + max_row_er;
 					
 					cnt_st_er = cnt_st_er + 1;
 					$display(" ***\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
-								j, temp[0], temp[1], temp[2], temp[3]);
+								jk, temp[0], temp[1], temp[2], temp[3]);
 					$display(" ***\t     REF:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
 								temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 				end			
 		end
 	
+	$fclose(file_ref);
+	$fclose(file);
+	
 	$display("\n\tnumber of errors compare RAM with matlab in this stage: %4d, time: %t", cnt_st_er, $time);
 	
 	cnt_all_er = cnt_all_er + cnt_st_er;
-	cnt_st_er = 0;
 endtask
 
 fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
