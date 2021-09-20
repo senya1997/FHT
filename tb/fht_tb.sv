@@ -111,7 +111,7 @@ initial begin
 
 // save ADC data line by line (row by row):	
 	$display("\n\twrite ADC data point in RAM, time: %t\n", $time);
-	file_data = $fopen(`FHT_INIT_RAM, "r");
+	file_data = $fopen(`INIT_FHT_RAM, "r");
 	disp_data = 0;
 	
 	for(j = 0; j < `BANK_SIZE; j = j + 1) 
@@ -160,14 +160,14 @@ initial begin
 	`endif
 	
 	`ifdef LAST_STAGE_ODD
-		SAVE_RAM_DATA(`FHT_DONE_RAM, 0);
+		SAVE_RAM_DATA(`FPGA_FHT_RAM, 0);
 		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM(`MATLAB_FHT_DONE_RAM, `FHT_DONE_RAM);
+			COMPARE_MATLAB_RAM(`MATH_FHT_RAM, `FPGA_FHT_RAM);
 		`endif
 	`elsif LAST_STAGE_EVEN
-		SAVE_RAM_DATA(`FHT_DONE_RAM, 1);
+		SAVE_RAM_DATA(`FPGA_FHT_RAM, 1);
 		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM(`MATLAB_FHT_DONE_RAM, `FHT_DONE_RAM);
+			COMPARE_MATLAB_RAM(`MATH_FHT_RAM, `FPGA_FHT_RAM);
 		`endif
 	`endif
 	
