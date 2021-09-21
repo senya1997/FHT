@@ -37,6 +37,7 @@
 // output MATH files for compare in real (for data):
 	`define MATH_FHT_RAM	"../../fht/matlab/math_fht_ram.txt"			// math model FHT out RAM for compare
 	`define MATH_CONV_RAM	"../../fht_conv/matlab/math_conv_ram.txt"	// math model CONV by DHT out RAM for compare
+	`define MATH_CONV_ADDR	"../../fht_conv/matlab/math_conv_addr.txt"
 	`define MATH_ADDR_RD	"../../fht/matlab/math_addr_rd.txt"			// addr of math model RAM on different stages FHT for compare
 	`define MATH_ADDR_WR	"../../fht/matlab/math_addr_wr.txt"
 

@@ -52,11 +52,11 @@ initial begin
 	`ifdef COMPARE_WITH_MATLAB
 		$display("\tread and write address compare with 'txt' file from matlab");
 		$display("\terror marking by '***', r/w = 0 => addr_rd, r/w = 1 => addr_wr\n");
+		
+		f_addr_rd = $fopen(`MATH_ADDR_RD, "r");
+		f_addr_wr = $fopen(`MATH_ADDR_WR, "r");
 	`endif
-	
-	f_addr_rd = $fopen(`MATH_ADDR_RD, "r");
-	f_addr_wr = $fopen(`MATH_ADDR_WR, "r");
-	
+
 		// #1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
@@ -68,15 +68,13 @@ initial begin
 	
 // wait the end of conversion:
 	wait(RDY);
-	$fclose(f_addr_rd);
-	$fclose(f_addr_wr);
 	
 	`ifdef COMPARE_WITH_MATLAB
+		$fclose(f_addr_rd);
+		$fclose(f_addr_wr);
+	
 		$display("\n\t\tnumber of errors in addr_rd this stage: %d", cnt_er_rd);
 		$display("\t\tnumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
-			cnt_er_rd = 0;
-			cnt_er_wr = 0;
-	
 		$display("\n\t\ttotal amount of errors: %d", cnt_er);
 	`endif
 	
