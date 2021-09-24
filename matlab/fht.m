@@ -349,7 +349,7 @@ fclose(file_fft_cp);
 
 % save fixed point version of IMP RAM POS/NEG FHT for conv:
     if(strcmp(test, 'signal'))
-        reg_ram = F_SAVE_REG_RAM(ram , d_bit, dir_init_conv);
+        reg_ram = F_SAVE_REG_RAM(ram, d_bit, dir_init_conv);
     elseif(strcmp(test, 'imp'))
         ram_p(1:row, 1:N_bank) = zeros;
         ram_n(1:row, 1:N_bank) = zeros;
@@ -370,8 +370,8 @@ fclose(file_fft_cp);
             end
         end
 
-        reg_ram_p = F_SAVE_REG_RAM(ram_p , imp_bit - 1, dir_init_imp_p); % minus bit expansion for imp
-        reg_ram_n = F_SAVE_REG_RAM(ram_n , imp_bit - 1, dir_init_imp_n);
+        reg_ram_p = F_SAVE_REG_RAM(ram_p, imp_bit - 1, dir_init_imp_p); % minus bit expansion for imp
+        reg_ram_n = F_SAVE_REG_RAM(ram_n, imp_bit - 1, dir_init_imp_n);
     end
 
 clear temp; clear file_ram; clear file_fft_cp;
