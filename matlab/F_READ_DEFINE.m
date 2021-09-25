@@ -9,8 +9,7 @@ len_def = length(def_name);
 flag_def_val = 0;
 
 while(~feof(file_def))
-    %line = fgetl(file_def);
-    line = fscanf(file_def, '%s\n');
+    line = fgetl(file_def);
     len_line = length(line);
     
     if(len_line > len_def)
