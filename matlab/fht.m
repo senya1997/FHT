@@ -3,6 +3,10 @@ clc;
 
 close all;
 
+fprintf('\n===================================================\n');
+fprintf('=              Fast Hartley transform             =\n');
+fprintf('===================================================\n');
+
 %% choose test signal:
     %test = 'sin';      % sine in 3 harmonics
     %test = 'imp';      % impulse response
@@ -65,7 +69,18 @@ save_err_ind = 'Y'; % save index of error data in file (Y/N, append to exist fil
     imp_bit	= F_READ_DEFINE(dir_def, 'IMP_BIT');
     w_amp	= F_READ_DEFINE(dir_def, 'MAX_W');
 
+fprintf('\nInput data:\n');
+fprintf('\tNum of point transform (N)\t\t\t= %d\n',     N);
+fprintf('\tNum of point signal in RAM (Nx)\t\t= %d\n',	Nx);
+fprintf('\tNum of point impulses in RAM (Nh)\t= %d\n',	Nh);
+fprintf('\tRAM bank size\t= %d\n',          row);
+fprintf('\tData width\t\t= %d\n',           d_bit);
+fprintf('\tImpulse coef width\t\t= %d\n',   imp_bit);
+fprintf('\tAmp of Sin/Cos coef\t\t= %d\n',  w_amp);
+
 %% get input data:
+fprintf('\nGet input data...\n');
+
 time = 0 : 1/Fd : (N - 1)/Fd;
 
 switch(test)
@@ -90,24 +105,34 @@ switch(test)
                         amp(2)*sind((freq(2)*360).* time + phase(2)) +...
                         amp(3)*sind((freq(3)*360).* time + phase(3));
     
-        fprintf('\nsignal test\n\n');
-        fprintf('amp_1 = %d,\tamp_2 = %d,\tamp_3 = %d\nfreq_1 = %d,\tfreq_2 = %d,\tfreq_3 = %d\nphase_1 = %d,\tphase_2 = %d,\tphase_3 = %d\n',...
+        fprintf('\tTest type: signal test\n');
+        fprintf('\n\tamp_1 = %d,\tamp_2 = %d,\tamp_3 = %d\n\tfreq_1 = %d,\tfreq_2 = %d,\tfreq_3 = %d\n\tphase_1 = %d,\tphase_2 = %d,\tphase_3 = %d\n',...
                 amp, freq, phase);
     case 'imp'
-        fprintf('\nimpulse test\n\n');
-        file_imp = fopen(dir_imp, 'r');         
+        fprintf('\tTest type: impulse test\n');
+        file_imp = fopen(dir_imp, 'r');
+        
+        if(file_imp == -1)
+           error('\nError: file does not exist "%s"\n', dir_imp); 
+        end
     case 'signal'
-        fprintf('\nsignal test\n\n');
+        fprintf('\tTest type: signal test\n');
         file_signal = fopen(dir_signal, 'r');
+        
+        if(file_signal == -1)
+           error('\nError: file does not exist "%s"\n', dir_signal); 
+        end
     case 'const'
-        fprintf('\nconst test\n\n');
+        fprintf('\tTest type: const test\n');
     case 'num'
-        fprintf('\nindex number test\n\n');
+        fprintf('\tTest type: index number test\n');
     otherwise
-        error('test var is wrong');
+        error('\nTest type var is wrong\n');
 end
 
 %% get input RAM for start FHT:
+fprintf('\nForming input RAM for FHT...');
+
 k = 0;
 ram(1:row, 1:N_bank) = zeros;
 test_signal(1:N) = zeros;
@@ -153,7 +178,7 @@ for i = 1:N_bank
             case 4
                 ram(j, 4) = test_signal(k);
             otherwise
-                error('number of bank must be equal 4 because of stage writing points bank number must be 1,3,2,4');
+                error('\nNumber of bank must be equal 4 (writing points bank number must be 1,3,2,4)\n');
         end
     end
 end
@@ -172,6 +197,8 @@ clear max_freq; clear max_amp; clear max_phase; clear bias_freq;
 clear line; clear k; clear signal;
 
 %% fft (for check):
+fprintf('\nStart reference FFT for check correctness of the FHT...');
+
 temp_fft = fft(test_signal, N)/N;
 
 ram_fft(1:row, 1:N_bank) = zeros;
@@ -182,16 +209,30 @@ end
 fft_line = real(temp_fft) - imag(temp_fft);
 
 %% fht:
+fprintf('\nStart FHT...\n');
+
 sin_x = load('sin.txt');
 cos_x = load('cos.txt');
 
 file_ram = fopen(dir_init_fht, 'w');
-for i = 1 : row
-    fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
+
+if(file_ram ~= -1)
+	for i = 1 : row
+        fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
+	end
+else
+    error('\nError: file name is wrong "%s"\n', dir_init_fht);
 end
-    
+
 file_addr_rd = fopen(dir_math_addr_rd, 'w'); % for compare with rtl
+if(file_addr_rd == -1)
+	error('\nError: file name is wrong "%s"\n', dir_math_addr_rd); 
+end
+
 file_addr_wr = fopen(dir_math_addr_wr, 'w');
+if(file_addr_wr == -1)
+	error('\nError: file name is wrong "%s"\n', dir_math_addr_wr); 
+end
 
 for i = 1:row % 0 stage (only butterfly)
     temp = F_FHT_BUT([ram(i, 1), ram(i, 2), 0],...
@@ -207,6 +248,7 @@ for i = 1:row % 0 stage (only butterfly)
 end
 
 last_stage = log(N)/log(2) - 1; % numbers start from zero
+fprintf('\n\tTotal num of stages transform: %d\n', last_stage);
 
 % init coef for 1st stage:
     bit_depth = log(row)/log(2) - 2; % bit depth of ROM data: [A_BIT - 3 : 0]	
@@ -214,11 +256,17 @@ last_stage = log(N)/log(2) - 1; % numbers start from zero
     sector = 1;
     
 for stage = 1:last_stage % without 0 stage
+    fprintf('\t\tCurrent stage transform: %d\n', stage);
+    
 	name = 'before_';
     name = strcat([name, mat2str(stage)]);
     name = strcat([name, 'st_ram.txt']);
     
     file_ram = fopen(name, 'w');
+    if(file_ram == -1)
+        error('\nError: file name is wrong "%s"\n', name); 
+    end
+
     for i = 1 : row
         fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
     end
@@ -235,7 +283,7 @@ for stage = 1:last_stage % without 0 stage
         num_coef = bin2dec(fliplr(dec2bin(cos_cnt, bit_depth))) + 1;
         
 		for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div)
-			if(j == 1)
+            if(j == 1)
 				temp = F_FHT_BUT([ram(i, 1), ram(i, 2), ram(i, 2)],...
                                  [ram(i, 3), ram(i, 4), ram(i, 4)],...
                                  [sin_x(num_coef), cos_x(num_coef)],...
@@ -283,7 +331,7 @@ for stage = 1:last_stage % without 0 stage
                 fprintf('x0 = %d, x1 = %d, x2 = %d; y0 = %d, y1 = %d, y2 = %d; num_coef = %d\n', temp_input, num_coef-1);
             end
             %}
-			if(stage == last_stage)
+            if(stage == last_stage)
 				ram_buf(i, 1) = temp(1);
 				ram_buf(i, 2) = temp(2);
 				ram_buf(i, 3) = temp(3);
@@ -305,9 +353,9 @@ for stage = 1:last_stage % without 0 stage
                 
                 fprintf(file_addr_wr, '%4d\t%4d\t%4d\t%4d\n', i-1,  i + div - 1, i-1, i + div - 1);
             end
-		end
+        end
         
-		if((sector_cnt == -(sector_size - 1)) && (j >= 2))
+        if((sector_cnt == -(sector_size - 1)) && (j >= 2))
 			sector_size = 2*sector_size;
 			sector_cnt = sector_size - 1;
 		else
@@ -333,24 +381,36 @@ fclose(file_addr_wr);
 clear file_addr_rd; clear file_addr_wr;
 
 %% save final RAM data in files:
+fprintf('\nSave output RAM after transform...');
+
 file_ram = fopen(dir_math_fht_ram, 'w');
+if(file_ram ~= -1)
+    for i = 1 : row
+        fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
+    end
+    fclose(file_ram); 
+else
+    error('\nError: file name is wrong "%s"\n', dir_math_fht_ram); 
+end
+
 file_fft_cp = fopen(dir_math_fft_cp, 'w'); % for compare in analys
-
-for i = 1 : row
-    fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
+if(file_fft_cp ~= -1)
+    for i = 1 : N
+        fprintf(file_fft_cp, '%6.6f\n', fft_line(i)); 
+    end
+    fclose(file_fft_cp);
+else
+    error('\nError: file name is wrong "%s"\n', dir_math_fft_cp); 
 end
-
-for i = 1 : N
-   fprintf(file_fft_cp, '%6.6f\n', fft_line(i)); 
-end
-
-fclose(file_ram); 
-fclose(file_fft_cp); 
 
 % save fixed point version of IMP RAM POS/NEG FHT for conv:
     if(strcmp(test, 'signal'))
+        fprintf('\nSave integer (reg) version output RAM signal for FPGA...');
+        
         reg_ram = F_SAVE_REG_RAM(ram, d_bit, dir_init_conv);
     elseif(strcmp(test, 'imp'))
+        fprintf('\nSave integer (reg) version output RAM impulses for FPGA...');
+        
         ram_p(1:row, 1:N_bank) = zeros;
         ram_n(1:row, 1:N_bank) = zeros;
 
@@ -377,6 +437,8 @@ fclose(file_fft_cp);
 clear temp; clear file_ram; clear file_fft_cp;
 
 %% get norm order in RAM for compare FFT and FHT:
+fprintf('\nCalc error between FFT and FHT for compare...');
+
 % from matrix to line:
     cnt = 1;
     clear ram_buf;
@@ -421,6 +483,10 @@ end
 if((i ~= 1) && (save_err_ind == 'Y'))
     file_err = fopen(dir_math_err_ind, 'a');
 
+    if(file_err == -1)
+        error('\nError: file name is wrong "%s"\n', dir_math_err_ind); 
+    end
+    
     ind_max_err = sort(ind_max_err);
     for i = 1:length(ind_max_err)
         fprintf(file_err, '%d\n', ind_max_err(i));
@@ -433,6 +499,8 @@ end
 fclose('all');
     
 %% graphics:
+fprintf('\nPrint graphics...\n');
+
 figure;
     plot(time, test_signal);
 title('Test signal:');
@@ -480,3 +548,7 @@ title('Error:');
 xlabel('Num of point');
 ylabel('Precent');
 grid on;
+
+fprintf('\n===================================================\n');
+fprintf('=                    Complete                     =\n');
+fprintf('===================================================\n');

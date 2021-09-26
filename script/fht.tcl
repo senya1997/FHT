@@ -202,7 +202,7 @@ if {[string equal $flag_clean -cl]} {
 	
 	puts "clean matlab dir"
 		file delete -force {*}[glob -nocomplain $path_matlab/*.txt]
-
+		file delete -force {*}[glob -nocomplain $path_conv_matlab/*.txt]
 	puts "clean root dir"
 		file delete -force {*}[glob -nocomplain *.mif]
 		file delete -force {*}[glob -nocomplain *.ver]
@@ -210,10 +210,8 @@ if {[string equal $flag_clean -cl]} {
 	puts "clean modelsim prj dir"
 		file delete -force {*}[glob -nocomplain $path_modelsim/*.txt]
 		file delete -force {*}[glob -nocomplain $path_modelsim/*.do]
+		file delete -force {*}[glob -nocomplain $path_modelsim/*.sdo]
 		file delete -force {*}[glob -nocomplain $path_modelsim/*.tcl]
-		
-	puts "clean FHT conv matlab dir"
-		file delete -force {*}[glob -nocomplain $path_conv_matlab/*.txt]
 } else {
 	puts "generate MIF for ROM and TXT for matlab..."
 

@@ -17,6 +17,10 @@ for i = 1 : row
 end
 
 file_reg = fopen(file_name, 'w');
+if(file_reg == -1)
+	error('\nError: file name is wrong "%s"\n', file_name); 
+end
+
 reg_ram = round(ram*(2^(bit - 1))/abs_max_ram); % fixed point for FPGA like registers
 
 for i = 1 : row
