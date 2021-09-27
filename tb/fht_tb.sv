@@ -351,7 +351,6 @@ task automatic COMPARE_MATLAB_RAM(input string name_ref, name);
 	int file_ref, file;
 	int scan;
 	
-	shortint ik, jk;
 	shortint cnt_st_er = 0;
 	
 	real temp [4];
@@ -363,30 +362,29 @@ task automatic COMPARE_MATLAB_RAM(input string name_ref, name);
 	file_ref	= $fopen(name_ref, "r");
 	file		= $fopen(name, "r");
 	
-	for(jk = 0; jk < `BANK_SIZE; jk = jk + 1)
+	for(shortint jk = 0; jk < `BANK_SIZE; jk++)
 		begin
 			scan = $fscanf(file_ref, "%f\t%f\t%f\t%f\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
 			scan = $fscanf(file, "%f\t%f\t%f\t%f\n", temp[0], temp[1], temp[2], temp[3]);
 
 			max_row_er = 0;
 
-			for(ik = 0; ik < 4; ik = ik + 1)
+			for(shortint ik = 0; ik < 4; ik++)
 				begin
 					temp_er[ik] = F_ABS(temp_ref[ik] - temp[ik]);
 					if(temp_er[ik] > max_row_er) max_row_er = temp_er[ik];
 				end
+			
+			if(max_row_er > max_er) max_er = max_row_er;
 
 			if((temp_er[0] < `ACCURACY) & (temp_er[1] < `ACCURACY) & (temp_er[2] < `ACCURACY) & (temp_er[3] < `ACCURACY))
 				$display("\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
-							jk, temp[0], temp[1], temp[2], temp[3]);
+								jk, temp[0], temp[1], temp[2], temp[3]);
 			else
 				begin
-					for(ik = 0; ik < 4; ik = ik + 1)
-						if(temp_er[ik] > max_er) max_er = temp_er[ik];
-					
 					av_er = av_er + max_row_er;
-					
 					cnt_st_er = cnt_st_er + 1;
+					
 					$display(" ***\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
 								jk, temp[0], temp[1], temp[2], temp[3]);
 					$display(" ***\t     REF:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 

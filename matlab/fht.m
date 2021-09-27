@@ -31,14 +31,14 @@ fprintf('===================================================\n');
 % dir output math:
     global dir_math_fht_ram;
     global dir_fpga_fht_ram;
-    global dir_math_fft_cp;
+    global dir_math_fft_line;
     global dir_math_err_ind;
     
     dir_math_addr_rd	= 'math_addr_rd.txt';
     dir_math_addr_wr	= 'math_addr_wr.txt';
     
  % use in fht analys, thats why its global:
-    dir_math_fft_cp     = 'math_fft_cp.txt';
+    dir_math_fft_line     = 'math_fft_cp.txt';
     dir_math_err_ind    = 'math_err_ind.txt';
     
     dir_math_fht_ram	= 'math_fht_ram.txt';
@@ -113,21 +113,21 @@ switch(test)
         file_imp = fopen(dir_imp, 'r');
         
         if(file_imp == -1)
-           error('\nError: file does not exist "%s"\n', dir_imp); 
+           error('Error: file does not exist "%s"', dir_imp); 
         end
     case 'signal'
         fprintf('\tTest type: signal test\n');
         file_signal = fopen(dir_signal, 'r');
         
         if(file_signal == -1)
-           error('\nError: file does not exist "%s"\n', dir_signal); 
+           error('Error: file does not exist "%s"', dir_signal); 
         end
     case 'const'
         fprintf('\tTest type: const test\n');
     case 'num'
         fprintf('\tTest type: index number test\n');
     otherwise
-        error('\nTest type var is wrong\n');
+        error('Test type var is wrong');
 end
 
 %% get input RAM for start FHT:
@@ -178,7 +178,7 @@ for i = 1:N_bank
             case 4
                 ram(j, 4) = test_signal(k);
             otherwise
-                error('\nNumber of bank must be equal 4 (writing points bank number must be 1,3,2,4)\n');
+                error('Number of bank must be equal 4 (writing points bank number must be 1,3,2,4)');
         end
     end
 end
@@ -221,17 +221,17 @@ if(file_ram ~= -1)
         fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
 	end
 else
-    error('\nError: file name is wrong "%s"\n', dir_init_fht);
+    error('Error: file name is wrong "%s"', dir_init_fht);
 end
 
 file_addr_rd = fopen(dir_math_addr_rd, 'w'); % for compare with rtl
 if(file_addr_rd == -1)
-	error('\nError: file name is wrong "%s"\n', dir_math_addr_rd); 
+	error('Error: file name is wrong "%s"', dir_math_addr_rd); 
 end
 
 file_addr_wr = fopen(dir_math_addr_wr, 'w');
 if(file_addr_wr == -1)
-	error('\nError: file name is wrong "%s"\n', dir_math_addr_wr); 
+	error('Error: file name is wrong "%s"', dir_math_addr_wr); 
 end
 
 for i = 1:row % 0 stage (only butterfly)
@@ -264,7 +264,7 @@ for stage = 1:last_stage % without 0 stage
     
     file_ram = fopen(name, 'w');
     if(file_ram == -1)
-        error('\nError: file name is wrong "%s"\n', name); 
+        error('Error: file name is wrong "%s"', name); 
     end
 
     for i = 1 : row
@@ -282,7 +282,7 @@ for stage = 1:last_stage % without 0 stage
 	for j = 1:sector
         num_coef = bin2dec(fliplr(dec2bin(cos_cnt, bit_depth))) + 1;
         
-		for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div)
+        for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div)
             if(j == 1)
 				temp = F_FHT_BUT([ram(i, 1), ram(i, 2), ram(i, 2)],...
                                  [ram(i, 3), ram(i, 4), ram(i, 4)],...
@@ -390,17 +390,17 @@ if(file_ram ~= -1)
     end
     fclose(file_ram); 
 else
-    error('\nError: file name is wrong "%s"\n', dir_math_fht_ram); 
+    error('Error: file name is wrong "%s"', dir_math_fht_ram); 
 end
 
-file_fft_cp = fopen(dir_math_fft_cp, 'w'); % for compare in analys
+file_fft_cp = fopen(dir_math_fft_line, 'w'); % for compare in analys
 if(file_fft_cp ~= -1)
     for i = 1 : N
         fprintf(file_fft_cp, '%6.6f\n', fft_line(i)); 
     end
     fclose(file_fft_cp);
 else
-    error('\nError: file name is wrong "%s"\n', dir_math_fft_cp); 
+    error('Error: file name is wrong "%s"', dir_math_fft_line); 
 end
 
 % save fixed point version of IMP RAM POS/NEG FHT for conv:
@@ -484,7 +484,7 @@ if((i ~= 1) && (save_err_ind == 'Y'))
     file_err = fopen(dir_math_err_ind, 'a');
 
     if(file_err == -1)
-        error('\nError: file name is wrong "%s"\n', dir_math_err_ind); 
+        error('Error: file name is wrong "%s"', dir_math_err_ind); 
     end
     
     ind_max_err = sort(ind_max_err);

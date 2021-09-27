@@ -3,7 +3,7 @@ function F_READ_DEFINE = F_READ_DEFINE(file_name, def_name)
 file_def = fopen(file_name, 'r');
 
 if(file_def == -1)
-   error('\nError: file does not exist "%s"\n', file_name); 
+   error('Error: file does not exist "%s"', file_name); 
 end
 
 def_name = ['`define ', def_name, ' '];
@@ -26,7 +26,7 @@ while(~feof(file_def))
 end
 
 if(~flag_def_val)
-    error('\nError while reading define: "%s"\n', def_name);
+    error('Error while reading define: "%s"', def_name);
 end
 
 fclose(file_def);

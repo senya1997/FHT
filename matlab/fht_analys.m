@@ -3,23 +3,36 @@ clc;
 
 close all;
 
+fprintf('\n\tCompare math model and RTL\n');
+
 %% input (from main matlab file):
     global dir_def;
 
-    global dir_math_fft_cp;
-    global dir_math_err_ind;
-    
     global dir_math_fht_ram;
     global dir_fpga_fht_ram;
 
-    N       = F_READ_DEFINE(dir_def, 'N');
-    row     = F_READ_DEFINE(dir_def, 'BANK_SIZE');
+    global dir_math_fft_line;
+    global dir_math_err_ind;
+   
+if(isempty(dir_def) || isempty(dir_math_fht_ram) || isempty(dir_fpga_fht_ram) ||...
+   isempty(dir_math_fft_line) || isempty(dir_math_err_ind))
+   error('Before run this - require run main script with define global vars!'); 
+end
     
+    N = F_READ_DEFINE(dir_def, 'N');
+    
+fprintf('\nInput data:\n');
+fprintf('\tNum of point transform (N) = %d\n',     N);
+fprintf('\tCompared files:\t"%s" and "%s"\n', dir_math_fht_ram, dir_fpga_fht_ram);
+fprintf('\tIndexes of error element files:\t"%s"\n', dir_math_err_ind);
+
 %% convert and calc matrix:
+fprintf('\nLoad input data and calc accuracy...');
+
     fht_math = load(dir_math_fht_ram);
     fht_fpga = load(dir_fpga_fht_ram);
 
-    fft_math = load(dir_math_fft_cp);
+    fft_math = load(dir_math_fft_line);
     fft_math = fft_math';
 
     fht_math_line = F_FHT_RAM_TO_LINE(fht_math);
@@ -34,6 +47,8 @@ close all;
     fclose('all');
     
 %% graphics:
+fprintf('\nPrint graphics...\n');
+
 % errors:
     figure;
     subplot(2,1,1);
