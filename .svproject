@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svproject>
+  <defines/>
+  <includePaths/>
+  <buildPaths/>
+  <pluginPaths/>
+  <libraryPaths/>
+  <argFilePaths>
+    
+  <argFilePath path="${project_loc}/files_rtl.f"/>
+    <argFilePath path="${project_loc}/files_tb.f"/>
+  </argFilePaths>
+  <sourceCollections/>
+  <projectRefs/>
+  <templatePaths/>
+</svproject>

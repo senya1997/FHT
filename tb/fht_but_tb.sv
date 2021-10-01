@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-`include "../fht_defines.v"
+`include "./fht_defines.v"
 
 package fli;
 	import "DPI-C" function mti_Cmd(input string cmd);
