@@ -1,3 +1,24 @@
+*.qdb
+*.ini
+
+_info
+**/_info
+**/**/_info
+**/**/**/_info
+**/**/**/**/_info
+
+_vmake
+**/_vmake
+**/**/_vmake
+**/**/**/_vmake
+**/**/**/**/_vmake
+
+transcript
+**/transcript
+**/**/transcript
+**/**/**/transcript
+**/**/**/**/transcript
+
 *.mif
 *.tclPreview
 

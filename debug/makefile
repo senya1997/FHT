@@ -1,4 +1,6 @@
-PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
+
+#PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
+PATH_QUARTUS := C:/altera/14.1/quartus
 
 LIB_LPM	:= lpm_ver
 LIB_MF	:= altera_mf_ver
@@ -15,7 +17,7 @@ LOG_FHT_TB := LOG_FHT.txt
 all: run
 	
 run: lib comp
-	vsim -c -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
+	vsim -c -novopt -L $(LIB_LPM) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
 	-do 'run -all' \
 	-do 'quit -sim' \
 	-do 'quit'
@@ -39,11 +41,14 @@ $(LIB_LPM):
 comp: 
 	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/*.sv
-
+	
 # ============== clean: ==============
 
 clean:
 	rm -rf work
 	rm -rf $(LIB_MF)
 	rm -rf $(LIB_LPM)
-	rm -rf *.txt transcript
+	rm -rf *.txt *.ini transcript
+	@echo
+	@echo ================ COMPLETE ====================
+	@echo
