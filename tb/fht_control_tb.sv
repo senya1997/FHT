@@ -1,13 +1,9 @@
 `timescale 1ns/1ns
 `include "./fht_defines.v"
 
-package fli;
-	import "DPI-C" function mti_Cmd(input string cmd);
-endpackage
-
 module fht_control_tb;
 
-import fli::*;
+import "DPI-C" function mti_Cmd(input string cmd);
 
 reg clk;
 reg reset;

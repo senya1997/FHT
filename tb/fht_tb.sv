@@ -1,13 +1,9 @@
 `timescale 1ns/1ns
 `include "./fht_defines.v"
 
-package fli;
-	import "DPI-C" function mti_Cmd(input string cmd);
-endpackage
-
 module fht_tb;
 
-import fli::*;
+import "DPI-C" function mti_Cmd(input string cmd);
 
 bit clk;
 bit reset;
@@ -382,6 +378,8 @@ task automatic COMPARE_MATLAB_RAM(input string name_ref, name);
 								jk, temp[0], temp[1], temp[2], temp[3]);
 			else
 				begin
+					if(max_row_er > max_er) max_er = max_row_er;
+					
 					av_er = av_er + max_row_er;
 					cnt_st_er = cnt_st_er + 1;
 					
