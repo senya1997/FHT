@@ -1,4 +1,4 @@
-`timescale 1ns/1ns
+`include "defines_tb.svh"
 `include "./fht_defines.v"
 
 package fli;

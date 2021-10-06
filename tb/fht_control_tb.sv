@@ -1,5 +1,5 @@
-`timescale 1ns/1ns
 `include "./fht_defines.v"
+`include "defines_tb.svh"
 
 module fht_control_tb;
 
