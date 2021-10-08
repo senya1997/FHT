@@ -40,7 +40,8 @@ $(LIB_LPM):
 
 comp: 
 	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
-	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/*.sv
+	vlog ../tb/pkg.sv
+	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/*_tb.sv
 	
 # ============== clean: ==============
 

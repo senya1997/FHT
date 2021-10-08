@@ -1,9 +1,9 @@
 `include "./fht_defines.v"
-`include "defines_tb.svh"
 
 module fht_tb;
 
-import "DPI-C" function mti_Cmd(input string cmd);
+import common_types_pkg::*;
+import fht_classes_pkg::*;
 
 bit clk;
 bit reset;
@@ -70,6 +70,8 @@ initial begin
 end
 
 initial begin
+ 	TransformRAM #(`D_BIT, `ADC_WIDTH, `A_BIT, `BANK_SIZE, 4) ram_imit;
+
 	int file_data, scan_data;
 	int temp_data[4];
 	
@@ -102,6 +104,8 @@ initial begin
 	
 	ram_sel = 1'b1;
 	start = 1'b0;
+	
+	ram_imit = new();
 	
 	#(10*`TACT);
 
@@ -152,7 +156,7 @@ initial begin
 	
 	`ifdef EN_BREAKPOINT
 		$display("\n\t\t\tpress 'run' to continue\n");
-		void'(mti_Cmd("stop -sync"));
+		$stop;
 	`endif
 	
 	`ifdef LAST_STAGE_ODD
@@ -178,7 +182,7 @@ initial begin
 	
 	`ifdef EN_BREAKPOINT
 		$display("\n\t\t\tpress 'run' to continue");
-		void'(mti_Cmd("stop -sync"));
+		$stop;
 	`endif
 	
 // IFHT:
@@ -225,6 +229,8 @@ initial begin
 			cnt_rev = cnt_rev + 1;
 		end
 	
+	ram_imit = null;
+		
 	$display("\n\tstart IFHT, time: %t\n", $time);
 	flag_cp_matlab = 0;
 	
@@ -258,7 +264,7 @@ initial begin
 	disp_data = 0;
 	
 	$display("\n\t\t\t\tCOMPLETE\n");
-	void'(mti_Cmd("stop -sync"));
+	$stop;
 end
 
 always@(FHT.CONTROL.cnt_stage)begin
@@ -288,7 +294,7 @@ always@(FHT.CONTROL.cnt_stage)begin
 	
 			`ifdef EN_BREAKPOINT
 				$display("\n\t\t\tpress 'run' to continue\n");
-				void'(mti_Cmd("stop -sync"));
+				$stop;
 			`endif
 		end
 end

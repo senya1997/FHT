@@ -1,13 +1,6 @@
-`include "defines_tb.svh"
 `include "./fht_defines.v"
 
-package fli;
-	import "DPI-C" function mti_Cmd(input string cmd);
-endpackage
-
 module fht_but_tb;
-
-import fli::*;
 
 bit clk;
 bit reset;
@@ -96,7 +89,7 @@ initial begin
 	
 	`ifdef EN_BREAKPOINT
 		$display("\n\t\t\tpress 'run' to continue\n");
-		void'(mti_Cmd("stop -sync"));
+		$stop;
 	`endif
 	
 	#(5*`TACT);
@@ -140,7 +133,7 @@ initial begin
 	#(5*`TACT);
 	$display("\n\n\t\t\tCOMPLETE\n");
 	
-	void'(mti_Cmd("stop -sync"));
+	$stop;
 end
 
 task DISP_INPUT;

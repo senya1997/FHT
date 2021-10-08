@@ -1,9 +1,6 @@
 `include "./fht_defines.v"
-`include "defines_tb.svh"
 
 module fht_control_tb;
-
-import "DPI-C" function mti_Cmd(input string cmd);
 
 reg clk;
 reg reset;
@@ -76,7 +73,7 @@ initial begin
 	
 	#(100*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
-	void'(mti_Cmd("stop -sync"));
+	$stop;
 end
 
 `ifdef COMPARE_WITH_MATLAB
@@ -103,7 +100,7 @@ always@(CONTROL.cnt_stage)begin
 			
 			`ifdef EN_BREAKPOINT
 				$display("\n\t\t\tpress 'run' to continue\n");
-				void'(mti_Cmd("stop -sync"));
+				$stop;
 			`endif
 			
 			$display("\n\t%2d stage FHT, time: %t\n", CONTROL.cnt_stage, $time);
