@@ -182,42 +182,48 @@
 	endfunction
 	
 	function void TransformRAM::Bitrev2NormalRAM(); // convert bit reverse to normal sequence points in RAM
-		$display("\n\tRewrite RAM data from bit rev to norm order for IFHT, time: %t\n", $time);
-	
-		for(j = 0; j < `BANK_SIZE; j = j + 1) 
-			begin
-				ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB[j];
-			end	
+		dbit_t tran_ram_buf [0 : BANK_SIZE - 1][0 : N_BANK - 1];
+		abit_t cnt_addr_rev;
+		abit_t addr_rev;
+		
+		$display("\n\tRewrite RAM data from bit reverse to norm order, time: %t\n", $time);
+		
+		for(uint16_t i = 0; i < BANK_SIZE; i++) // rows
+			for(uchar_t j = 0; j < N_BANK; j++) // column
+				tran_ram_buf[i][j] = tran_ram[i][j];
 
-		cnt_rev = 0;
-	
-		for(j = 0; j < `BANK_SIZE; j = j + 1) 
+		cnt_addr_rev = 0;
+		
+		for(uint16_t i = 0; i < BANK_SIZE; i++) // rows
 			begin
-				temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
-				temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
-				temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
-				temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
+				addr_rev = AddrBitReverse(cnt_addr_rev);
 				
-				for(i = 0; i < 4; i = i + 1)
-					begin
-						data_fixp = temp_data[i];
-						addr_wr = j;
-							
-						we[i] = 1'b1;
-						#(`TACT);
-						we[i] = 1'b0;
-					end
-					
-				cnt_rev = cnt_rev + 1;
+				for(uchar_t j = 0; j < N_BANK; j++) // column
+					tran_ram[i][j] = tran_ram_buf[addr_rev][j];
+				
+				cnt_addr_rev = cnt_addr_rev + 1;
 			end
 	endfunction
 	
-	function void TransformRAM::DisplayRAM();
-	
-	endfunction
+	task TransformRAM::DisplayRAM(output dbit_t oDATA);
+		nbit_t cnt_bank_rev;
+		nbit_t bank_rev;
+		
+		$display("\n\tDisplay RAM data in bank bit reverse order, time: %t\n", $time);
+		
+		cnt_bank_rev = 0;
+		
+		for(uchar_t i = 0; i < N_BANK; i++) // column
+			begin
+				bank_rev = BankBitReverse(cnt_bank_rev);
+					
+				for(uint16_t j = 0; j < BANK_SIZE; j++) // rows
+					oDATA = tran_ram[j][bank_rev];
+				
+				cnt_bank_rev = cnt_bank_rev + 1;
+				#(tact);
+			end
+	endtask
 		
 	task TransformRAM::InitRAM(
 								input string name,
@@ -225,13 +231,11 @@
 								input bit from_file, // 1 - init external RAM and RAM in class from file, 0 - init external ram from class RAM
 								output dbit_t oDATA,
 								output abit_t oADDR_WR,
-								output bit [N_BANK - 1 : 0] oWE
+								output nbit_t oWE
 							); // line by line from file
 		
 		int32_t f_data, scan_data;
 		int32_t temp_data;
-		
-		bit signed [INT_BIT - 1 : 0] data_buf;
 		
 		$display("\n\tWrite data point in RAM from file: '%s', time: %t\n", name, $time);
 		
@@ -248,33 +252,26 @@
 				end
 			end
 	
-		for(uint16_t j = 0; j < BANK_SIZE; j++) // rows
-			begin
-				for(uchar_t i = 0; i < N_BANK; i++) // columns
-					begin
-						if(from_file)
-							begin
-								if(i < N_BANK - 1)	scan_data = $fscanf(f_data, "%f\t", temp_data);
-								else				scan_data = $fscanf(f_data, "%f\n", temp_data);
-								
-								tran_ram[j][i] = temp_data; // update internal RAM imitation
-							end
-						else data_buf = tran_ram[j][i]); // signed cast
-						
-						if(fixed_point)
-							begin
-								data_buf = $signed(temp_data); // signed cast
-								oDATA = {data_buf, {(D_BIT - INT_BIT){1'b0}}};
-							end
-						else oDATA = temp_data; // signed cast
-								
-						oADDR_WR = j; // unsigned cast
-								
-						oWE[i] = 1'b1; // write external RAM
-						#(tact);
-						oWE[i] = 1'b0;
-					end
-			end
+		for(uint16_t i = 0; i < BANK_SIZE; i++) // rows
+			for(uchar_t j = 0; j < N_BANK; j++) // columns
+				begin
+					if(from_file)
+						begin
+							if(j < N_BANK - 1)	scan_data = $fscanf(f_data, "%f\t", temp_data);
+							else				scan_data = $fscanf(f_data, "%f\n", temp_data);
+							
+							tran_ram[i][j] = $signed(temp_data); // update internal RAM imitation, signed cast
+						end
+					
+					if(fixed_point & from_file)	oDATA = {tran_ram[i][j], {(D_BIT - INT_BIT){1'b0}}};
+					else						oDATA = tran_ram[i][j];
+							
+					oADDR_WR = i; // row choose, unsigned cast
+							
+					oWE[j] = 1'b1; // column choose, write external RAM
+					#(tact);
+					oWE[j] = 1'b0;
+				end
 		
 		if(from_file) $fclose(f_data);
 	endtask

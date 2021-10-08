@@ -1,11 +1,12 @@
 
-#PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
-PATH_QUARTUS := C:/altera/14.1/quartus
+PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
+#PATH_QUARTUS := C:/altera/14.1/quartus
 
 LIB_LPM	:= lpm_ver
 LIB_MF	:= altera_mf_ver
 
 LOG_COMP_RTL	:= LOG_COMP_RTL.txt
+LOG_COMP_PKG	:= LOG_COMP_PKG.txt
 LOG_COMP_TB		:= LOG_COMP_TB.txt
 
 LOG_FHT_TB := LOG_FHT.txt
@@ -17,7 +18,7 @@ LOG_FHT_TB := LOG_FHT.txt
 all: run
 	
 run: lib comp
-	vsim -c -novopt -L $(LIB_LPM) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
+	vsim -c -L $(LIB_LPM) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
 	-do 'run -all' \
 	-do 'quit -sim' \
 	-do 'quit'
@@ -40,7 +41,7 @@ $(LIB_LPM):
 
 comp: 
 	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
-	vlog ../tb/pkg.sv
+	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/*_tb.sv
 	
 # ============== clean: ==============

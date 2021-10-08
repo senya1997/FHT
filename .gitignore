@@ -2,6 +2,9 @@
 *.qdb
 *.ini
 
+*.qtl
+*.qpg
+
 _info
 **/_info
 **/**/_info

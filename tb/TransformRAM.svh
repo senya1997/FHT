@@ -11,7 +11,8 @@ typedef bit signed		[D_BIT - 1 : 0] dbit_t;
 typedef logic signed	[D_BIT - 1 : 0] dlogic_t;
 	
 typedef bit				[A_BIT - 1 : 0] abit_t;
-	
+typedef bit				[N_BANK - 1 : 0] nbit_t;
+
 // main vars:
 	local dbit_t tran_ram [0 : BANK_SIZE - 1][0 : N_BANK - 1]; // RAM imitation
 	local dbit_t disp_data; // data that display RAM content on wave window
@@ -26,10 +27,10 @@ typedef bit				[A_BIT - 1 : 0] abit_t;
 	
 	
 // protected:
-	extern protected function float32_t	AbsData(float32_t data);
-	extern protected function float32_t	Reg2Real(dbit_t data);
+	extern protected function float32_t	AbsData(float32_t data); // static ? (enable calling without making instance)
+	extern protected function float32_t	Reg2Real(dbit_t data); // -//-
 	
-	protected function abit_t AddrBitReverse(abit_t addr);
+	protected function abit_t AddrBitReverse(abit_t addr); // -//-
 		abit_t addr_buf;
 		
 		for(uchar_t i = 0; i < A_BIT; i++) 
@@ -38,6 +39,15 @@ typedef bit				[A_BIT - 1 : 0] abit_t;
 		AddrBitReverse = addr_buf; // unsigned cast
 	endfunction
 
+	protected function nbit_t BankBitReverse(nbit_t bank); // -//-
+		nbit_t bank_buf;
+		
+		for(uchar_t i = 0; i < N_BANK; i++) 
+			bank_buf[N_BANK - 1 - i] = bank[i];
+		
+		BankBitReverse = bank_buf; // unsigned cast
+	endfunction
+	
 // public:
 	extern function new();
 	
@@ -55,14 +65,14 @@ typedef bit				[A_BIT - 1 : 0] abit_t;
 	
 	extern function void Bitrev2NormalRAM(); // convert bit reverse to normal sequence points in RAM
 	
-	extern function void DisplayRAM();
+	extern task DisplayRAM(output dbit_t oDATA);
 	
 	extern task InitRAM(
 						input string name,
 						input bit fixed_point, // 1 - add '0' in fract part of data before write, 0 - add data in RAM as is
 						input bit from_file, // 1 - init external RAM and RAM in class from file, 0 - init external ram from class RAM
-						output bit signed [D_BIT - 1 : 0] oDATA,
-						output bit [A_BIT - 1 : 0] oADDR_WR,
-						output bit [N_BANK - 1 : 0] oWE
+						output dbit_t oDATA,
+						output abit_t oADDR_WR,
+						output nbit_t oWE
 					); // line by line from file
 endclass
