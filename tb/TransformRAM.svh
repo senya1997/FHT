@@ -8,7 +8,7 @@ class TransformRAM #(uint16_t	D_BIT = 24,			// 'D_BIT' <= 32;
 					);
 
 typedef bit signed		[D_BIT - 1 : 0] dbit_t;
-typedef logic signed	[D_BIT - 1 : 0] dlogic_t;
+typedef reg 		[D_BIT - 1 : 0] dlogic_t;
 	
 typedef bit				[A_BIT - 1 : 0] abit_t;
 typedef bit				[N_BANK - 1 : 0] nbit_t;

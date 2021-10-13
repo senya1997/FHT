@@ -24,6 +24,10 @@ bit [3 : 0] we;
 
 wire RDY_FHT, RDY_IFHT;
 
+bit signed [`D_BIT - 1 : 0] fht_data;
+bit	[`A_BIT - 1 : 0] fht_addr;
+bit	[3 : 0] fht_we;
+
 int i, j;
 int cnt_all_er; // counters of stage and all errors
 
@@ -32,16 +36,16 @@ real max_er, av_er; // max and avarage error
 
 function [`A_BIT - 1 : 0] F_BIT_REV(input [`A_BIT - 1 : 0] iDATA);
 integer i;
-	begin
-		for (i = 0; i < `A_BIT; i = i + 1) F_BIT_REV[`A_BIT - 1 - i] = iDATA[i];
-	end
+begin
+	for (i = 0; i < `A_BIT; i = i + 1) F_BIT_REV[`A_BIT - 1 - i] = iDATA[i];
+end
 endfunction
 
 // convert from type 'reg' with fixed point to 'real':
-function real F_REG_TO_REAL(input bit signed [`D_BIT - 1 : 0] iDATA);
-	bit signed [`ADC_WIDTH - 1 : 0] data_int;
-	real temp;
-	shortint k;
+	function real F_REG_TO_REAL(input bit signed [`D_BIT - 1 : 0] iDATA);
+bit signed [`ADC_WIDTH - 1 : 0] data_int;
+real temp;
+shortint k;
 begin
 	temp = 0;
 	for (k = 0; k < (`D_BIT - `ADC_WIDTH); k = k + 1) 
@@ -52,11 +56,11 @@ begin
 end
 endfunction
 
-function real F_ABS(input real data);
-	if(data < 0) F_ABS = -data;
-	else F_ABS = data;
+	function real F_ABS(input real data);
+if(data < 0) F_ABS = -data;
+else F_ABS = data;
 endfunction
-
+	
 initial begin
 	$timeformat(-6, 3, " us", 6);
 	clk = 1;
@@ -106,41 +110,20 @@ initial begin
 	start = 1'b0;
 	
 	ram_imit = new();
+	ram_imit.SetPeriod(`TACT);
 	
 	#(10*`TACT);
 
-// save ADC data line by line (row by row):	
 	$display("\n\twrite ADC data point in RAM, time: %t\n", $time);
-	file_data = $fopen(`INIT_FHT_RAM, "r");
-	disp_data = 0;
 	
-	for(j = 0; j < `BANK_SIZE; j = j + 1) 
-		begin
-			scan_data = $fscanf(file_data, "%f\t%f\t%f\t%f\n", temp_data[0], temp_data[1], temp_data[2], temp_data[3]);
-			
-			disp_data = temp_data[0];
-			
-			for(i = 0; i < 4; i = i + 1)
-				begin
-					data_buf = temp_data[i];
-					data_fixp = {data_buf, {(`D_BIT - `ADC_WIDTH){1'b0}}};
-					
-					addr_wr = j;
-					
-				// save input data from ADC require bitreverse bank counter
-					we[i] = 1'b1;
-						#(`TACT);
-					we[i] = 1'b0;
-				end
-		end
+	ram_imit.InitRAM(`INIT_FHT_RAM, 1, 1, fht_data, fht_addr, fht_we);
 		
-	disp_data = 0;
-	$fclose(file_data);
+	#(`TACT);
 	
-	#(10*`TACT);
+	for(uchar_t i = 0; i < 4; i++)
+		ram_imit.UpdBankRAM(i, FHT.FHT_RAM_A.ram_bank[i].RAM_BANK.`RAM_ACCESS_TB);
 	
-// init data always saving in A RAM from external module	
-	SAVE_RAM_DATA("init_ram_a.txt", 0);
+	ram_imit.SaveRAMdata("init_ram_a.txt");
 	
 	$display("\n\tstart FHT, time: %t\n", $time);
 		// #1; // if "sdf" is turn off
@@ -150,7 +133,7 @@ initial begin
 		#(`TACT);
 
 	wait(RDY_FHT);
-	#(`TACT);
+		#(`TACT);
 	
 	$display("\n\tfinish FHT, time: %t\n", $time);
 	
@@ -298,7 +281,7 @@ always@(FHT.CONTROL.cnt_stage)begin
 			`endif
 		end
 end
-
+	
 task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
 	bit signed [`D_BIT - 1 : 0] buf_signed [0 : 3];
 	
@@ -411,17 +394,17 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	
 	.iSTART(start),
 	
-	.iWE(we),
+	.iWE(fht_we),
 	
-	.iDATA_0(data_fixp),
-	.iDATA_1(data_fixp),
-	.iDATA_2(data_fixp),
-	.iDATA_3(data_fixp),
+	.iDATA_0(fht_data),
+	.iDATA_1(fht_data),
+	.iDATA_2(fht_data),
+	.iDATA_3(fht_data),
 	
-	.iADDR_WR_0(addr_wr),
-	.iADDR_WR_1(addr_wr),
-	.iADDR_WR_2(addr_wr),
-	.iADDR_WR_3(addr_wr),
+	.iADDR_WR_0(fht_addr),
+	.iADDR_WR_1(fht_addr),
+	.iADDR_WR_2(fht_addr),
+	.iADDR_WR_3(fht_addr),
 	
 	.iADDR_RD_0(addr_rd[0]),
 	.iADDR_RD_1(addr_rd[1]),
@@ -437,34 +420,34 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 );
 
 fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
-			.MIF_SIN(`MIF_SIN), .MIF_COS(`MIF_COS)) IFHT(
+	.MIF_SIN(`MIF_SIN), .MIF_COS(`MIF_COS)) IFHT(
 	.iCLK(clk),
 	.iRESET(reset),
-	
+
 	.iSTART(start),
-	
+
 	.iWE(we),
 
 	.iDATA_0(data_fixp),
 	.iDATA_1(data_fixp),
 	.iDATA_2(data_fixp),
 	.iDATA_3(data_fixp),
-	
+
 	.iADDR_WR_0(addr_wr),
 	.iADDR_WR_1(addr_wr),
 	.iADDR_WR_2(addr_wr),
 	.iADDR_WR_3(addr_wr),
-	
+
 	.iADDR_RD_0(addr_rd[0]),
 	.iADDR_RD_1(addr_rd[1]),
 	.iADDR_RD_2(addr_rd[2]),
 	.iADDR_RD_3(addr_rd[3]),
-	
+
 	.oDATA_0(),
 	.oDATA_1(),
 	.oDATA_2(),
 	.oDATA_3(),
-	
+
 	.oRDY(RDY_IFHT)
 );
 
