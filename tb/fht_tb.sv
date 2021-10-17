@@ -8,45 +8,30 @@ import fht_classes_pkg::*;
 bit clk;
 bit reset;
 
-bit flag_cp_matlab = 1; // for turn off COMPARE_MATLAB_RAM on IFHT stage
-
 bit start;
-bit ram_sel;
 
 bit signed [`D_BIT - 1 : 0] data_fixp;
-
-bit signed [`ADC_WIDTH - 1 : 0] disp_data;
-
 bit [`A_BIT - 1 : 0] addr_wr;
 bit [3 : 0] we;
-
-wire RDY_FHT, RDY_IFHT;
 
 bit signed [`D_BIT - 1 : 0] fht_data;
 bit	[`A_BIT - 1 : 0] fht_addr;
 bit	[3 : 0] fht_we;
 
+bit flag_cp_matlab = 1; // for turn off COMPARE_MATLAB_RAM on IFHT stage !!! mb replace by RDY_FHT signal ???
+bit ram_sel;
+
+wire RDY_FHT, RDY_IFHT;
+
 TransformRAM #(`D_BIT, `ADC_WIDTH, `A_BIT, `BANK_SIZE, 4) ram_imit;
 
 int i, j;
-int cnt_all_er; // counters of stage and all errors
-
-real temp;
-real max_er, av_er; // max and avarage error
 
 function [`A_BIT - 1 : 0] F_BIT_REV(input [`A_BIT - 1 : 0] iDATA);
-integer i;
-begin
-	for (i = 0; i < `A_BIT; i = i + 1) F_BIT_REV[`A_BIT - 1 - i] = iDATA[i];
-end
-endfunction
-
-// convert from type 'reg' with fixed point to 'real':
-
-
-function real F_ABS(input real data);
-if(data < 0) F_ABS = -data;
-else F_ABS = data;
+	integer i;
+		begin
+			for (i = 0; i < `A_BIT; i = i + 1) F_BIT_REV[`A_BIT - 1 - i] = iDATA[i];
+		end
 endfunction
 	
 initial begin
@@ -62,7 +47,6 @@ initial begin
 end
 	
 initial begin
-	int file_data, scan_data;
 	int temp_data[4];
 	
 // buf RAM for transmit data from bit rev order to norm before start IFHT:
@@ -70,8 +54,6 @@ initial begin
 	logic signed [`D_BIT - 1 : 0] ram_buf_1 [0 : `BANK_SIZE - 1];
 	logic signed [`D_BIT - 1 : 0] ram_buf_2 [0 : `BANK_SIZE - 1];
 	logic signed [`D_BIT - 1 : 0] ram_buf_3 [0 : `BANK_SIZE - 1];
-	
-	logic signed [`D_BIT - 1 : 0] ram_buf_0_ext [0 : `BANK_SIZE - 1];
 	
 	bit [`A_BIT - 1 : 0] cnt_rev;
 	
@@ -81,20 +63,16 @@ initial begin
 		$display("\n\n\t\t\t\tSTART TEST FHT\n");
 	`endif
 	
-	$display("\terror between reference signal and result must be less then `ACCURACY defines: %6.6f", `ACCURACY);
-	$display("\tif error too big - in console its marked by '***'");
+	$display("\tError between reference signal and result must be less then `ACCURACY defines: %f", `ACCURACY);
+	$display("\tIf error too big - in console its marked by '***'");
 	
 	`ifdef COMPARE_WITH_MATLAB
-		$display("\n\tRAM compare with 'txt' file from matlab");
+		$display("\tRAM compare with 'txt' file from matlab");
 	`endif
 	
 	fht_data = 0; 
 	fht_addr = 0;
 	fht_we = 0;
-		
-	cnt_all_er = 0;
-	max_er = 0;
-	av_er = 0;
 	
 	ram_sel = 1'b1;
 	start = 1'b0;
@@ -110,12 +88,12 @@ initial begin
 	ram_imit.SaveRAMdata("init_ram_a.txt");
 	
 	$display("\n\tstart FHT, time: %t\n", $time);
+	
 		// #1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
 		#(`TACT);
-
 	wait(RDY_FHT);
 		#(`TACT);
 	
@@ -128,25 +106,18 @@ initial begin
 	
 	`ifdef LAST_STAGE_ODD
 		UpdClassRAM_A;
-		ram_imit.SaveRAMdata(`FPGA_FHT_RAM);
-		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM(`MATH_FHT_RAM, `FPGA_FHT_RAM);
-		`endif
 	`elsif LAST_STAGE_EVEN
 		UpdClassRAM_B;
-		ram_imit.SaveRAMdata(`FPGA_FHT_RAM);
-		`ifdef COMPARE_WITH_MATLAB
-			COMPARE_MATLAB_RAM(`MATH_FHT_RAM, `FPGA_FHT_RAM);
-		`endif
 	`endif
 	
+	ram_imit.SaveRAMdata(`FPGA_FHT_RAM);
+	
 	`ifdef COMPARE_WITH_MATLAB
-		$display("\n\tmax error (compared RAM with matlab) in all transfer: %6.6f", max_er);
+		ram_imit.CompareWithFile(`MATH_FHT_RAM, `ACCURACY);
 		
-		if(cnt_all_er == 0) $display("\tavarage error in all transfer: 0.000000\n");
-		else $display("\tavarage error in all transfer: %6.6f\n", av_er/cnt_all_er);
-		
-		$display("\ttotal amount of errors: %d", cnt_all_er);
+		$display("\n\tMax error in all transfer: %6.6f", ram_imit.GetMaxErr());
+		$display("\tAvarage error in all transfer: %6.6f", ram_imit.GetAvErr());
+		$display("\tTotal amount of errors: %d", ram_imit.GetAllErr());
 	`endif
 	
 	`ifdef EN_BREAKPOINT
@@ -195,8 +166,6 @@ initial begin
 			cnt_rev = cnt_rev + 1;
 		end
 	
-	ram_imit = null;
-		
 	$display("\n\tstart IFHT, time: %t\n", $time);
 	flag_cp_matlab = 0;
 	
@@ -206,29 +175,11 @@ initial begin
 		#(`TACT);
 
 	wait(RDY_IFHT);
+	
+	ram_imit = null;
+	
 	$display("\tfinish IFHT, time: %t\n", $time);
-	
-	for(j = 0; j < `BANK_SIZE; j = j + 1) 
-		begin
-			`ifdef LAST_STAGE_ODD
-				ram_buf_0_ext[j] = IFHT.FHT_RAM_A.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB[j];
-			`elsif LAST_STAGE_EVEN
-				ram_buf_0_ext[j] = IFHT.FHT_RAM_B.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB[j];
-			`endif
-		end	
 
-	cnt_rev = 0;
-	
-	for(j = 0; j < `BANK_SIZE; j = j + 1) 
-		begin
-			disp_data = ram_buf_0_ext[F_BIT_REV(cnt_rev)][`ADC_WIDTH - 1 : 0]; // width of 'disp_data' => cut RAM data ? 
-			cnt_rev = cnt_rev + 1;
-			
-			#(4*`TACT);
-		end
-		
-	disp_data = 0;
-	
 	$display("\n\t\t\t\tCOMPLETE\n");
 	$stop;
 end
@@ -247,25 +198,18 @@ always@(FHT.CONTROL.cnt_stage)begin
 			
 			if(~ram_sel)	str_temp = {"before_", str_stage, "st_ram_a.txt"};
 			else 			str_temp = {"before_", str_stage, "st_ram_b.txt"};
-				
-			#(2*`TACT);
 			
-			if(ram_sel)
-				begin
-					UpdClassRAM_B;
-					ram_imit.SaveRAMdata(str_temp);
-				end
-			else
-				begin
-					UpdClassRAM_A;
-					ram_imit.SaveRAMdata(str_temp);
-				end
-
+				#(2*`TACT);
+				
+			if(ram_sel)	UpdClassRAM_B;
+			else		UpdClassRAM_A;
+				
+			ram_imit.SaveRAMdata(str_temp);
 			ram_sel = ~ram_sel;
 			
 			`ifdef COMPARE_WITH_MATLAB
 				str_temp_ref = {"../../fht/matlab/before_", str_stage, "st_ram.txt"};
-				COMPARE_MATLAB_RAM(str_temp_ref, str_temp);
+				ram_imit.CompareWithFile(str_temp_ref, `ACCURACY);
 			`endif
 	
 			`ifdef EN_BREAKPOINT
@@ -287,61 +231,6 @@ task UpdClassRAM_B;
 	ram_imit.UpdBankRAM(1, FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB);
 	ram_imit.UpdBankRAM(2, FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB);
 	ram_imit.UpdBankRAM(3, FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB);
-endtask
-
-task automatic COMPARE_MATLAB_RAM(input string name_ref, name);
-	int file_ref, file;
-	int scan;
-	
-	shortint cnt_st_er = 0;
-	
-	real temp [4];
-	real temp_ref [4];
-	real temp_er [4];
-	
-	real max_row_er; // max error on this row
-	
-	file_ref	= $fopen(name_ref, "r");
-	file		= $fopen(name, "r");
-	
-	for(shortint jk = 0; jk < `BANK_SIZE; jk++)
-		begin
-			scan = $fscanf(file_ref, "%f\t%f\t%f\t%f\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
-			scan = $fscanf(file, "%f\t%f\t%f\t%f\n", temp[0], temp[1], temp[2], temp[3]);
-
-			max_row_er = 0;
-
-			for(shortint ik = 0; ik < 4; ik++)
-				begin
-					temp_er[ik] = F_ABS(temp_ref[ik] - temp[ik]);
-					if(temp_er[ik] > max_row_er) max_row_er = temp_er[ik];
-				end
-			
-			if(max_row_er > max_er) max_er = max_row_er;
-
-			if((temp_er[0] < `ACCURACY) & (temp_er[1] < `ACCURACY) & (temp_er[2] < `ACCURACY) & (temp_er[3] < `ACCURACY))
-				$display("\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
-								jk, temp[0], temp[1], temp[2], temp[3]);
-			else
-				begin
-					if(max_row_er > max_er) max_er = max_row_er;
-					
-					av_er = av_er + max_row_er;
-					cnt_st_er = cnt_st_er + 1;
-					
-					$display(" ***\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
-								jk, temp[0], temp[1], temp[2], temp[3]);
-					$display(" ***\t     REF:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
-								temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
-				end			
-		end
-	
-	$fclose(file_ref);
-	$fclose(file);
-	
-	$display("\n\tnumber of errors compare RAM with matlab in this stage: %4d, time: %t", cnt_st_er, $time);
-	
-	cnt_all_er = cnt_all_er + cnt_st_er;
 endtask
 
 fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 

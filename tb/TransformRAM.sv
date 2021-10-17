@@ -70,7 +70,7 @@
 		float32_t max_cur_er;
 		float32_t sum_cur_er;
 		
-		$display("\n\tCompare data point in RAM with class RAM, time: %t\n", $time);
+		$display("\tCompare data point in RAM with class RAM, time: %t\n", $time);
 		
 		cnt_cur_er = 0;
 		max_cur_er = 0;
@@ -173,7 +173,7 @@
 		string str_ram_data;
 		string str_temp;
 		
-		$display("\n\tCompare data point in RAM with file: '%s', time: %t\n", name_ref, $time);
+		$display("\tCompare data point in RAM with file: '%s', time: %t\n", name_ref, $time);
 		
 		f_ref = $fopen(name_ref, "r");
 		if(f_ref == 0)
@@ -190,6 +190,9 @@
 		for(uint16_t i = 0; i < BANK_SIZE; i++) // row
 			begin
 				cnt_row_er = 0;
+				
+				str_ram_data = "";
+				str_ref_data = "";
 				
 				for(uchar_t j = 0; j < N_BANK; j++) // column
 					begin
@@ -222,7 +225,7 @@
 				if(cnt_row_er != 0)
 					begin
 						$display(" ***\tLine %3d:\t%s", i, str_ram_data);
-						$display(" ***\t     REF:\t%s", i, str_ref_data);
+						$display(" ***\t     REF:\t%s", str_ref_data);
 					end
 			end
 	
@@ -248,7 +251,7 @@
 		abit_t cnt_addr_rev;
 		abit_t addr_rev;
 		
-		$display("\n\tRewrite RAM data from bit reverse to norm order, time: %t\n", $time);
+		$display("\tRewrite RAM data from bit reverse to norm order, time: %t\n", $time);
 		
 		for(uint16_t i = 0; i < BANK_SIZE; i++) // rows
 			for(uchar_t j = 0; j < N_BANK; j++) // column
@@ -271,7 +274,7 @@
 		nbit_t cnt_bank_rev;
 		nbit_t bank_rev;
 		
-		$display("\n\tDisplay RAM data in bank bit reverse order, time: %t\n", $time);
+		$display("\tDisplay RAM data in bank bit reverse order, time: %t\n", $time);
 		
 		cnt_bank_rev = 0;
 		
@@ -299,7 +302,7 @@
 		int32_t f_data, scan_data;
 		int32_t temp_data;
 		
-		$display("\n\tWrite data point in RAM from file: '%s', time: %t\n", name, $time);
+		$display("\tWrite data point in RAM from file: '%s', time: %t\n", name, $time);
 		
 		if(from_file)
 			begin
