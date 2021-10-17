@@ -26,10 +26,10 @@ typedef bit				[N_BANK - 1 : 0] nbit_t;
 
 	
 // protected:
-	extern protected function float32_t	AbsData(float32_t data); // static ? (enable calling without making instance)
-	extern protected function float32_t	Reg2Real(dbit_t data); // -//-
+	extern static protected function float32_t	AbsData(float32_t data); // static ? (enable calling without making instance)
+	extern static protected function float32_t	Reg2Float(dbit_t data); // -//-
 	
-	protected function abit_t AddrBitReverse(abit_t addr); // -//-
+	static protected function abit_t AddrBitReverse(abit_t addr); // -//-
 		abit_t addr_buf;
 		
 		for(uchar_t i = 0; i < A_BIT; i++) 
@@ -38,7 +38,7 @@ typedef bit				[N_BANK - 1 : 0] nbit_t;
 		AddrBitReverse = addr_buf; // unsigned cast
 	endfunction
 
-	protected function nbit_t BankBitReverse(nbit_t bank); // -//-
+	static protected function nbit_t BankBitReverse(nbit_t bank); // -//-
 		nbit_t bank_buf;
 		
 		for(uchar_t i = 0; i < N_BANK; i++) 
@@ -55,6 +55,10 @@ typedef bit				[N_BANK - 1 : 0] nbit_t;
 	extern function uint32_t	GetAllErr();
 	extern function float32_t	GetMaxErr();
 	extern function float32_t	GetAvErr();
+	
+	extern function float32_t	GetMaxDataRam();
+	extern function float32_t	GetMinDataRam();
+	extern function float32_t	GetMeanDataRam();
 	
 	extern function void UpdBankRAM(uint16_t bunk_num, dlogic_t ext_ram [0 : BANK_SIZE - 1]); // run always when required copy external RAM in class 
 	extern function void SaveRAMdata(string name);

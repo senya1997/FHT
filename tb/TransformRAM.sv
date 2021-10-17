@@ -15,7 +15,7 @@
 		else AbsData = data;
 	endfunction
 	
-	function float32_t TransformRAM::Reg2Real(dbit_t data);
+	function float32_t TransformRAM::Reg2Float(dbit_t data);
 		int32_t data_int; // integer part of data
 		float32_t data_fract;
 	
@@ -25,7 +25,7 @@
 			data_fract = data_fract + float32_t'(data[D_BIT - INT_BIT - (k+1)])/(2**(k+1)); // one bit in float cast
 	
 		data_int = $signed(data[D_BIT - 1 : D_BIT - INT_BIT]); // signed cast
-		Reg2Real = float32_t'(data_int) + data_fract; // cast
+		Reg2Float = float32_t'(data_int) + data_fract; // cast
 	endfunction
 
 // public:
@@ -46,6 +46,39 @@
 		else GetAvErr = 0;
 	endfunction
 	
+	function float32_t TransformRAM::GetMaxDataRam();
+		dbit_t max_data;
+		
+		max_data = 0;
+		for(uint16_t i = 0; i < BANK_SIZE; i++) // rows
+			for(uchar_t j = 0; j < N_BANK; j++) // column
+				if(tran_ram[i][j] > max_data) max_data = tran_ram[i][j];
+		
+		return Reg2Float(max_data);
+	endfunction
+	
+	function float32_t TransformRAM::GetMinDataRam();
+		dbit_t min_data;
+		
+		min_data = 0;
+		for(uint16_t i = 0; i < BANK_SIZE; i++) // rows
+			for(uchar_t j = 0; j < N_BANK; j++) // column
+				if(tran_ram[i][j] < min_data) min_data = tran_ram[i][j];
+		
+		return Reg2Float(min_data);
+	endfunction
+	
+	function float32_t TransformRAM::GetMeanDataRam();
+		float32_t sum_data;
+		
+		sum_data = 0;
+		for(uint16_t i = 0; i < BANK_SIZE; i++) // rows
+			for(uchar_t j = 0; j < N_BANK; j++) // column
+				sum_data = sum_data + Reg2Float(tran_ram[i][j]);
+		
+		return sum_data/(BANK_SIZE * N_BANK);
+	endfunction
+	
 	function void TransformRAM::UpdBankRAM(uint16_t bunk_num, dlogic_t ext_ram [0 : BANK_SIZE - 1]);
 		for(uint16_t cnt_data = 0; cnt_data < BANK_SIZE; cnt_data++)
 			begin
@@ -53,7 +86,7 @@
 					tran_ram[cnt_data][bunk_num] = ext_ram[cnt_data];
 				else
 					begin
-						$display("\n***\tCrytical warning: RAM data in 'X' state: bank = %d, addr = %d, data = %d", bunk_num, cnt_data, ext_ram[cnt_data]);
+						$display("\n ***\tCrytical warning: RAM data in 'X' state: bank = %d, addr = %d, data = %d", bunk_num, cnt_data, ext_ram[cnt_data]);
 						$stop;
 						return;
 					end
@@ -78,14 +111,14 @@
 		
 		for(uint16_t i = 0; i < BANK_SIZE; i++) // row
 			begin
-				if(&ext_ram[i] !== 1'bx) temp_ext_data = Reg2Real(ext_ram[i]);
+				if(&ext_ram[i] !== 1'bx) temp_ext_data = Reg2Float(ext_ram[i]);
 				else
 					begin
-						$display("\n***\tCrytical warning: RAM data in 'X' state: bank = %d,  addr = %d, data = %d", bunk_num, i, ext_ram[i]);
+						$display("\n ***\tCrytical warning: RAM data in 'X' state: bank = %d,  addr = %d, data = %d", bunk_num, i, ext_ram[i]);
 						return ERR;
 					end
 					
-				temp_ram_data = Reg2Real(tran_ram[i][bunk_num]);
+				temp_ram_data = Reg2Float(tran_ram[i][bunk_num]);
 				temp_er = AbsData(temp_ext_data - temp_ram_data);
 
 				if(temp_er > accuracy)
@@ -134,7 +167,7 @@
 				$fclose(f_ram);
 				$fclose(f_ram_reg);
 				
-				$display("\n***\tError: file name is wrong: '%s'\n", name);
+				$display("\n ***\tError: file name is wrong: '%s'\n", name);
 				$stop;
 				return;
 			end
@@ -143,7 +176,7 @@
 			begin
 				for(uchar_t cnt_bank = 0; cnt_bank < N_BANK; cnt_bank++) 
 					begin
-						$fwrite(f_ram, "%6.6f", Reg2Real(tran_ram[cnt_data][cnt_bank]), "\t");
+						$fwrite(f_ram, "%6.6f", Reg2Float(tran_ram[cnt_data][cnt_bank]), "\t");
 						$fwrite(f_ram_reg, "%d", tran_ram[cnt_data][cnt_bank], "\t");
 					end
 						
@@ -179,7 +212,7 @@
 		if(f_ref == 0)
 			begin
 				$fclose(f_ref);
-				$display("\n***\tError: file name is wrong: '%s'\n", name_ref);
+				$display("\n ***\tError: file name is wrong: '%s'\n", name_ref);
 				return ERR;
 			end
 		
@@ -199,7 +232,7 @@
 						if(i < N_BANK - 1)	scan_data = $fscanf(f_ref, "%f\t", temp_ref_data);
 						else				scan_data = $fscanf(f_ref, "%f\n", temp_ref_data);
 						
-						temp_ram_data = Reg2Real(tran_ram[i][j]);
+						temp_ram_data = Reg2Float(tran_ram[i][j]);
 						temp_er = AbsData(temp_ref_data - temp_ram_data);
 						
 						str_temp.realtoa(temp_ref_data);
@@ -302,21 +335,22 @@
 		int32_t f_data, scan_data;
 		int32_t temp_data;
 		
-		$display("\tWrite data point in RAM from file: '%s', time: %t\n", name, $time);
-		
 		if(from_file)
 			begin
+				$display("\tWrite data point in RAM from file: '%s', time: %t\n", name, $time);
 				f_data = $fopen(name, "r");
 		
 				if(f_data == 0)
-				begin
-					$fclose(f_data);
-					$display("\n***\tError: file name is wrong: '%s'\n", name);
-					$stop;
-					return;
-				end
+					begin
+						$fclose(f_data);
+						$display("\n ***\tError: file name is wrong: '%s'\n", name);
+						$stop;
+						return;
+					end
 			end
-	
+		else 
+			$display("\tWrite data point in RAM from class RAM, time: %t\n", $time);
+		
 		for(uint16_t i = 0; i < BANK_SIZE; i++) // rows
 			for(uchar_t j = 0; j < N_BANK; j++) // columns
 				begin

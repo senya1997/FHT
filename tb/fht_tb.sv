@@ -10,30 +10,19 @@ bit reset;
 
 bit start;
 
-bit signed [`D_BIT - 1 : 0] data_fixp;
-bit [`A_BIT - 1 : 0] addr_wr;
-bit [3 : 0] we;
+bit signed [`D_BIT - 1 : 0] data;
+bit	[`A_BIT - 1 : 0] addr_wr;
+bit	[3 : 0] we;
 
-bit signed [`D_BIT - 1 : 0] fht_data;
-bit	[`A_BIT - 1 : 0] fht_addr;
-bit	[3 : 0] fht_we;
+bit flag_cp_matlab = 1; // for turn off compare RAM with ref file on IFHT stage
+bit ram_sel; // select which RAM is saving A/B
 
-bit flag_cp_matlab = 1; // for turn off COMPARE_MATLAB_RAM on IFHT stage !!! mb replace by RDY_FHT signal ???
-bit ram_sel;
+wire RDY_FHT;
 
-wire RDY_FHT, RDY_IFHT;
+float32_t min_data, max_data, mean_data;
 
 TransformRAM #(`D_BIT, `ADC_WIDTH, `A_BIT, `BANK_SIZE, 4) ram_imit;
 
-int i, j;
-
-function [`A_BIT - 1 : 0] F_BIT_REV(input [`A_BIT - 1 : 0] iDATA);
-	integer i;
-		begin
-			for (i = 0; i < `A_BIT; i = i + 1) F_BIT_REV[`A_BIT - 1 - i] = iDATA[i];
-		end
-endfunction
-	
 initial begin
 	$timeformat(-6, 3, " us", 6);
 	clk = 1;
@@ -47,15 +36,7 @@ initial begin
 end
 	
 initial begin
-	int temp_data[4];
-	
-// buf RAM for transmit data from bit rev order to norm before start IFHT:
-	logic signed [`D_BIT - 1 : 0] ram_buf_0 [0 : `BANK_SIZE - 1];
-	logic signed [`D_BIT - 1 : 0] ram_buf_1 [0 : `BANK_SIZE - 1];
-	logic signed [`D_BIT - 1 : 0] ram_buf_2 [0 : `BANK_SIZE - 1];
-	logic signed [`D_BIT - 1 : 0] ram_buf_3 [0 : `BANK_SIZE - 1];
-	
-	bit [`A_BIT - 1 : 0] cnt_rev;
+	bit signed [`D_BIT - 1 : 0] disp_data; // display RAM data in wave
 	
 	`ifdef TEST_MIXER
 		$display("\n\n\t\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
@@ -63,31 +44,34 @@ initial begin
 		$display("\n\n\t\t\t\tSTART TEST FHT\n");
 	`endif
 	
-	$display("\tError between reference signal and result must be less then `ACCURACY defines: %f", `ACCURACY);
-	$display("\tIf error too big - in console its marked by '***'");
-	
 	`ifdef COMPARE_WITH_MATLAB
-		$display("\tRAM compare with 'txt' file from matlab");
+		$display("\tEnable RAM compare with 'txt' file from matlab");
 	`endif
 	
-	fht_data = 0; 
-	fht_addr = 0;
-	fht_we = 0;
+	$display("\tError between reference signal and result must be less then `ACCURACY defines: %f", `ACCURACY);
+	$display("\tIf error too big - in console its marked by '***'\n");
+	
+	disp_data	= 0;
+	data		= 0; 
+	addr_wr		= 0;
+	we			= 0;
 	
 	ram_sel = 1'b1;
-	start = 1'b0;
+	start	= 1'b0;
 	
 	ram_imit = new();
 	ram_imit.SetPeriod(`TACT);
-	
-	#(100*`TACT);
 
-	$display("\n\twrite ADC data point in RAM, time: %t\n", $time);
-	
-	ram_imit.InitRAM(`INIT_FHT_RAM, 1, 1, fht_data, fht_addr, fht_we);
+// init DUT by ADC data:
+	#(10*`TACT);
+	ram_imit.InitRAM(`INIT_FHT_RAM, 1, 1, data, addr_wr, we);
 	ram_imit.SaveRAMdata("init_ram_a.txt");
 	
-	$display("\n\tstart FHT, time: %t\n", $time);
+	ram_imit.DisplayRAM(disp_data);
+	disp_data = 0;
+	
+// FHT:
+	$display("\tStart FHT, time: %t...\n", $time);
 	
 		// #1; // if "sdf" is turn off
 	start = 1'b1;
@@ -97,12 +81,7 @@ initial begin
 	wait(RDY_FHT);
 		#(`TACT);
 	
-	$display("\n\tfinish FHT, time: %t\n", $time);
-	
-	`ifdef EN_BREAKPOINT
-		$display("\n\t\t\tpress 'run' to continue\n");
-		$stop;
-	`endif
+	$display("\tFinish FHT, time: %t\n", $time);
 	
 	`ifdef LAST_STAGE_ODD
 		UpdClassRAM_A;
@@ -113,12 +92,13 @@ initial begin
 	ram_imit.SaveRAMdata(`FPGA_FHT_RAM);
 	
 	`ifdef COMPARE_WITH_MATLAB
-		ram_imit.CompareWithFile(`MATH_FHT_RAM, `ACCURACY);
-		
-		$display("\n\tMax error in all transfer: %6.6f", ram_imit.GetMaxErr());
-		$display("\tAvarage error in all transfer: %6.6f", ram_imit.GetAvErr());
-		$display("\tTotal amount of errors: %d", ram_imit.GetAllErr());
+		void'(ram_imit.CompareWithFile(`MATH_FHT_RAM, `ACCURACY));
+		flag_cp_matlab = 0;
 	`endif
+	
+	min_data = ram_imit.GetMinDataRam();
+	max_data = ram_imit.GetMaxDataRam();
+	mean_data = ram_imit.GetMeanDataRam();
 	
 	`ifdef EN_BREAKPOINT
 		$display("\n\t\t\tpress 'run' to continue");
@@ -126,62 +106,31 @@ initial begin
 	`endif
 	
 // IFHT:
-	#(`TACT);
-	$display("\n\tRewrite RAM data from bit rev to norm order for IFHT, time: %t\n", $time);
+	ram_imit.Bitrev2NormalRAM();
+	ram_imit.InitRAM("", 0, 0, data, addr_wr, we);
 	
-	for(j = 0; j < `BANK_SIZE; j = j + 1) 
-		begin
-			`ifdef LAST_STAGE_ODD
-				ram_buf_0[j] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_1[j] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_2[j] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_3[j] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB[j];
-			`elsif LAST_STAGE_EVEN
-				ram_buf_0[j] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_1[j] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_2[j] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB[j];
-				ram_buf_3[j] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB[j];
-			`endif
-		end	
-
-	cnt_rev = 0;
-	
-	for(uint16_t j = 0; j < `BANK_SIZE; j++) 
-		begin
-			temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
-			temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
-			temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
-			temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
-				
-			for(uchar_t i = 0; i < 4; i++)
-				begin
-					data_fixp = temp_data[i];
-					addr_wr = j;
-					
-					we[i] = 1'b1;
-						#(`TACT);
-					we[i] = 1'b0;
-				end
-				
-			cnt_rev = cnt_rev + 1;
-		end
-	
-	$display("\n\tstart IFHT, time: %t\n", $time);
-	flag_cp_matlab = 0;
+	$display("\tStart IFHT, time: %t...\n", $time);
 	
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
 		#(`TACT);
-
-	wait(RDY_IFHT);
+	wait(RDY_FHT);
+		#(`TACT);
 	
-	ram_imit = null;
+	$display("\tFinish IFHT, time: %t\n", $time);
+		
+	`ifdef LAST_STAGE_ODD
+		UpdClassRAM_A;
+	`elsif LAST_STAGE_EVEN
+		UpdClassRAM_B;
+	`endif
 	
-	$display("\tfinish IFHT, time: %t\n", $time);
-
-	$display("\n\t\t\t\tCOMPLETE\n");
-	$stop;
+	ram_imit.Bitrev2NormalRAM();
+	ram_imit.DisplayRAM(disp_data);
+	disp_data = 0;
+	
+	$finish;
 end
 
 always@(FHT.CONTROL.cnt_stage)begin
@@ -209,7 +158,7 @@ always@(FHT.CONTROL.cnt_stage)begin
 			
 			`ifdef COMPARE_WITH_MATLAB
 				str_temp_ref = {"../../fht/matlab/before_", str_stage, "st_ram.txt"};
-				ram_imit.CompareWithFile(str_temp_ref, `ACCURACY);
+				void'(ram_imit.CompareWithFile(str_temp_ref, `ACCURACY));
 			`endif
 	
 			`ifdef EN_BREAKPOINT
@@ -233,6 +182,19 @@ task UpdClassRAM_B;
 	ram_imit.UpdBankRAM(3, FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB);
 endtask
 
+final begin
+ 	$display("\n===========================================================================================\n");
+ 	$display("\tStatistics about all transform, %t:\n", $time);
+ 	$display("\tData range in transform is: %6.6f ... %6.6f", min_data, max_data);
+ 	$display("\tMean data: %6.6f\n", mean_data);
+ 	$display("\tMax error: %6.6f", ram_imit.GetMaxErr());
+	$display("\tAvarage error: %6.6f", ram_imit.GetAvErr());
+	$display("\tTotal amount of errors: %d", ram_imit.GetAllErr());
+	$display("\n===========================================================================================\n");
+	
+	ram_imit = null;
+end
+	
 fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
 			.MIF_SIN(`MIF_SIN), .MIF_COS(`MIF_COS)) FHT(
 	.iCLK(clk),
@@ -240,17 +202,17 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	
 	.iSTART(start),
 	
-	.iWE(fht_we),
+	.iWE(we),
 	
-	.iDATA_0(fht_data),
-	.iDATA_1(fht_data),
-	.iDATA_2(fht_data),
-	.iDATA_3(fht_data),
+	.iDATA_0(data),
+	.iDATA_1(data),
+	.iDATA_2(data),
+	.iDATA_3(data),
 	
-	.iADDR_WR_0(fht_addr),
-	.iADDR_WR_1(fht_addr),
-	.iADDR_WR_2(fht_addr),
-	.iADDR_WR_3(fht_addr),
+	.iADDR_WR_0(addr_wr),
+	.iADDR_WR_1(addr_wr),
+	.iADDR_WR_2(addr_wr),
+	.iADDR_WR_3(addr_wr),
 	
 	.iADDR_RD_0(),
 	.iADDR_RD_1(),
@@ -263,38 +225,6 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.oDATA_3(),
 	
 	.oRDY(RDY_FHT)
-);
-
-fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT), 
-	.MIF_SIN(`MIF_SIN), .MIF_COS(`MIF_COS)) IFHT(
-	.iCLK(clk),
-	.iRESET(reset),
-
-	.iSTART(start),
-
-	.iWE(we),
-
-	.iDATA_0(data_fixp),
-	.iDATA_1(data_fixp),
-	.iDATA_2(data_fixp),
-	.iDATA_3(data_fixp),
-
-	.iADDR_WR_0(addr_wr),
-	.iADDR_WR_1(addr_wr),
-	.iADDR_WR_2(addr_wr),
-	.iADDR_WR_3(addr_wr),
-
-	.iADDR_RD_0(),
-	.iADDR_RD_1(),
-	.iADDR_RD_2(),
-	.iADDR_RD_3(),
-
-	.oDATA_0(),
-	.oDATA_1(),
-	.oDATA_2(),
-	.oDATA_3(),
-
-	.oRDY(RDY_IFHT)
 );
 
 endmodule
