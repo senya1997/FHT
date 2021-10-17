@@ -1,15 +1,13 @@
 `include "TransformRAM.svh"
 
  	function TransformRAM::new();
- 		disp_data = 0;
- 		
  		for(uint16_t cnt_data = 0; cnt_data < BANK_SIZE; cnt_data++)
  			for(uint16_t cnt_bank = 0; cnt_bank < N_BANK; cnt_bank++)
  				tran_ram[cnt_data][cnt_bank] = 0;
  	endfunction
 
 // private:
- 	
+ 
  	
 // protected:
  	function float32_t TransformRAM::AbsData(float32_t data);
@@ -31,8 +29,8 @@
 	endfunction
 
 // public:
-	function void TransformRAM::SetPeriod(uint32_t tact);
-		this.tact = tact;
+	function void TransformRAM::SetPeriod(time tact);
+		this.tact = tact*1000; // ???
 	endfunction
 	
 	function uint32_t TransformRAM::GetAllErr();
@@ -55,13 +53,71 @@
 					tran_ram[cnt_data][bunk_num] = ext_ram[cnt_data];
 				else
 					begin
-						$display("\n***\tCrytical warning: RAM data in 'X' state: addr = %d, data = %d", cnt_data, ext_ram[cnt_data]);
+						$display("\n***\tCrytical warning: RAM data in 'X' state: bank = %d, addr = %d, data = %d", bunk_num, cnt_data, ext_ram[cnt_data]);
 						$stop;
 						return;
 					end
 			end
 	endfunction
+	
+	function e_comp TransformRAM::CompareBankRAM(uint16_t bunk_num, float32_t accuracy, dlogic_t ext_ram [0 : BANK_SIZE - 1]);
+		float32_t temp_ram_data;
+		float32_t temp_ext_data; // external for class RAM data
+		float32_t temp_er;
 		
+	// errors in current compare with file:
+		uint32_t cnt_cur_er; 
+		float32_t max_cur_er;
+		float32_t sum_cur_er;
+		
+		$display("\n\tCompare data point in RAM with class RAM, time: %t\n", $time);
+		
+		cnt_cur_er = 0;
+		max_cur_er = 0;
+		sum_cur_er = 0;
+		
+		for(uint16_t i = 0; i < BANK_SIZE; i++) // row
+			begin
+				if(&ext_ram[i] !== 1'bx) temp_ext_data = Reg2Real(ext_ram[i]);
+				else
+					begin
+						$display("\n***\tCrytical warning: RAM data in 'X' state: bank = %d,  addr = %d, data = %d", bunk_num, i, ext_ram[i]);
+						return ERR;
+					end
+					
+				temp_ram_data = Reg2Real(tran_ram[i][bunk_num]);
+				temp_er = AbsData(temp_ext_data - temp_ram_data);
+
+				if(temp_er > accuracy)
+					begin
+						sum_er		= sum_er + temp_er;
+						sum_cur_er	= sum_cur_er + temp_er;
+						
+						cnt_all_er = cnt_all_er + 1;
+						cnt_cur_er = cnt_cur_er + 1;
+									
+						if(temp_er > max_er)		max_er = temp_er;
+						if(temp_er > max_cur_er)	max_cur_er = temp_er;
+						
+						$display(" ***\tLine %3d: EXT RAM =\t\t\t%6.6f, CLASS RAM:\t\t\t%6.6f", i, temp_ext_data, temp_ram_data);
+					end
+			end
+		
+		$display("\n\tNumber of errors compare RAM with class RAM: %4d, time: %t", cnt_cur_er, $time);
+		$display("\tMax error: %6.6f", max_cur_er);
+		
+		if(cnt_cur_er == 0)
+			begin
+				$display("\tAvarage error: 0\n");
+				return SAME;
+			end
+		else
+			begin
+				$display("\tAvarage error: %6.6f\n", sum_cur_er/cnt_cur_er);
+				return DIFF;
+			end
+	endfunction
+	
 	function void TransformRAM::SaveRAMdata(string name);
 		int32_t f_ram, f_ram_reg;
 		string str_temp;
@@ -99,7 +155,7 @@
 		$fclose(f_ram_reg);
 	endfunction
 
-	function void TransformRAM::CompareWithFile(string name_ref, float32_t accuracy);
+	function e_comp TransformRAM::CompareWithFile(string name_ref, float32_t accuracy);
 		int32_t f_ref;
 		int32_t scan_data;
 	
@@ -124,8 +180,7 @@
 			begin
 				$fclose(f_ref);
 				$display("\n***\tError: file name is wrong: '%s'\n", name_ref);
-				$stop;
-				return;
+				return ERR;
 			end
 		
 		cnt_cur_er = 0;
@@ -173,12 +228,19 @@
 	
 		$fclose(f_ref);
 		
-		$display("\n\tMax error: %6.6f", max_cur_er);
+		$display("\n\tNumber of errors compare RAM with file: %4d, time: %t", cnt_cur_er, $time);
+		$display("\tMax error: %6.6f", max_cur_er);
 		
-		if(cnt_cur_er == 0)	$display("\tAvarage error: 0");
-		else				$display("\tAvarage error: %6.6f", sum_cur_er/cnt_cur_er);
-		
-		$display("\tNumber of errors compare RAM with file: %4d, time: %t\n", cnt_cur_er, $time);
+		if(cnt_cur_er == 0)
+			begin
+				$display("\tAvarage error: 0\n");
+				return SAME;
+			end
+		else
+			begin
+				$display("\tAvarage error: %6.6f\n", sum_cur_er/cnt_cur_er);
+				return DIFF;
+			end
 	endfunction
 	
 	function void TransformRAM::Bitrev2NormalRAM(); // convert bit reverse to normal sequence points in RAM
@@ -205,7 +267,7 @@
 			end
 	endfunction
 	
-	task TransformRAM::DisplayRAM(output dbit_t oDATA);
+	task TransformRAM::DisplayRAM(ref dbit_t data_disp);
 		nbit_t cnt_bank_rev;
 		nbit_t bank_rev;
 		
@@ -218,22 +280,22 @@
 				bank_rev = BankBitReverse(cnt_bank_rev);
 					
 				for(uint16_t j = 0; j < BANK_SIZE; j++) // rows
-					oDATA = tran_ram[j][bank_rev];
+					data_disp = tran_ram[j][bank_rev];
 				
 				cnt_bank_rev = cnt_bank_rev + 1;
 				#(tact);
 			end
 	endtask
-		
+
 	task TransformRAM::InitRAM(
-								input string name,
-								input bit fixed_point, // 1 - add '0' in fract part of data before write, 0 - add data in RAM as is
-								input bit from_file, // 1 - init external RAM and RAM in class from file, 0 - init external ram from class RAM
-								output dbit_t oDATA,
-								output abit_t oADDR_WR,
-								output nbit_t oWE
-							); // line by line from file
-		
+							string name,
+							bit fixed_point, // 1 - add '0' in fract part of data before write, 0 - add data in RAM as is
+							bit from_file, // 1 - init external RAM and RAM in class from file, 0 - init external ram from class RAM
+							ref dbit_t out_data,
+							ref abit_t out_addr,
+							ref nbit_t out_we
+						); // line by line from file
+						
 		int32_t f_data, scan_data;
 		int32_t temp_data;
 		
@@ -263,14 +325,14 @@
 							tran_ram[i][j] = $signed(temp_data); // update internal RAM imitation, signed cast
 						end
 					
-					if(fixed_point & from_file)	oDATA = {tran_ram[i][j], {(D_BIT - INT_BIT){1'b0}}};
-					else						oDATA = tran_ram[i][j];
+					if(fixed_point & from_file)	out_data = {tran_ram[i][j], {(D_BIT - INT_BIT){1'b0}}};
+					else						out_data = tran_ram[i][j];
 							
-					oADDR_WR = i; // row choose, unsigned cast
-							
-					oWE[j] = 1'b1; // column choose, write external RAM
+					out_addr = i; // row choose, unsigned cast
+					
+					out_we[j] = 1'b1; // column choose, write external RAM
 					#(tact);
-					oWE[j] = 1'b0;
+					out_we[j] = 1'b0;
 				end
 		
 		if(from_file) $fclose(f_data);

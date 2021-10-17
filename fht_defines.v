@@ -70,14 +70,14 @@
 	//`define RAM_ACCESS_TB altsyncram_component.mem_data
 	//`define RAM_ACCESS_TB altsyncram_component.m_default.altsyncram_inst.mem_data
 	`define RAM_ACCESS_TB altsyncram_component.m_non_arria10.altsyncram_inst.mem_data
-	
+/*
 `define CLK_FREQ 100 // MHz
-	
+
 `define TACT		$ceil(1000/`CLK_FREQ) // ns
 `define HALF_TACT	$ceil(`TACT/2)
-/*
-	`define TACT 21
-	`define HALF_TACT `TACT/2 
  */
+`define TACT 10ns
+`define HALF_TACT 5ns
+
 `define NUM_OF_RPT 50	// number of repeat butterfly test
 `define ACCURACY 0.001	// for all tests (butterfly, FHT)

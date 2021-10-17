@@ -12,13 +12,11 @@ bit flag_cp_matlab = 1; // for turn off COMPARE_MATLAB_RAM on IFHT stage
 
 bit start;
 bit ram_sel;
-	
-bit signed [`ADC_WIDTH - 1 : 0] data_buf; // '-2' because data from ADC don't have bit expansion
+
 bit signed [`D_BIT - 1 : 0] data_fixp;
 
 bit signed [`ADC_WIDTH - 1 : 0] disp_data;
 
-bit [`A_BIT - 1 : 0] addr_rd [0 : 3];
 bit [`A_BIT - 1 : 0] addr_wr;
 bit [3 : 0] we;
 
@@ -27,6 +25,8 @@ wire RDY_FHT, RDY_IFHT;
 bit signed [`D_BIT - 1 : 0] fht_data;
 bit	[`A_BIT - 1 : 0] fht_addr;
 bit	[3 : 0] fht_we;
+
+TransformRAM #(`D_BIT, `ADC_WIDTH, `A_BIT, `BANK_SIZE, 4) ram_imit;
 
 int i, j;
 int cnt_all_er; // counters of stage and all errors
@@ -42,21 +42,9 @@ end
 endfunction
 
 // convert from type 'reg' with fixed point to 'real':
-	function real F_REG_TO_REAL(input bit signed [`D_BIT - 1 : 0] iDATA);
-bit signed [`ADC_WIDTH - 1 : 0] data_int;
-real temp;
-shortint k;
-begin
-	temp = 0;
-	for (k = 0; k < (`D_BIT - `ADC_WIDTH); k = k + 1) 
-		temp = temp + iDATA[`D_BIT - `ADC_WIDTH -(k+1)]*1.0/(2**(k+1));
-	
-	data_int = iDATA[`D_BIT - 1 : `D_BIT - `ADC_WIDTH];
-	F_REG_TO_REAL = data_int + temp;
-end
-endfunction
 
-	function real F_ABS(input real data);
+
+function real F_ABS(input real data);
 if(data < 0) F_ABS = -data;
 else F_ABS = data;
 endfunction
@@ -72,10 +60,8 @@ initial begin
 	reset = 1'b0; #(`TACT);
 	reset = 1'b1;
 end
-
+	
 initial begin
- 	TransformRAM #(`D_BIT, `ADC_WIDTH, `A_BIT, `BANK_SIZE, 4) ram_imit;
-
 	int file_data, scan_data;
 	int temp_data[4];
 	
@@ -102,6 +88,10 @@ initial begin
 		$display("\n\tRAM compare with 'txt' file from matlab");
 	`endif
 	
+	fht_data = 0; 
+	fht_addr = 0;
+	fht_we = 0;
+		
 	cnt_all_er = 0;
 	max_er = 0;
 	av_er = 0;
@@ -112,17 +102,11 @@ initial begin
 	ram_imit = new();
 	ram_imit.SetPeriod(`TACT);
 	
-	#(10*`TACT);
+	#(100*`TACT);
 
 	$display("\n\twrite ADC data point in RAM, time: %t\n", $time);
 	
 	ram_imit.InitRAM(`INIT_FHT_RAM, 1, 1, fht_data, fht_addr, fht_we);
-		
-	#(`TACT);
-	
-	for(uchar_t i = 0; i < 4; i++)
-		ram_imit.UpdBankRAM(i, FHT.FHT_RAM_A.ram_bank[i].RAM_BANK.`RAM_ACCESS_TB);
-	
 	ram_imit.SaveRAMdata("init_ram_a.txt");
 	
 	$display("\n\tstart FHT, time: %t\n", $time);
@@ -143,12 +127,14 @@ initial begin
 	`endif
 	
 	`ifdef LAST_STAGE_ODD
-		SAVE_RAM_DATA(`FPGA_FHT_RAM, 0);
+		UpdClassRAM_A;
+		ram_imit.SaveRAMdata(`FPGA_FHT_RAM);
 		`ifdef COMPARE_WITH_MATLAB
 			COMPARE_MATLAB_RAM(`MATH_FHT_RAM, `FPGA_FHT_RAM);
 		`endif
 	`elsif LAST_STAGE_EVEN
-		SAVE_RAM_DATA(`FPGA_FHT_RAM, 1);
+		UpdClassRAM_B;
+		ram_imit.SaveRAMdata(`FPGA_FHT_RAM);
 		`ifdef COMPARE_WITH_MATLAB
 			COMPARE_MATLAB_RAM(`MATH_FHT_RAM, `FPGA_FHT_RAM);
 		`endif
@@ -189,17 +175,14 @@ initial begin
 
 	cnt_rev = 0;
 	
-	for(j = 0; j < `BANK_SIZE; j = j + 1) 
+	for(uint16_t j = 0; j < `BANK_SIZE; j++) 
 		begin
 			temp_data[0] = ram_buf_0[F_BIT_REV(cnt_rev)];
 			temp_data[1] = ram_buf_1[F_BIT_REV(cnt_rev)];
 			temp_data[2] = ram_buf_2[F_BIT_REV(cnt_rev)];
 			temp_data[3] = ram_buf_3[F_BIT_REV(cnt_rev)];
 				
-			//$display("\tLine %3d:\tdata_0: %6.6f,\t\t\t\tdata_1: %6.6f,\t\t\t\tdata_2: %6.6f,\t\t\t\tdata_3: %6.6f", 
-			//				j, F_REG_TO_REAL(temp_data[0]), F_REG_TO_REAL(temp_data[1]), F_REG_TO_REAL(temp_data[2]), F_REG_TO_REAL(temp_data[3]));
-				
-			for(i = 0; i < 4; i = i + 1)
+			for(uchar_t i = 0; i < 4; i++)
 				begin
 					data_fixp = temp_data[i];
 					addr_wr = j;
@@ -262,12 +245,22 @@ always@(FHT.CONTROL.cnt_stage)begin
 			int_stage = FHT.CONTROL.cnt_stage;
 			str_stage.itoa(int_stage);
 			
-			if(~ram_sel)
-				str_temp = {"before_", str_stage, "st_ram_a.txt"};
-			else
-				str_temp = {"before_", str_stage, "st_ram_b.txt"};
+			if(~ram_sel)	str_temp = {"before_", str_stage, "st_ram_a.txt"};
+			else 			str_temp = {"before_", str_stage, "st_ram_b.txt"};
 				
-			#(2*`TACT) SAVE_RAM_DATA(str_temp, ram_sel);
+			#(2*`TACT);
+			
+			if(ram_sel)
+				begin
+					UpdClassRAM_B;
+					ram_imit.SaveRAMdata(str_temp);
+				end
+			else
+				begin
+					UpdClassRAM_A;
+					ram_imit.SaveRAMdata(str_temp);
+				end
+
 			ram_sel = ~ram_sel;
 			
 			`ifdef COMPARE_WITH_MATLAB
@@ -281,55 +274,19 @@ always@(FHT.CONTROL.cnt_stage)begin
 			`endif
 		end
 end
-	
-task SAVE_RAM_DATA(string name, bit ram_sel); // 0 - RAM(A), 1 - RAM(B)
-	bit signed [`D_BIT - 1 : 0] buf_signed [0 : 3];
-	
-	string str_temp;
-	
-	int f_ram, f_ram_reg;
-	shortint cnt_bank, cnt_data;
-	
-	$display("\tsave RAM in files: '%s', time: %t\n", name, $time);
-	
-	str_temp = {"reg_", name};
-	
-	f_ram = $fopen(name, "w");
-	f_ram_reg = $fopen(str_temp, "w"); // data for convolution
-	
-	for(cnt_data = 0; cnt_data < `BANK_SIZE; cnt_data = cnt_data + 1)
-		begin
-		// cycle 'for' impossible to use because expression
-		// '...FHT_RAM_A.ram_bank[i].RAM_BANK...' provide to error in modelsim
-		// number of bank memory must be the 'integer number', not a 'variable'
-			if(ram_sel == 0)
-				begin
-					buf_signed[0] = FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB[cnt_data];
-					buf_signed[1] = FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB[cnt_data];
-					buf_signed[2] = FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB[cnt_data];
-					buf_signed[3] = FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB[cnt_data];
-				end
-			else if(ram_sel == 1)
-				begin
-					buf_signed[0] = FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB[cnt_data];
-					buf_signed[1] = FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB[cnt_data];
-					buf_signed[2] = FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB[cnt_data];
-					buf_signed[3] = FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB[cnt_data];
-				end
-			
-			for(cnt_bank = 0; cnt_bank < 4; cnt_bank = cnt_bank + 1) 
-				begin
-					// $fwrite(f_ram, "%6.6f", F_REG_TO_REAL(buf_signed[cnt_bank]), "\t\t");
-					$fwrite(f_ram, "%6.6f", F_REG_TO_REAL(buf_signed[cnt_bank]), "\t");
-					$fwrite(f_ram_reg, "%d", buf_signed[cnt_bank], "\t");
-				end
-				
-			$fwrite(f_ram, "\n");
-			$fwrite(f_ram_reg, "\n");
-		end
-		
-	$fclose(f_ram);
-	$fclose(f_ram_reg);
+
+task UpdClassRAM_A;
+	ram_imit.UpdBankRAM(0, FHT.FHT_RAM_A.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB);
+	ram_imit.UpdBankRAM(1, FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB);
+	ram_imit.UpdBankRAM(2, FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB);
+	ram_imit.UpdBankRAM(3, FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB);
+endtask
+
+task UpdClassRAM_B;
+	ram_imit.UpdBankRAM(0, FHT.FHT_RAM_B.ram_bank[0].RAM_BANK.`RAM_ACCESS_TB);
+	ram_imit.UpdBankRAM(1, FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB);
+	ram_imit.UpdBankRAM(2, FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB);
+	ram_imit.UpdBankRAM(3, FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB);
 endtask
 
 task automatic COMPARE_MATLAB_RAM(input string name_ref, name);
@@ -406,10 +363,10 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iADDR_WR_2(fht_addr),
 	.iADDR_WR_3(fht_addr),
 	
-	.iADDR_RD_0(addr_rd[0]),
-	.iADDR_RD_1(addr_rd[1]),
-	.iADDR_RD_2(addr_rd[2]),
-	.iADDR_RD_3(addr_rd[3]),
+	.iADDR_RD_0(),
+	.iADDR_RD_1(),
+	.iADDR_RD_2(),
+	.iADDR_RD_3(),
 	
 	.oDATA_0(),
 	.oDATA_1(),
@@ -438,10 +395,10 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iADDR_WR_2(addr_wr),
 	.iADDR_WR_3(addr_wr),
 
-	.iADDR_RD_0(addr_rd[0]),
-	.iADDR_RD_1(addr_rd[1]),
-	.iADDR_RD_2(addr_rd[2]),
-	.iADDR_RD_3(addr_rd[3]),
+	.iADDR_RD_0(),
+	.iADDR_RD_1(),
+	.iADDR_RD_2(),
+	.iADDR_RD_3(),
 
 	.oDATA_0(),
 	.oDATA_1(),

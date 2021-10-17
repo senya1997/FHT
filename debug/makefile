@@ -18,7 +18,7 @@ LOG_FHT_TB := LOG_FHT.txt
 all: run
 	
 run: lib comp
-	vsim -c -L $(LIB_LPM) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
+	vsim -c -voptargs="+acc" -L $(LIB_LPM) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
 	-do 'run -all' \
 	-do 'quit -sim' \
 	-do 'quit'

@@ -15,5 +15,7 @@
 
 // classes:
 	package fht_classes_pkg;
+		typedef enum {SAME, DIFF, ERR} e_comp;
+		
 		`include "TransformRAM.sv"
 	endpackage
