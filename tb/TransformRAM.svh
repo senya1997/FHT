@@ -2,16 +2,18 @@ import common_types_pkg::*;
 
 class TransformRAM #(uint16_t	D_BIT = 24,			// 'D_BIT' <= 32;
 								INT_BIT = 16,		// number bit of integer part of data
-								A_BIT = 8,			// log2(rows)
 								BANK_SIZE = 256,	// num of rows
-								N_BANK = 4			// num of columns
+								A_BIT = 8,			// log2(BANK_SIZE)
+								N_BANK = 4,			// num of columns
+								N_BIT = 2			// log2(N_BANK)
 					);
 
-typedef bit signed		[D_BIT - 1 : 0] dbit_t;
-typedef reg 		[D_BIT - 1 : 0] dlogic_t;
-	
-typedef bit				[A_BIT - 1 : 0] abit_t;
-typedef bit				[N_BANK - 1 : 0] nbit_t;
+typedef bit signed	[D_BIT - 1 : 0] dbit_t;
+typedef reg			[D_BIT - 1 : 0] dlogic_t;
+
+typedef bit	[A_BIT - 1 : 0]		abit_t;
+typedef bit	[N_BIT - 1 : 0]		nbit_t;
+typedef bit	[N_BANK - 1 : 0]	webit_t;
 
 // main vars:
 	local dbit_t tran_ram [0 : BANK_SIZE - 1][0 : N_BANK - 1]; // RAM imitation
@@ -41,8 +43,8 @@ typedef bit				[N_BANK - 1 : 0] nbit_t;
 	static protected function nbit_t BankBitReverse(nbit_t bank); // -//-
 		nbit_t bank_buf;
 		
-		for(uchar_t i = 0; i < N_BANK; i++) 
-			bank_buf[N_BANK - 1 - i] = bank[i];
+		for(uchar_t i = 0; i < N_BIT; i++) 
+			bank_buf[N_BIT - 1 - i] = bank[i];
 		
 		BankBitReverse = bank_buf; // unsigned cast
 	endfunction
@@ -76,6 +78,6 @@ typedef bit				[N_BANK - 1 : 0] nbit_t;
 						bit from_file, // 1 - init external RAM and RAM in class from file, 0 - init external ram from class RAM
 						ref dbit_t out_data,
 						ref abit_t out_addr,
-						ref nbit_t out_we
+						ref webit_t out_we
 					); // line by line from file
 endclass

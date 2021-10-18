@@ -21,7 +21,7 @@ wire RDY_FHT;
 
 float32_t min_data, max_data, mean_data;
 
-TransformRAM #(`D_BIT, `ADC_WIDTH, `A_BIT, `BANK_SIZE, 4) ram_imit;
+TransformRAM #(`D_BIT, `ADC_WIDTH, `BANK_SIZE, `A_BIT, 4, 2) ram_imit;
 
 initial begin
 	$timeformat(-6, 3, " us", 6);
@@ -36,7 +36,7 @@ initial begin
 end
 	
 initial begin
-	bit signed [`D_BIT - 1 : 0] disp_data; // display RAM data in wave
+	bit signed [`D_BIT - 1 : 0] disp_fht, disp_ifht; // display RAM data in wave
 	
 	`ifdef TEST_MIXER
 		$display("\n\n\t\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
@@ -51,7 +51,9 @@ initial begin
 	$display("\tError between reference signal and result must be less then `ACCURACY defines: %f", `ACCURACY);
 	$display("\tIf error too big - in console its marked by '***'\n");
 	
-	disp_data	= 0;
+	disp_fht	= 0;
+	disp_ifht	= 0;
+	
 	data		= 0; 
 	addr_wr		= 0;
 	we			= 0;
@@ -67,8 +69,8 @@ initial begin
 	ram_imit.InitRAM(`INIT_FHT_RAM, 1, 1, data, addr_wr, we);
 	ram_imit.SaveRAMdata("init_ram_a.txt");
 	
-	ram_imit.DisplayRAM(disp_data);
-	disp_data = 0;
+	ram_imit.DisplayRAM(disp_fht);
+	disp_fht = 0;
 	
 // FHT:
 	$display("\tStart FHT, time: %t...\n", $time);
@@ -127,8 +129,8 @@ initial begin
 	`endif
 	
 	ram_imit.Bitrev2NormalRAM();
-	ram_imit.DisplayRAM(disp_data);
-	disp_data = 0;
+	ram_imit.DisplayRAM(disp_ifht);
+	disp_ifht = 0;
 	
 	$finish;
 end

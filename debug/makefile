@@ -1,6 +1,6 @@
 
-PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
-#PATH_QUARTUS := C:/altera/14.1/quartus
+#PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
+PATH_QUARTUS := C:/altera/14.1/quartus
 
 LIB_LPM	:= lpm_ver
 LIB_MF	:= altera_mf_ver
@@ -11,6 +11,8 @@ LOG_COMP_TB		:= LOG_COMP_TB.txt
 
 LOG_FHT_TB := LOG_FHT.txt
 
+VOPT := -voptargs="+acc"
+
 #===================================================================================================#
 #											make:													#
 #===================================================================================================#
@@ -18,10 +20,8 @@ LOG_FHT_TB := LOG_FHT.txt
 all: run
 	
 run: lib comp
-	vsim -c -voptargs="+acc" -L $(LIB_LPM) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
-	-do 'run -all' \
-	-do 'quit -sim' \
-	-do 'quit'
+	vsim -c $(VOPT) -L $(LIB_LPM) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
+	-do 'run -all'
 
 # =========== compile libs: ===========
 

@@ -83,7 +83,7 @@
 		for(uint16_t cnt_data = 0; cnt_data < BANK_SIZE; cnt_data++)
 			begin
 				if(&ext_ram[cnt_data] !== 1'bx)
-					tran_ram[cnt_data][bunk_num] = ext_ram[cnt_data];
+					tran_ram[cnt_data][bunk_num] = ext_ram[cnt_data]; // "unsigned" to signed cast
 				else
 					begin
 						$display("\n ***\tCrytical warning: RAM data in 'X' state: bank = %d, addr = %d, data = %d", bunk_num, cnt_data, ext_ram[cnt_data]);
@@ -316,10 +316,12 @@
 				bank_rev = BankBitReverse(cnt_bank_rev);
 					
 				for(uint16_t j = 0; j < BANK_SIZE; j++) // rows
-					data_disp = tran_ram[j][bank_rev];
-				
+					begin
+						data_disp = tran_ram[j][bank_rev];
+						#(tact);
+					end
+					
 				cnt_bank_rev = cnt_bank_rev + 1;
-				#(tact);
 			end
 	endtask
 
@@ -329,7 +331,7 @@
 							bit from_file, // 1 - init external RAM and RAM in class from file, 0 - init external ram from class RAM
 							ref dbit_t out_data,
 							ref abit_t out_addr,
-							ref nbit_t out_we
+							ref webit_t out_we
 						); // line by line from file
 						
 		int32_t f_data, scan_data;
