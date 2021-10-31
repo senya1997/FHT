@@ -6,29 +6,6 @@
  				tran_ram[cnt_data][cnt_bank] = 0;
  	endfunction
 
-// private:
- 
- 	
-// protected:
- 	function float32_t TransformRAM::AbsData(float32_t data);
-		if(data < 0) AbsData = -data;
-		else AbsData = data;
-	endfunction
-	
-	function float32_t TransformRAM::Reg2Float(dbit_t data);
-		int32_t data_int; // integer part of data
-		float32_t data_fract;
-	
-		data_fract = 0;
-		
-		for(uchar_t k = 0; k < (D_BIT - INT_BIT); k++) 
-			data_fract = data_fract + float32_t'(data[D_BIT - INT_BIT - (k+1)])/(2**(k+1)); // one bit in float cast
-	
-		data_int = $signed(data[D_BIT - 1 : D_BIT - INT_BIT]); // signed cast
-		Reg2Float = float32_t'(data_int) + data_fract; // cast
-	endfunction
-
-// public:
 	function void TransformRAM::SetPeriod(time tact);
 		this.tact = tact*1000; // ???
 	endfunction
@@ -77,6 +54,24 @@
 				sum_data = sum_data + Reg2Float(tran_ram[i][j]);
 		
 		return sum_data/(BANK_SIZE * N_BANK);
+	endfunction
+	
+	function float32_t TransformRAM::AbsData(float32_t data);
+		if(data < 0) AbsData = -data;
+		else AbsData = data;
+	endfunction
+	
+	function float32_t TransformRAM::Reg2Float(dbit_t data);
+		int32_t data_int; // integer part of data
+		float32_t data_fract;
+	
+		data_fract = 0;
+		
+		for(uchar_t k = 0; k < (D_BIT - INT_BIT); k++) 
+			data_fract = data_fract + float32_t'(data[D_BIT - INT_BIT - (k+1)])/(2**(k+1)); // one bit in float cast
+	
+		data_int = $signed(data[D_BIT - 1 : D_BIT - INT_BIT]); // signed cast
+		Reg2Float = float32_t'(data_int) + data_fract; // cast
 	endfunction
 	
 	function void TransformRAM::UpdBankRAM(uint16_t bunk_num, dlogic_t ext_ram [0 : BANK_SIZE - 1]);

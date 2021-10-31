@@ -26,11 +26,7 @@ typedef bit	[N_BANK - 1 : 0]	webit_t;
 
 // private:
 
-	
-// protected:
-	extern static protected function float32_t	AbsData(float32_t data); // static ? (enable calling without making instance)
-	extern static protected function float32_t	Reg2Float(dbit_t data); // -//-
-	
+// protected:	
 	static protected function abit_t AddrBitReverse(abit_t addr); // -//-
 		abit_t addr_buf;
 		
@@ -61,6 +57,9 @@ typedef bit	[N_BANK - 1 : 0]	webit_t;
 	extern function float32_t	GetMaxDataRam();
 	extern function float32_t	GetMinDataRam();
 	extern function float32_t	GetMeanDataRam();
+	
+	extern static function float32_t AbsData(float32_t data); // static ? (enable calling without making instance)
+	extern static function float32_t Reg2Float(dbit_t data); // -//-
 	
 	extern function void UpdBankRAM(uint16_t bunk_num, dlogic_t ext_ram [0 : BANK_SIZE - 1]); // run always when required copy external RAM in class 
 	extern function void SaveRAMdata(string name);
