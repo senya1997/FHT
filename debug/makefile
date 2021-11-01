@@ -1,6 +1,6 @@
 
-PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
-#PATH_QUARTUS := C:/altera/14.1/quartus
+#PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
+PATH_QUARTUS := C:/altera/14.1/quartus
 
 LIB_LPM	:= lpm_ver
 LIB_MF	:= altera_mf_ver
@@ -49,6 +49,11 @@ $(LIB_LPM):
 
 # ========= compile sources: =========
 
+comp:
+	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
+	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv
+	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/*_tb.sv
+	
 comp_fht:
 	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
 	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv

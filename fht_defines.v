@@ -79,5 +79,5 @@
 `define TACT 10ns
 `define HALF_TACT 5ns
 
-`define NUM_OF_RPT 50	// number of repeat butterfly test
+`define NUM_OF_RPT 100	// number of repeat butterfly test
 `define ACCURACY 0.001	// for all tests (butterfly, FHT)

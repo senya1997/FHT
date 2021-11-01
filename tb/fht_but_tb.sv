@@ -16,8 +16,7 @@ typedef struct {
 
 class ButRandPacket;
 	rand data_t data [0 : 2];
-	rand ang_t sin;
-	rand ang_t cos;
+	rand ang_t sin, cos;
 	
 	constraint ValidValue {
 		sin >= -`MAX_W;
@@ -47,7 +46,7 @@ wire signed [`D_BIT - 1 : 0] RESULT [0 : 1];
 
 stButPack_t dut_pack; // go on DUT
 
-uint16_t cnt_er;
+uint16_t cnt_er, cnt_of; // counters errors and overflows
 float32_t max_er, sum_er; // max and average error
 
 TransformRAM #(`D_BIT, `ADC_WIDTH, `BANK_SIZE, `A_BIT, 4, 2) ram_imit; // for use static methods
@@ -79,6 +78,7 @@ initial begin
 	dut_pack.sin = `MAX_W;
 	dut_pack.cos = 0;
 
+	cnt_of = 0;
 	cnt_er = 0;
 	max_er = 0;
 	sum_er = 0;
@@ -91,7 +91,7 @@ initial begin
 	
 	repeat(`NUM_OF_RPT)
 		begin
-			but_rand.randomize();
+			void'(but_rand.randomize());
 
 			dut_pack.data[1] = but_rand.data[1];
 			dut_pack.data[2] = but_rand.data[2];
@@ -146,7 +146,7 @@ initial begin
 	$finish;
 end
 
-task automatic DispInput;
+task DispInput;
 	$display("\n\n\tInput signals, time: %t", $time);
 	$display("\t\tData: x[0] = %9.6f,\tx[1] = %9.6f,\tx[2] = %9.6f",	ram_imit.Reg2Float(dut_pack.data[0]), 
 																		ram_imit.Reg2Float(dut_pack.data[1]), 
@@ -154,7 +154,7 @@ task automatic DispInput;
 	$display("\t\tCoef: sin = %6d,\tcos = %6d", dut_pack.sin, dut_pack.cos);
 endtask
 
-task automatic DispResult;
+task DispResult;
 	float32_t temp;
 	float32_t ref_res [2];
 	float32_t err [2];
@@ -169,6 +169,9 @@ task automatic DispResult;
 	res[0] = ram_imit.Reg2Float(RESULT[0]);
 	res[1] = ram_imit.Reg2Float(RESULT[1]);
 	
+	err[0] = ram_imit.AbsData(res[0] - ref_res[0]);
+	err[1] = ram_imit.AbsData(res[1] - ref_res[1]);
+	
 	$display("\tReference/output signals:");
 	
 //	$display("\t\tnormalize mult REF = %9.5f", temp);
@@ -178,12 +181,18 @@ task automatic DispResult;
 	$display("\t\tRes: y[0] = %9.6f\t\t\ty[1] = %9.6f", res[0], res[1]);
 	
 	$display("\tError (subtraction of res and ref signals), time: %t", $time);
-		err[0] = ram_imit.AbsData(res[0] - ref_res[0]);
-		err[1] = ram_imit.AbsData(res[1] - ref_res[1]);
 		
 	if((err[0] >= `ACCURACY) | (err[1] >= `ACCURACY))
 		begin
 			$display(" ***\t\tError: err[0] = %6.6f, err[1] = %6.6f", err[0], err[1]);
+			
+			if(ref_res[0] > (`MAX_ADC_D - 1) | ref_res[0] < -`MAX_ADC_D |
+			   ref_res[1] > (`MAX_ADC_D - 1) | ref_res[1] < -`MAX_ADC_D)
+				begin
+					$display(" ***\t\tOverflow output");
+					cnt_of = cnt_of + 1;
+					return;
+				end
 			
 			cnt_er = cnt_er + 1;
 			
@@ -198,7 +207,7 @@ endtask
 
 task automatic GetSpecAngle(
 	input uint16_t i,
-	input uint32_t hypo,
+	input int32_t hypo,
 	output float32_t cos,
 	output float32_t sin
 );
@@ -241,11 +250,12 @@ endtask
 final begin
 	$display("\n===========================================================================================\n");
 	$display("\tStatistics about all calculations, %t:\n", $time);
-	$display("\tTotal amount of errors: %6d", cnt_er);
-	$display("\n\tMax error: %6.6f", max_er);
-
-	if(cnt_er == 0) $display("\tAvarage error: 0");
-	else $display("\tAvarage error: %6.6f", sum_er/cnt_er);
+	$display("\tNumber of errors:\t%6d", cnt_er);
+	$display("\tNumber of overflows:\t%6d", cnt_of);
+	
+	$display("\n\tMax error:\t\t%6.6f", max_er);
+	if(cnt_er == 0) $display("\tAvarage error:\t\t0");
+	else $display("\tAvarage error:\t\t%6.6f", sum_er/cnt_er);
 	$display("\n===========================================================================================\n");
 end
 
