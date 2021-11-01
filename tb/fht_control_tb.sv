@@ -11,14 +11,12 @@ wire [`A_BIT - 1 : 0] ADDR_RD [0 : 3];
 wire [`A_BIT - 1 : 0] ADDR_WR [0 : 3];
 wire [`A_BIT - 1 : 0] ADDR_COEF;
 
+wire WE_A, WE_B;
+wire RDY;
+
 int f_addr_rd, f_addr_wr;
 int cnt_er_rd, cnt_er_wr;
 int cnt_er;
-
-string str_temp;
-
-wire WE_A, WE_B;
-wire RDY;
 
 initial begin
 	$timeformat(-6, 3, " us", 6);
@@ -39,17 +37,17 @@ initial begin
 	cnt_er_wr = 0;
 	cnt_er = 0;
 	
-	#(100*`TACT);
 	$display("\n\n\t\t\tSTART TEST CONTROL FHT\n");
 	
 	`ifdef COMPARE_WITH_MATLAB
-		$display("\tread and write address compare with 'txt' file from matlab");
-		$display("\terror marking by '***', r/w = 0 => addr_rd, r/w = 1 => addr_wr\n");
+		$display("\tRead and write address compare with 'txt' file from matlab");
+		$display("\tError marking by '***', r/w = 0 => addr_rd, r/w = 1 => addr_wr\n");
 		
 		f_addr_rd = $fopen(`MATH_ADDR_RD, "r");
 		f_addr_wr = $fopen(`MATH_ADDR_WR, "r");
 	`endif
 
+	#(10*`TACT);
 		// #1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
@@ -66,12 +64,12 @@ initial begin
 		$fclose(f_addr_rd);
 		$fclose(f_addr_wr);
 	
-		$display("\n\t\tnumber of errors in addr_rd this stage: %d", cnt_er_rd);
-		$display("\t\tnumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
-		$display("\n\t\ttotal amount of errors: %d", cnt_er);
+		$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
+		$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
+		$display("\n\t\tTotal amount of errors: %d", cnt_er);
 	`endif
 	
-	#(100*`TACT);
+	#(10*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
 	$stop;
 end
@@ -79,12 +77,12 @@ end
 `ifdef COMPARE_WITH_MATLAB
 	always@(posedge clk)begin
 		if(!RDY & (CONTROL.cnt_stage_time < `BANK_SIZE))
-			COMPARE_MATLAB_ADDR(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
+			CompareMatlabAddr(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
 	end
 
 	always@(posedge CONTROL.clk_2)begin
 		if(!RDY & (WE_A | WE_B))
-			COMPARE_MATLAB_ADDR(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
+			CompareMatlabAddr(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 	end
 `endif
 	
@@ -92,8 +90,8 @@ always@(CONTROL.cnt_stage)begin
 	if(!RDY)
 		begin
 			`ifdef COMPARE_WITH_MATLAB
-				$display("\n\t\tnumber of errors in addr_rd this stage: %d", cnt_er_rd);
-				$display("\t\tnumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
+				$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
+				$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
 					cnt_er_rd = 0;
 					cnt_er_wr = 0;
 			`endif
@@ -107,9 +105,8 @@ always@(CONTROL.cnt_stage)begin
 		end
 end
 
-task COMPARE_MATLAB_ADDR(
+task CompareMatlabAddr(
 	input int file,
-	
 	input bit rd_wr, // '0' - addr_rd, '1' - addr_wr
 	
 	input [`A_BIT - 1 : 0] iADDR_0,
@@ -128,8 +125,8 @@ task COMPARE_MATLAB_ADDR(
 					rd_wr, iADDR_0, iADDR_1, iADDR_2, iADDR_3, $time);
 	else
 		begin
-			if(rd_wr) cnt_er_wr = cnt_er_wr + 1;
-			else cnt_er_rd = cnt_er_rd + 1;
+			if(rd_wr)	cnt_er_wr = cnt_er_wr + 1;
+			else		cnt_er_rd = cnt_er_rd + 1;
 			
 			cnt_er = cnt_er + 1;
 			
