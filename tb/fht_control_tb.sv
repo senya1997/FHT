@@ -115,15 +115,11 @@ task CompareMatlabAddr(
 	input [`A_BIT - 1 : 0] iADDR_3
 );
 	int temp_ref [4];
-	int temp;
 
-	temp = $fscanf(file, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]);
+	void'($fscanf(file, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]));
 			
-	if((temp_ref[0] == iADDR_0) & (temp_ref[1] == iADDR_1) & 
-	   (temp_ref[2] == iADDR_2) & (temp_ref[3] == iADDR_3))
-		$display("\t\tr/w: %1d, addr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d, time: %t", 
-					rd_wr, iADDR_0, iADDR_1, iADDR_2, iADDR_3, $time);
-	else
+	if((temp_ref[0] != iADDR_0) | (temp_ref[1] != iADDR_1) | 
+	   (temp_ref[2] != iADDR_2) | (temp_ref[3] != iADDR_3))
 		begin
 			if(rd_wr)	cnt_er_wr = cnt_er_wr + 1;
 			else		cnt_er_rd = cnt_er_rd + 1;

@@ -185,7 +185,6 @@
 
 	function e_comp TransformRAM::CompareWithFile(string name_ref, float32_t accuracy);
 		int32_t f_ref;
-		int32_t scan_data;
 	
 		float32_t temp_ref_data; // reference data from file
 		float32_t temp_ram_data;
@@ -224,8 +223,8 @@
 				
 				for(uchar_t j = 0; j < N_BANK; j++) // column
 					begin
-						if(i < N_BANK - 1)	scan_data = $fscanf(f_ref, "%f\t", temp_ref_data);
-						else				scan_data = $fscanf(f_ref, "%f\n", temp_ref_data);
+						if(i < N_BANK - 1)	void'($fscanf(f_ref, "%f\t", temp_ref_data));
+						else				void'($fscanf(f_ref, "%f\n", temp_ref_data));
 						
 						temp_ram_data = Reg2Float(tran_ram[i][j]);
 						temp_er = AbsData(temp_ref_data - temp_ram_data);
@@ -329,7 +328,7 @@
 							ref webit_t out_we
 						); // line by line from file
 						
-		int32_t f_data, scan_data;
+		int32_t f_data;
 		int32_t temp_data;
 		
 		if(from_file)
@@ -353,8 +352,8 @@
 				begin
 					if(from_file)
 						begin
-							if(j < N_BANK - 1)	scan_data = $fscanf(f_data, "%f\t", temp_data);
-							else				scan_data = $fscanf(f_data, "%f\n", temp_data);
+							if(j < N_BANK - 1)	void'($fscanf(f_data, "%f\t", temp_data));
+							else				void'($fscanf(f_data, "%f\n", temp_data));
 							
 							tran_ram[i][j] = $signed(temp_data); // update internal RAM imitation, signed cast
 						end

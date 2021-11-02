@@ -19,7 +19,7 @@ VOPT := -voptargs="+acc"
 #											make:													#
 #===================================================================================================#
 
-all: run
+all: run_fht
 	
 run_fht: lib comp_fht
 	vsim -c $(VOPT) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
@@ -49,13 +49,11 @@ $(LIB_LPM):
 
 # ========= compile sources: =========
 
-comp:
-	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
+comp: comp_rtl
 	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/*_tb.sv
 	
-comp_fht:
-	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
+comp_fht: comp_rtl
 	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/fht_tb.sv
 
@@ -68,12 +66,16 @@ comp_fht_control:
 	vlog -logfile $(LOG_COMP_RTL) -incr ../fht_control.v
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/fht_control_tb.sv
 
+comp_rtl:
+	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
+
 # ============== clean: ==============
 
 clean:
 	rm -rf work
 	rm -rf $(LIB_MF)
 	rm -rf $(LIB_LPM)
+	rm -rf wlf* vish* vsim*
 	rm -rf *.txt *.ini transcript
 	@echo
 	@echo ================ COMPLETE ====================
