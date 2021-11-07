@@ -37,6 +37,8 @@ initial begin
 	cnt_er_wr = 0;
 	cnt_er = 0;
 	
+	#(10*`TACT);
+	
 	$display("\n\n\t\t\tSTART TEST CONTROL FHT\n");
 	
 	`ifdef COMPARE_WITH_MATLAB
@@ -47,17 +49,14 @@ initial begin
 		f_addr_wr = $fopen(`MATH_ADDR_WR, "r");
 	`endif
 
-	#(10*`TACT);
 		// #1; // if "sdf" is turn off
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
 		// #(`TACT - 1);
-		
-	wait(!RDY);	
-	$display("\t 0 stage FHT, time: %t\n", $time);
-	
+
 // wait the end of conversion:
+	wait(!RDY);
 	wait(RDY);
 	
 	`ifdef COMPARE_WITH_MATLAB
@@ -78,60 +77,58 @@ end
 	always@(posedge clk)begin
 		if(!RDY & (CONTROL.cnt_stage_time < `BANK_SIZE))
 			CompareMatlabAddr(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
-	end
-
-	always@(posedge CONTROL.clk_2)begin
+		
 		if(!RDY & (WE_A | WE_B))
 			CompareMatlabAddr(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 	end
+
+	always@(CONTROL.cnt_stage)begin
+		if(!RDY)
+			begin
+				`ifdef COMPARE_WITH_MATLAB
+					$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
+					$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
+						cnt_er_rd = 0;
+						cnt_er_wr = 0;
+				`endif
+				
+				`ifdef EN_BREAKPOINT
+					$display("\n\t\t\tpress 'run' to continue\n");
+					$stop;
+				`endif
+				
+				$display("\n\t%2d stage FHT, time: %t\n", CONTROL.cnt_stage, $time);
+			end
+	end
+
+	task CompareMatlabAddr(
+		input int file,
+		input bit rd_wr, // '0' - addr_rd, '1' - addr_wr
+		
+		input [`A_BIT - 1 : 0] iADDR_0,
+		input [`A_BIT - 1 : 0] iADDR_1,
+		input [`A_BIT - 1 : 0] iADDR_2,
+		input [`A_BIT - 1 : 0] iADDR_3
+	);
+		int temp_ref [4];
+	
+		void'($fscanf(file, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]));
+				
+		if((temp_ref[0] != iADDR_0) | (temp_ref[1] != iADDR_1) | 
+		   (temp_ref[2] != iADDR_2) | (temp_ref[3] != iADDR_3))
+			begin
+				if(rd_wr)	cnt_er_wr = cnt_er_wr + 1;
+				else		cnt_er_rd = cnt_er_rd + 1;
+				
+				cnt_er = cnt_er + 1;
+				
+				$display(" ***\tREF:\tr/w: %1d,\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d, time: %t", 
+										rd_wr, temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3], $time);
+				$display(" ***\t\t\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d", 
+										iADDR_0, iADDR_1, iADDR_2, iADDR_3);
+			end
+	endtask
 `endif
-	
-always@(CONTROL.cnt_stage)begin
-	if(!RDY)
-		begin
-			`ifdef COMPARE_WITH_MATLAB
-				$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
-				$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
-					cnt_er_rd = 0;
-					cnt_er_wr = 0;
-			`endif
-			
-			`ifdef EN_BREAKPOINT
-				$display("\n\t\t\tpress 'run' to continue\n");
-				$stop;
-			`endif
-			
-			$display("\n\t%2d stage FHT, time: %t\n", CONTROL.cnt_stage, $time);
-		end
-end
-
-task CompareMatlabAddr(
-	input int file,
-	input bit rd_wr, // '0' - addr_rd, '1' - addr_wr
-	
-	input [`A_BIT - 1 : 0] iADDR_0,
-	input [`A_BIT - 1 : 0] iADDR_1,
-	input [`A_BIT - 1 : 0] iADDR_2,
-	input [`A_BIT - 1 : 0] iADDR_3
-);
-	int temp_ref [4];
-
-	void'($fscanf(file, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]));
-			
-	if((temp_ref[0] != iADDR_0) | (temp_ref[1] != iADDR_1) | 
-	   (temp_ref[2] != iADDR_2) | (temp_ref[3] != iADDR_3))
-		begin
-			if(rd_wr)	cnt_er_wr = cnt_er_wr + 1;
-			else		cnt_er_rd = cnt_er_rd + 1;
-			
-			cnt_er = cnt_er + 1;
-			
-			$display(" ***\tREF:\tr/w: %1d,\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d, time: %t", 
-									rd_wr, temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3], $time);
-			$display(" ***\t\t\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d", 
-									iADDR_0, iADDR_1, iADDR_2, iADDR_3);
-		end
-endtask
 
 fht_control #(.A_BIT(`A_BIT)) CONTROL(
 	.iCLK(clk),
