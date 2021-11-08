@@ -69,7 +69,7 @@ initial begin
 	ram_imit.InitRAM(`INIT_FHT_RAM, 1, 1, data, addr_wr, we);
 	ram_imit.SaveRAMdata("init_ram_a.txt");
 	
-	ram_imit.DisplayRAM(disp_fht);
+	ram_imit.DisplayAsWaveRAM(disp_fht);
 	disp_fht = 0;
 	
 // FHT:
@@ -129,7 +129,7 @@ initial begin
 	`endif
 	
 	ram_imit.Bitrev2NormalRAM();
-	ram_imit.DisplayRAM(disp_ifht);
+	ram_imit.DisplayAsWaveRAM(disp_ifht);
 	disp_ifht = 0;
 	
 	$finish;

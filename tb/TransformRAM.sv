@@ -297,7 +297,17 @@
 			end
 	endfunction
 	
-	task TransformRAM::DisplayRAM(ref dbit_t data_disp);
+	function void TransformRAM::DisplayAsMatRAM();
+		$display({"\n\t\tdisplay RAM ", str_arr_name, ", time: %t\n"}, $time);
+		
+		for(uint16_t i = 0; i < BANK_SIZE; i++)
+				for(uchar_t j = 0; j < N_BANK; j++)
+					$display("\tAddr %3d:\tdata[0]: %6d,\t\t\t\tdata[1]: %6d,\t\t\t\tdata[2]: %6d,\t\t\t\tdata[3]: %6d", 
+								i, tran_ram[i][0], tran_ram[i][1], tran_ram[i][2], tran_ram[i][3]);
+
+	endfunction
+	
+	task TransformRAM::DisplayAsWaveRAM(ref dbit_t data_disp);
 		nbit_t cnt_bank_rev;
 		nbit_t bank_rev;
 		

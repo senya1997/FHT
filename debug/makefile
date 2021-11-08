@@ -1,4 +1,4 @@
-# for open questa from cmd to see wavefaorms:
+# for open questa from cmd to see waveforms:
 #	vsim -voptargs="+acc" -L altera_mf_ver -logfile LOG_FHT.txt fht_tb -do "transcript on" -do "../../fht/tb/wave/top.do" -do "configure wave -timelineunits us"
 #	vsim -voptargs="+acc" -logfile LOG_FHT_BUT.txt fht_but_tb -do "transcript on" -do "../../fht/tb/wave/but.do"
 #	vsim -voptargs="+acc" -logfile LOG_FHT_CONTROL.txt fht_control_tb -do "transcript on" -do "../../fht/tb/wave/control.do" -do "configure wave -timelineunits us"
@@ -53,11 +53,13 @@ $(LIB_LPM):
 
 # ========= compile sources: =========
 
-comp: comp_rtl
+comp:
+	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
 	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/*_tb.sv
 	
-comp_fht: comp_rtl
+comp_fht:
+	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
 	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/fht_tb.sv
 
@@ -69,9 +71,6 @@ comp_fht_but:
 comp_fht_control:
 	vlog -logfile $(LOG_COMP_RTL) -incr ../fht_control.v
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/fht_control_tb.sv
-
-comp_rtl:
-	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
 
 # ============== clean: ==============
 

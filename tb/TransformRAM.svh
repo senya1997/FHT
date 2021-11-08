@@ -69,7 +69,9 @@ typedef bit	[N_BANK - 1 : 0]	webit_t;
 	
 	extern function void Bitrev2NormalRAM(); // convert bit reverse to normal sequence points in RAM
 	
-	extern task DisplayRAM(ref dbit_t data_disp);
+	extern function void DisplayAsMatRAM();
+	
+	extern task DisplayAsWaveRAM(ref dbit_t data_disp);
 	
 	extern task InitRAM(
 						string name,
