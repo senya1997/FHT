@@ -11,7 +11,7 @@ bit reset;
 bit start;
 
 bit signed [`D_BIT - 1 : 0] data;
-bit	[`A_BIT - 1 : 0] addr_wr;
+bit	[`A_BIT - 1 : 0] addr_rd, addr_wr;
 bit	[3 : 0] we;
 
 bit flag_cp_matlab = 1; // for turn off compare RAM with ref file on IFHT stage
@@ -54,7 +54,8 @@ initial begin
 	disp_fht	= 0;
 	disp_ifht	= 0;
 	
-	data		= 0; 
+	data		= 0;
+	addr_rd		= 0;
 	addr_wr		= 0;
 	we			= 0;
 	
@@ -175,6 +176,7 @@ task UpdClassRAM_A;
 	ram_imit.UpdBankRAM(1, FHT.FHT_RAM_A.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB);
 	ram_imit.UpdBankRAM(2, FHT.FHT_RAM_A.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB);
 	ram_imit.UpdBankRAM(3, FHT.FHT_RAM_A.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB);
+	$display();
 endtask
 
 task UpdClassRAM_B;
@@ -182,6 +184,7 @@ task UpdClassRAM_B;
 	ram_imit.UpdBankRAM(1, FHT.FHT_RAM_B.ram_bank[1].RAM_BANK.`RAM_ACCESS_TB);
 	ram_imit.UpdBankRAM(2, FHT.FHT_RAM_B.ram_bank[2].RAM_BANK.`RAM_ACCESS_TB);
 	ram_imit.UpdBankRAM(3, FHT.FHT_RAM_B.ram_bank[3].RAM_BANK.`RAM_ACCESS_TB);
+	$display();
 endtask
 
 final begin
@@ -216,10 +219,10 @@ fht_top #(.D_BIT(`D_BIT), .A_BIT(`A_BIT), .W_BIT(`W_BIT),
 	.iADDR_WR_2(addr_wr),
 	.iADDR_WR_3(addr_wr),
 	
-	.iADDR_RD_0(),
-	.iADDR_RD_1(),
-	.iADDR_RD_2(),
-	.iADDR_RD_3(),
+	.iADDR_RD_0(addr_rd),
+	.iADDR_RD_1(addr_rd),
+	.iADDR_RD_2(addr_rd),
+	.iADDR_RD_3(addr_rd),
 	
 	.oDATA_0(),
 	.oDATA_1(),

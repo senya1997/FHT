@@ -76,7 +76,7 @@ reg we_b;
 reg source_data;
 reg source_cont;
 
-reg rdy;
+reg rdy, rdy_d;
 
 /**************************************************************/
 /*                            wires                           */
@@ -271,6 +271,11 @@ always@(posedge iCLK or negedge iRESET)begin
 	else if(LAST_STAGE & EOF_STAGE) rdy <= 1'b1;
 end
 
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) rdy_d <= 1'b1;
+	else rdy_d <= rdy;
+end
+
 always@(posedge iCLK or negedge iRESET) begin
 	if(!iRESET) source_data <= 1'b0;
 	else if(rdy) source_data <= 1'b0;
@@ -309,6 +314,6 @@ assign oSOURCE_CONT = source_cont;
 assign oWE_A = we_a;
 assign oWE_B = we_b;
 
-assign oRDY = rdy;
+assign oRDY = rdy_d & rdy;
 
 endmodule 

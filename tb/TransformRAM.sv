@@ -75,13 +75,15 @@
 	endfunction
 	
 	function void TransformRAM::UpdBankRAM(uint16_t bunk_num, dlogic_t ext_ram [0 : BANK_SIZE - 1]);
+		$display("\tUpdate %d bank class RAM, time: %t", bunk_num, $time);
+		
 		for(uint16_t cnt_data = 0; cnt_data < BANK_SIZE; cnt_data++)
 			begin
 				if(&ext_ram[cnt_data] !== 1'bx)
 					tran_ram[cnt_data][bunk_num] = ext_ram[cnt_data]; // "unsigned" to signed cast
 				else
 					begin
-						$display("\n ***\tCrytical warning: RAM data in 'X' state: bank = %d, addr = %d, data = %d", bunk_num, cnt_data, ext_ram[cnt_data]);
+						$display("\n ***\tCrytical warning: RAM data in 'X' state:\n\t\tbank = %d, addr = %d, data = %d\n", bunk_num, cnt_data, ext_ram[cnt_data]);
 						$stop;
 						return;
 					end
@@ -109,7 +111,7 @@
 				if(&ext_ram[i] !== 1'bx) temp_ext_data = Reg2Float(ext_ram[i]);
 				else
 					begin
-						$display("\n ***\tCrytical warning: RAM data in 'X' state: bank = %d,  addr = %d, data = %d", bunk_num, i, ext_ram[i]);
+						$display("\n ***\tCrytical warning: RAM data in 'X' state:\n\t\tbank = %d,  addr = %d, data = %d\n", bunk_num, i, ext_ram[i]);
 						return ERR;
 					end
 					
@@ -298,20 +300,35 @@
 	endfunction
 	
 	function void TransformRAM::DisplayAsMatRAM();
-		$display({"\n\t\tdisplay RAM ", str_arr_name, ", time: %t\n"}, $time);
+		string str_temp, str_num;
+		
+		$display("\tDisplay RAM, time: %t\n", $time);
 		
 		for(uint16_t i = 0; i < BANK_SIZE; i++)
+			begin
+				str_num.itoa(i);
+				str_temp = {"\tAddr ", str_num, ":\t"};
+				
 				for(uchar_t j = 0; j < N_BANK; j++)
-					$display("\tAddr %3d:\tdata[0]: %6d,\t\t\t\tdata[1]: %6d,\t\t\t\tdata[2]: %6d,\t\t\t\tdata[3]: %6d", 
-								i, tran_ram[i][0], tran_ram[i][1], tran_ram[i][2], tran_ram[i][3]);
-
+					begin
+						//str_num.itoa(int32_t'(tran_ram[i][j])); // cast
+						str_num.itoa(tran_ram[i][j]);
+						
+						if(j < N_BANK - 1)	str_temp = {str_temp, str_num, ",\t\t\t\t"};
+						else				str_temp = {str_temp, str_num};
+					end
+				
+				$display(str_temp);
+			end
+			
+		$display("\n\tEnd of RAM\n");
 	endfunction
 	
 	task TransformRAM::DisplayAsWaveRAM(ref dbit_t data_disp);
 		nbit_t cnt_bank_rev;
 		nbit_t bank_rev;
 		
-		$display("\tDisplay RAM data in bank bit reverse order, time: %t\n", $time);
+		$display("\tDisplay as wave RAM data in bank bit reverse order, time: %t\n", $time);
 		
 		cnt_bank_rev = 0;
 		

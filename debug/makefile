@@ -3,8 +3,8 @@
 #	vsim -voptargs="+acc" -logfile LOG_FHT_BUT.txt fht_but_tb -do "transcript on" -do "../../fht/tb/wave/but.do"
 #	vsim -voptargs="+acc" -logfile LOG_FHT_CONTROL.txt fht_control_tb -do "transcript on" -do "../../fht/tb/wave/control.do" -do "configure wave -timelineunits us"
 
-PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
-#PATH_QUARTUS := C:/altera/14.1/quartus
+#PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
+PATH_QUARTUS := C:/altera/14.1/quartus
 
 LIB_LPM	:= lpm_ver
 LIB_MF	:= altera_mf_ver

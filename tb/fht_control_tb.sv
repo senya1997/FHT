@@ -2,14 +2,13 @@
 
 module fht_control_tb;
 
-reg clk;
-reg reset;
+bit clk;
+bit reset;
 
-reg start;
+bit start;
 
 wire [`A_BIT - 1 : 0] ADDR_RD [0 : 3];
 wire [`A_BIT - 1 : 0] ADDR_WR [0 : 3];
-wire [`A_BIT - 1 : 0] ADDR_COEF;
 
 wire WE_A, WE_B;
 wire RDY;
@@ -47,6 +46,15 @@ initial begin
 		
 		f_addr_rd = $fopen(`MATH_ADDR_RD, "r");
 		f_addr_wr = $fopen(`MATH_ADDR_WR, "r");
+		
+		if((f_addr_rd == 0) | (f_addr_wr == 0))
+			begin
+				$fclose(f_addr_rd);
+				$fclose(f_addr_wr);
+				
+				$display("\n ***\tReference file open error (check name and paths)\n");
+				$stop;
+			end
 	`endif
 
 		// #1; // if "sdf" is turn off
@@ -59,18 +67,17 @@ initial begin
 	wait(!RDY);
 	wait(RDY);
 	
+	#(10*`TACT);
+	
 	`ifdef COMPARE_WITH_MATLAB
+		$display("\n\t\tTotal amount of errors: %d", cnt_er);
+		
 		$fclose(f_addr_rd);
 		$fclose(f_addr_wr);
-	
-		$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
-		$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
-		$display("\n\t\tTotal amount of errors: %d", cnt_er);
 	`endif
 	
-	#(10*`TACT);
 	$display("\n\t\t\tCOMPLETE\n");
-	$stop;
+	$finish;
 end
 
 `ifdef COMPARE_WITH_MATLAB
@@ -83,22 +90,19 @@ end
 	end
 
 	always@(CONTROL.cnt_stage)begin
-		if(!RDY)
-			begin
-				`ifdef COMPARE_WITH_MATLAB
-					$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
-					$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
-						cnt_er_rd = 0;
-						cnt_er_wr = 0;
-				`endif
-				
-				`ifdef EN_BREAKPOINT
-					$display("\n\t\t\tpress 'run' to continue\n");
-					$stop;
-				`endif
-				
-				$display("\n\t%2d stage FHT, time: %t\n", CONTROL.cnt_stage, $time);
-			end
+		`ifdef COMPARE_WITH_MATLAB
+			$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
+			$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
+				cnt_er_rd = 0;
+				cnt_er_wr = 0;
+		`endif
+		
+		`ifdef EN_BREAKPOINT
+			$display("\n\t\t\tpress 'run' to continue\n");
+			$stop;
+		`endif
+		
+		$display("\t%2d stage FHT, time: %t", CONTROL.cnt_stage, $time);
 	end
 
 	task CompareMatlabAddr(
@@ -117,15 +121,15 @@ end
 		if((temp_ref[0] != iADDR_0) | (temp_ref[1] != iADDR_1) | 
 		   (temp_ref[2] != iADDR_2) | (temp_ref[3] != iADDR_3))
 			begin
+				cnt_er = cnt_er + 1;
+				
 				if(rd_wr)	cnt_er_wr = cnt_er_wr + 1;
 				else		cnt_er_rd = cnt_er_rd + 1;
 				
-				cnt_er = cnt_er + 1;
-				
 				$display(" ***\tREF:\tr/w: %1d,\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d, time: %t", 
-										rd_wr, temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3], $time);
+							rd_wr, temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3], $time);
 				$display(" ***\t\t\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d", 
-										iADDR_0, iADDR_1, iADDR_2, iADDR_3);
+							iADDR_0, iADDR_1, iADDR_2, iADDR_3);
 			end
 	endtask
 `endif
