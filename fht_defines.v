@@ -24,7 +24,6 @@
 `define MAX_CONV 8388608
 `define MAX_IMP 32768
  
- 
 /*****************************************************************************************************************/
 /*																	work directories:															  */
 /*****************************************************************************************************************/
@@ -36,11 +35,13 @@
 
 // output MATH files for compare in real type (for data):
 	`define MATH_FHT_RAM	"../../fht/matlab/math_fht_ram.txt"			// math model FHT out RAM for compare
-	`define MATH_CONV_RAM	"../../fht_conv/matlab/math_conv_ram.txt"	// math model CONV by DHT out RAM for compare
-	`define MATH_CONV_ADDR	"../../fht_conv/matlab/math_conv_addr.txt"
+	
 	`define MATH_ADDR_RD	"../../fht/matlab/math_addr_rd.txt"			// addr of math model RAM on different stages FHT for compare
 	`define MATH_ADDR_WR	"../../fht/matlab/math_addr_wr.txt"
-
+	
+	`define MATH_CONV_RAM	"../../fht_conv/matlab/math_conv_ram.txt"	// math model CONV by DHT out RAM for compare
+	`define MATH_CONV_ADDR	"../../fht_conv/matlab/math_conv_addr.txt"
+	
 // output FPGA file for compare in real and reg type (save 'reg' version of RAM - prescript 'reg' is added to the entered name automatic):
 	`define FPGA_FHT_RAM	"fpga_fht_ram.txt"	// FHT output from tb save in current dir of modelsim project
 	`define FPGA_CONV_RAM	"fpga_conv_ram.txt"	// CONV output (ready for IFHT RAM) from tb save in current dir of modelsim project

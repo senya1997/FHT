@@ -74,7 +74,7 @@ initial begin
 	disp_fht = 0;
 	
 // FHT:
-	$display("\tStart FHT, time: %t...\n", $time);
+	$display("\tStart FHT, time: %t\n", $time);
 	
 		// #1; // if "sdf" is turn off
 	start = 1'b1;

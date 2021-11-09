@@ -320,8 +320,6 @@
 				
 				$display(str_temp);
 			end
-			
-		$display("\n\tEnd of RAM\n");
 	endfunction
 	
 	task TransformRAM::DisplayAsWaveRAM(ref dbit_t data_disp);

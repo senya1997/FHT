@@ -42,7 +42,7 @@ fprintf('===================================================\n');
     dir_math_err_ind    = 'math_err_ind.txt';
     
     dir_math_fht_ram	= 'math_fht_ram.txt';
-    dir_fpga_fht_ram	= '../../modelsim/fht/fpga_fht_ram.txt';
+    dir_fpga_fht_ram	= '../debug/fpga_fht_ram.txt';
 
 N_bank = 4; % defines by architecture of transform in FPGA (don't change for this config)
 
