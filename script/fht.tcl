@@ -74,7 +74,7 @@ set path_def ./fht_defines.v
 	set D_BIT [expr $A_BIT + 12]
 	set W_BIT [expr $W_BIT + 1]
 	set CONV_BIT [expr $D_BIT + 4]
-	set IMP_BIT [expr $IMP_BIT + 1]
+	#set IMP_BIT [expr $IMP_BIT + 1]
 	
 # read input keys from cmd
 	set flag_compile	[lindex $argv 0]
@@ -84,7 +84,8 @@ set path_def ./fht_defines.v
 	set MAX_D [expr round(pow(2, $D_BIT - 1))]
 	set MAX_W [expr round(pow(2, $W_BIT - 2))]
 	set MAX_CONV [expr round(pow(2, $CONV_BIT - 1))]
-	set MAX_IMP [expr round(pow(2, $IMP_BIT - 2))]
+	#set MAX_IMP [expr round(pow(2, $IMP_BIT - 2))]
+	set MAX_IMP [expr round(pow(2, $IMP_BIT - 1))]
 
 	set N [expr round(4*pow(2, $A_BIT))] 
 	set BANK_SIZE [expr $N/4]

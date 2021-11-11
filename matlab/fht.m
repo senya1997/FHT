@@ -466,7 +466,7 @@ fprintf('\nCalc error between FFT and FHT for compare...');
 
     clear cnt;
 
-err_line = abs(fft_line - fht_line)*100/max(abs(fht_line));  % in precent
+err_line = F_ABS_ERR_LINE(fft_line, fht_line);  % in precent
 err_line_buf = err_line;
 
 i = 1;

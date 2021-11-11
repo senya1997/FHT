@@ -16,7 +16,7 @@
 `define A_BIT 8
 `define W_BIT 13
 `define CONV_BIT 24
-`define IMP_BIT 17
+`define IMP_BIT 16
  
 `define MAX_ADC_D 32768
 `define MAX_D 524288
