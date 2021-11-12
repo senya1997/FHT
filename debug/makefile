@@ -1,10 +1,5 @@
-# for open questa from cmd to see waveforms:
-#	vsim -voptargs="+acc" -L altera_mf_ver -logfile LOG_FHT.txt fht_tb -do "transcript on" -do "../../fht/tb/wave/top.do" -do "configure wave -timelineunits us"
-#	vsim -voptargs="+acc" -logfile LOG_FHT_BUT.txt fht_but_tb -do "transcript on" -do "../../fht/tb/wave/but.do"
-#	vsim -voptargs="+acc" -logfile LOG_FHT_CONTROL.txt fht_control_tb -do "transcript on" -do "../../fht/tb/wave/control.do" -do "configure wave -timelineunits us"
-
-PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
-#PATH_QUARTUS := C:/altera/14.1/quartus
+#PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
+PATH_QUARTUS := C:/altera/14.1/quartus
 
 LIB_LPM	:= lpm_ver
 LIB_MF	:= altera_mf_ver
@@ -24,20 +19,42 @@ VOPT := -voptargs="+acc"
 #===================================================================================================#
 
 all: run_fht
-	
+
+# ============ run test in cmd mode: ===========	
+
 run_fht: lib comp_fht
 	vsim -c $(VOPT) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
 	-do 'run -all'
 
-run_fht_but: comp_fht_but
+run_but: comp_but
 	vsim -c $(VOPT) -logfile $(LOG_FHT_BUT_TB) fht_but_tb \
 	-do 'run -all'
 
-run_fht_control: comp_fht_control
+run_control: comp_control
 	vsim -c $(VOPT) -logfile $(LOG_FHT_CONTROL_TB) fht_control_tb \
 	-do 'run -all'
 
-# =========== compile libs: ===========
+# ============ run gui questa test: ===========
+	
+run_gui_fht: lib comp_fht
+	vsim $(VOPT) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
+	-do '../tb/wave/top.do' \
+	-do 'configure wave -timelineunits us' \
+	-do 'transcript on'
+
+run_gui_but: comp_but
+	vsim $(VOPT) -logfile $(LOG_FHT_BUT_TB) fht_but_tb \
+	-do '../tb/wave/but.do' \
+	-do 'configure wave -timelineunits us' \
+	-do 'transcript on'
+
+run_gui_control: comp_control
+	vsim $(VOPT) -logfile $(LOG_FHT_CONTROL_TB) fht_control_tb \
+	-do '../tb/wave/control.do' \
+	-do 'configure wave -timelineunits us' \
+	-do 'transcript on'
+
+# ================ compile libs: ===============
 
 lib: $(LIB_MF) $(LIB_LPM)
 
@@ -51,7 +68,7 @@ $(LIB_LPM):
 	vmap $(LIB_LPM) $(LIB_LPM)
 	vlog -work $(LIB_LPM) "$(PATH_QUARTUS)/eda/sim_lib/220model.v"
 
-# ========= compile sources: =========
+# ============== compile sources: ==============
 
 comp:
 	vlog -logfile $(LOG_COMP_RTL) -incr ../*.v
@@ -63,12 +80,12 @@ comp_fht:
 	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/fht_tb.sv
 
-comp_fht_but:
+comp_but:
 	vlog -logfile $(LOG_COMP_RTL) -incr ../fht_but.v
 	vlog -logfile $(LOG_COMP_PKG) ../tb/pkg.sv
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/fht_but_tb.sv
 
-comp_fht_control:
+comp_control:
 	vlog -logfile $(LOG_COMP_RTL) -incr ../fht_control.v
 	vlog -logfile $(LOG_COMP_TB) -incr +incdir+../ ../tb/fht_control_tb.sv
 

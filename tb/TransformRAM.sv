@@ -319,7 +319,8 @@
 					end
 				
 				$display(str_temp);
-			end
+			end	
+		$display();
 	endfunction
 	
 	task TransformRAM::DisplayAsWaveRAM(ref dbit_t data_disp);

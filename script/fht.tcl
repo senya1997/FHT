@@ -18,6 +18,8 @@ if { ![project_exists $prj] } {
 project_open $prj
 set_current_revision $prj_rev;
 
+load_package flow
+
 # ================================================================================= #
 # 											 input parameters: 											#
 # ================================================================================= #
@@ -53,14 +55,12 @@ set_current_revision $prj_rev;
 	set name_def TEST_MIXER
 	
 # path of element that need to copy/clean
+	set path_def			./fht_defines.v
 	set path_script			./script
+	set path_debug			./debug
 	set path_sdo			./simulation/modelsim
-	
+	set path_conv_debug		../fht_conv/debug
 	set path_modelsim		../modelsim/fht/
-	set path_matlab			./matlab
-	set path_conv_matlab	../fht_conv/matlab
-
-set path_def ./fht_defines.v
 	
 # ================================================================================= #
 # 											 calculate parameters: 										#
@@ -193,20 +193,37 @@ if {$flag_def_exist == 0} {
 
 close $f_def
 
-if {[string equal $flag_compile -c]} {
-	puts "compiling..."
-	execute_flow -compile;
-}
-
 if {[string equal $flag_clean -cl]} {
-	puts "clean build...\n"
+	puts "clean project...\n"
 	
 	puts "clean matlab dir"
-		file delete -force {*}[glob -nocomplain $path_matlab/*.txt]
-		file delete -force {*}[glob -nocomplain $path_conv_matlab/*.txt]
-	puts "clean root dir"
+		file delete -force {*}[glob -nocomplain ./matlab/*.txt]
+		file delete -force {*}[glob -nocomplain ../fht_conv/matlab/*.txt]
+		
+	puts "clean fht dir"
 		file delete -force {*}[glob -nocomplain *.mif]
 		file delete -force {*}[glob -nocomplain *.ver]
+		
+		file delete -force {*}[glob -nocomplain $path_debug/wlf*]
+		file delete -force {*}[glob -nocomplain $path_debug/vish*]
+		file delete -force {*}[glob -nocomplain $path_debug/vsim*]
+		file delete -force {*}[glob -nocomplain $path_debug/*.txt]
+		file delete -force {*}[glob -nocomplain $path_debug/*.ini]
+		file delete -force {*}[glob -nocomplain $path_debug/transcript]
+		file delete -force $path_debug/work
+		file delete -force $path_debug/lpm_ver
+		file delete -force $path_debug/altera_mf_ver
+	
+	puts "clean conv dir"
+		file delete -force {*}[glob -nocomplain $path_conv_debug/wlf*]
+		file delete -force {*}[glob -nocomplain $path_conv_debug/vish*]
+		file delete -force {*}[glob -nocomplain $path_conv_debug/vsim*]
+		file delete -force {*}[glob -nocomplain $path_conv_debug/*.txt]
+		file delete -force {*}[glob -nocomplain $path_conv_debug/*.ini]
+		file delete -force {*}[glob -nocomplain $path_conv_debug/transcript]
+		file delete -force $path_conv_debug/work
+		file delete -force $path_conv_debug/lpm_ver
+		file delete -force $path_conv_debug/altera_mf_ver
 	
 	puts "clean modelsim prj dir"
 		file delete -force {*}[glob -nocomplain $path_modelsim/*.txt]
@@ -253,12 +270,17 @@ if {[string equal $flag_clean -cl]} {
 		close $f_txt
 	}
 	
-	puts "copy sdo..."
-		file copy -force {*}[glob $path_sdo/*.sdo] $path_modelsim
+	#puts "copy sdo..."
+	#	file copy -force {*}[glob $path_sdo/*.sdo] $path_modelsim
 	
 	puts "copy scripts..."
 		file copy -force {*}[glob $path_script/*.do] $path_modelsim
 		file copy -force {*}[glob $path_script/*.tcl] $path_modelsim
+}
+
+if {[string equal $flag_compile -c]} {
+	puts "compiling..."
+	execute_flow -compile;
 }
 
 project_close
