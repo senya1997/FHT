@@ -24,15 +24,18 @@ all: run_fht
 
 run_fht: lib comp_fht
 	vsim -c $(VOPT) -L $(LIB_MF) -logfile $(LOG_FHT_TB) fht_tb \
-	-do 'run -all'
+	-do 'run -all' \
+	-do 'quit'
 
 run_but: comp_but
 	vsim -c $(VOPT) -logfile $(LOG_FHT_BUT_TB) fht_but_tb \
-	-do 'run -all'
+	-do 'run -all' \
+	-do 'quit'
 
 run_control: comp_control
 	vsim -c $(VOPT) -logfile $(LOG_FHT_CONTROL_TB) fht_control_tb \
-	-do 'run -all'
+	-do 'run -all' \
+	-do 'quit'
 
 # ============ run gui questa test: ===========
 	

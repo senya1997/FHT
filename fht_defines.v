@@ -58,9 +58,9 @@
 /*													variable defines RTL:																  */
 /*****************************************************************************************************************/
 
-// `define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
+`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
 `define ROUND_FHT		// enable round in FHT butterfly
-`define ROUND_FHT_CONV	// enable round in conv calc
+//`define ROUND_FHT_CONV	// enable round in conv calc
 	
 `timescale 1ns/1ns
 

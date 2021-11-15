@@ -161,7 +161,7 @@ task DispResult;
 	float32_t res [2];
 	
 	temp = float32_t'(dut_pack.cos * ram_imit.Reg2Float(dut_pack.data[1]) +
-					  dut_pack.sin * ram_imit.Reg2Float(dut_pack.data[2]))/`MAX_W;
+					  dut_pack.sin * ram_imit.Reg2Float(dut_pack.data[2]))/`MAX_W; // required convert data from reg to float, cause data on input contain fract part
 
 	ref_res[0] = (ram_imit.Reg2Float(dut_pack.data[0]) + temp)/2;
 	ref_res[1] = (ram_imit.Reg2Float(dut_pack.data[0]) - temp)/2;
