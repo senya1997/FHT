@@ -97,11 +97,6 @@ end
 				cnt_er_wr = 0;
 		`endif
 		
-		`ifdef EN_BREAKPOINT
-			$display("\n\t\t\tpress 'run' to continue\n");
-			$stop;
-		`endif
-		
 		$display("\t%2d stage FHT, time: %t", CONTROL.cnt_stage, $time);
 	end
 

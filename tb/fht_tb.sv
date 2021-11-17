@@ -42,14 +42,14 @@ initial begin
 		$display("\n\n\t\t\tSTART TEST DATA MIXERS WITH CONTROL\n");
 	`else
 		$display("\n\n\t\t\t\tSTART TEST FHT\n");
+		
+		$display("\tError between reference signal and result must be less then `ACCURACY defines: %f", `ACCURACY);
+		$display("\tIf error too big - in console its marked by '***'\n");
 	`endif
 	
 	`ifdef COMPARE_WITH_MATLAB
 		$display("\tEnable RAM compare with 'txt' file from matlab");
 	`endif
-	
-	$display("\tError between reference signal and result must be less then `ACCURACY defines: %f", `ACCURACY);
-	$display("\tIf error too big - in console its marked by '***'\n");
 	
 	disp_fht	= 0;
 	disp_ifht	= 0;

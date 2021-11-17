@@ -59,14 +59,13 @@
 /*****************************************************************************************************************/
 
 `define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
+`define COMPARE_WITH_MATLAB
+
 `define ROUND_FHT		// enable round in FHT butterfly
 //`define ROUND_FHT_CONV	// enable round in conv calc
 	
 `timescale 1ns/1ns
 
-// `define EN_BREAKPOINT
-`define COMPARE_WITH_MATLAB
-	
 // if modelsim issue error 'Unresolved reference to...' try to switch this define:
 	//`define RAM_ACCESS_TB altsyncram_component.mem_data
 	//`define RAM_ACCESS_TB altsyncram_component.m_default.altsyncram_inst.mem_data

@@ -7,13 +7,12 @@ fprintf('\n===================================================\n');
 fprintf('=              Fast Hartley transform             =\n');
 fprintf('===================================================\n');
 
-%% choose test signal:
+%% choose test signal (if test mixer is enabled - test signal is number):
     %test = 'sin';      % sine in 3 harmonics
     %test = 'imp';      % impulse response
     test = 'signal';   % real signal from 'wav'
     %test = 'const';    % const bias
-    %test = 'num';      % linear increase signal from '0' to 'N - 1'
-
+    
 %% variables:
     global dir_def;
     dir_def = '../fht_defines.v';
@@ -38,7 +37,7 @@ fprintf('===================================================\n');
     dir_math_addr_wr	= 'math_addr_wr.txt';
     
  % use in fht analys, thats why its global:
-    dir_math_fft_line     = 'math_fft_cp.txt';
+    dir_math_fft_line   = 'math_fft_cp.txt';
     dir_math_err_ind    = 'math_err_ind.txt';
     
     dir_math_fht_ram	= 'math_fht_ram.txt';
@@ -69,6 +68,34 @@ save_err_ind = 'Y'; % save index of error data in file (Y/N, append to exist fil
     imp_bit	= F_READ_DEFINE(dir_def, 'IMP_BIT');
     w_amp	= F_READ_DEFINE(dir_def, 'MAX_W');
 
+% check test mixer define:
+    def_name = '`define TEST_MIXER';
+
+    test_mix = 0;
+    len_def = length(def_name);
+
+    file_def = fopen(dir_def, 'r');
+
+    while(~feof(file_def))
+        line = fgetl(file_def);
+        len_line = length(line);
+
+        if(len_line >= len_def)
+            if(strcmp(line(1 : len_def), def_name))
+                fprintf('\nWARNING: TEST_MIXER is enabled\n');
+                
+                test = 'num'; % linear increase signal from '0' to 'N - 1'
+                test_mix = 1;
+                break;
+            end
+        end
+    end
+
+    fclose(file_def);
+    
+clear def_name; clear len_def; clear len_line;
+clear file_def; clear line;
+    
 fprintf('\nInput data:\n');
 fprintf('\tNum of point transform (N)\t\t\t= %d\n',     N);
 fprintf('\tNum of point signal in RAM (Nx)\t\t= %d\n',	Nx);
@@ -235,10 +262,10 @@ if(file_addr_wr == -1)
 end
 
 for i = 1:row % 0 stage (only butterfly)
-    temp = F_FHT_BUT([ram(i, 1), ram(i, 2), 0],...
-                     [ram(i, 3), ram(i, 4), 0],...
-                     [sin_x(1), sin_x(1)],...
-                     [cos_x(1), cos_x(1)], w_amp);
+    temp = F_FHT_BUT(test_mix, [ram(i, 1), ram(i, 2), 0],...
+                               [ram(i, 3), ram(i, 4), 0],...
+                               [sin_x(1), sin_x(1)],...
+                               [cos_x(1), cos_x(1)], w_amp);
     ram(i, :) = [temp(1), temp(3), temp(2), temp(4)];
 
     fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1); % every second tact
@@ -284,30 +311,30 @@ for stage = 1:last_stage % without 0 stage
         
         for i = (1 + (j-1)*2*div):(2*div + (j-1)*2*div)
             if(j == 1)
-				temp = F_FHT_BUT([ram(i, 1), ram(i, 2), ram(i, 2)],...
-                                 [ram(i, 3), ram(i, 4), ram(i, 4)],...
-                                 [sin_x(num_coef), cos_x(num_coef)],...
-                                 [cos_x(num_coef), -sin_x(num_coef)], w_amp);
+				temp = F_FHT_BUT(test_mix, [ram(i, 1), ram(i, 2), ram(i, 2)],...
+                                           [ram(i, 3), ram(i, 4), ram(i, 4)],...
+                                           [sin_x(num_coef), cos_x(num_coef)],...
+                                           [cos_x(num_coef), -sin_x(num_coef)], w_amp);
                 
                 temp_input = [ram(i, 1), ram(i, 2), ram(i, 2), ram(i, 3), ram(i, 4), ram(i, 4)];
                 
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			elseif(j == 2)
-				temp = F_FHT_BUT([ram(i, 2), ram(i, 1), ram(i, 3)],...
-                                 [ram(i, 4), ram(i, 3), ram(i, 1)],...
-                                 [sin_x(num_coef), cos_x(num_coef)],...
-                                 [cos_x(num_coef), -sin_x(num_coef)], w_amp);
+				temp = F_FHT_BUT(test_mix, [ram(i, 2), ram(i, 1), ram(i, 3)],...
+                                           [ram(i, 4), ram(i, 3), ram(i, 1)],...
+                                           [sin_x(num_coef), cos_x(num_coef)],...
+                                           [cos_x(num_coef), -sin_x(num_coef)], w_amp);
                 
                 temp_input = [ram(i, 2), ram(i, 1), ram(i, 3), ram(i, 4), ram(i, 3), ram(i, 1)];
                                   
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			elseif(mod(j, 2) == 1) 
-				temp = F_FHT_BUT([ram(i, 1), ram(i, 2), ram(i + sector_cnt*2*div, 3)],...
-                                 [ram(i, 3), ram(i, 4), ram(i + sector_cnt*2*div, 1)],...
-                                 [sin_x(num_coef), cos_x(num_coef)],...
-                                 [cos_x(num_coef), -sin_x(num_coef)], w_amp);
+				temp = F_FHT_BUT(test_mix, [ram(i, 1), ram(i, 2), ram(i + sector_cnt*2*div, 3)],...
+                                           [ram(i, 3), ram(i, 4), ram(i + sector_cnt*2*div, 1)],...
+                                           [sin_x(num_coef), cos_x(num_coef)],...
+                                           [cos_x(num_coef), -sin_x(num_coef)], w_amp);
                 
                 temp_input = [  ram(i, 1), ram(i, 2), ram(i + sector_cnt*2*div, 3),...
                                 ram(i, 3), ram(i, 4), ram(i + sector_cnt*2*div, 1)];
@@ -315,10 +342,10 @@ for stage = 1:last_stage % without 0 stage
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i + sector_cnt*2*div-1, i-1, i + sector_cnt*2*div-1, i-1);                 
                 fprintf(file_addr_rd, '%4d\t%4d\t%4d\t%4d\n', i-1, i-1, i-1, i-1);
 			else
-				temp = F_FHT_BUT([ram(i, 2), ram(i, 1), ram(i + sector_cnt*2*div, 4)],...
-                                 [ram(i, 4), ram(i, 3), ram(i + sector_cnt*2*div, 2)],...
-                                 [sin_x(num_coef), cos_x(num_coef)],...
-                                 [cos_x(num_coef), -sin_x(num_coef)], w_amp);
+				temp = F_FHT_BUT(test_mix, [ram(i, 2), ram(i, 1), ram(i + sector_cnt*2*div, 4)],...
+                                           [ram(i, 4), ram(i, 3), ram(i + sector_cnt*2*div, 2)],...
+                                           [sin_x(num_coef), cos_x(num_coef)],...
+                                           [cos_x(num_coef), -sin_x(num_coef)], w_amp);
                 
                 temp_input = [ram(i, 2), ram(i, 1), ram(i + sector_cnt*2*div, 4),...
                               ram(i, 4), ram(i, 3), ram(i + sector_cnt*2*div, 2)];

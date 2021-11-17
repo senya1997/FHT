@@ -80,10 +80,7 @@
 		for(uint16_t cnt_data = 0; cnt_data < BANK_SIZE; cnt_data++)
 			begin
 				if(&ext_ram[cnt_data] !== 1'bx)
-				begin
-					$display("\tIN[%d]: %d", bunk_num, ext_ram[cnt_data]);
 					tran_ram[cnt_data][bunk_num] = ext_ram[cnt_data]; // "unsigned" to signed cast
-				end
 				else
 					begin
 						$display("\n ***\tCrytical warning: RAM data in 'X' state:\n\t\tbank = %d, addr = %d, data = %d\n", bunk_num, cnt_data, ext_ram[cnt_data]);

@@ -84,6 +84,22 @@ initial begin
 	sum_er = 0;
 
 	$display("\n\n\t\tSTART TEST FHT BUTTERFLY");
+	
+`ifdef TEST_MIXER
+	$display("\n\tTest mix data is enabled\n");
+	
+	dut_pack.data[0] = 1;
+	dut_pack.data[1] = 2;
+	#(`TACT);
+	
+	if((RESULT[0] != 1) | (RESULT[1] != 2))
+		$display(" ***\t\tError: Mixer in but working wrong\n");
+	else
+		$display("\tMix data in but are correct\n");
+	
+	$finish;
+`endif
+	
 	$display("\n\tError between reference signal and result must be less then `ACCURACY defines: %f", `ACCURACY);
 	$display("\tIf error too big or there is overflow - in console its marked by '***'");
 	
@@ -106,14 +122,9 @@ initial begin
 			DispResult;
 		end
 	
-	`ifdef EN_BREAKPOINT
-		$display("\n\t\t\tpress 'run' to continue\n");
-		$stop;
-	`endif
+	$display("\n\n\n\t\tTEST ON SPEC ANGLES\n");
 	
 	#(4*`TACT);
-	
-	$display("\n\n\n\t\tTEST ON SPEC ANGLES\n");
 	
 	cnt = 0;
 	dut_pack.data[0] = 0; // max value of data receive on '0' stage, on this stage 'X(0) = 0'
