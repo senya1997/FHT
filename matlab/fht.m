@@ -50,7 +50,7 @@ bias = 100;
 
 rand_sin = 'Y'; % generate rand sine harm or determine by defined value (Y/N)
 
-max_amp = 10922; % signed 16 bit ADC <=> 32767/3, cause pseudorand signal have 3 harmonic
+max_amp = 10922; % if normalize not using - signed 16 bit ADC <=> 32767/3, cause pseudorand signal have 3 harmonic
 max_freq = 1000; % in Hz
 max_phase = 180; % in grad
 
@@ -58,6 +58,7 @@ bias_freq = 100; % in Hz
 
 threshold = 0.2; % in precent max error between FFT and FHT that save index of error data
 save_err_ind = 'Y'; % save index of error data in file (Y/N, append to exist file)
+normalize_input = 'Y'; % required normalize input signal in ADC width
 
 % read files:
     N       = F_READ_DEFINE(dir_def, 'N');
@@ -67,34 +68,15 @@ save_err_ind = 'Y'; % save index of error data in file (Y/N, append to exist fil
     d_bit	= F_READ_DEFINE(dir_def, 'D_BIT');
     imp_bit	= F_READ_DEFINE(dir_def, 'IMP_BIT');
     w_amp	= F_READ_DEFINE(dir_def, 'MAX_W');
+    adc_amp	= F_READ_DEFINE(dir_def, 'MAX_ADC_D');
 
 % check test mixer define:
-    def_name = '`define TEST_MIXER';
+    test_mix = F_DEFINE_EXIST(dir_def, 'TEST_MIXER');
 
-    test_mix = 0;
-    len_def = length(def_name);
-
-    file_def = fopen(dir_def, 'r');
-
-    while(~feof(file_def))
-        line = fgetl(file_def);
-        len_line = length(line);
-
-        if(len_line >= len_def)
-            if(strcmp(line(1 : len_def), def_name))
-                fprintf('\nWARNING: TEST_MIXER is enabled\n');
-                
-                test = 'num'; % linear increase signal from '0' to 'N - 1'
-                test_mix = 1;
-                break;
-            end
-        end
+    if(test_mix)
+        fprintf('\nWARNING: Test of mixers is enabled\n');
+        test = 'num'; % linear increase signal from '0' to 'N - 1'
     end
-
-    fclose(file_def);
-    
-clear def_name; clear len_def; clear len_line;
-clear file_def; clear line;
     
 fprintf('\nInput data:\n');
 fprintf('\tNum of point transform (N)\t\t\t= %d\n',     N);
@@ -104,6 +86,7 @@ fprintf('\tRAM bank size\t= %d\n',          row);
 fprintf('\tData width\t\t= %d\n',           d_bit);
 fprintf('\tImpulse coef width\t\t= %d\n',   imp_bit);
 fprintf('\tAmp of Sin/Cos coef\t\t= %d\n',  w_amp);
+fprintf('\tAmp of input signal on ADC\t\t= %d\n',  adc_amp);
 
 %% get input data:
 fprintf('\nGet input data...\n');
@@ -163,7 +146,7 @@ fprintf('\nForming input RAM for FHT...');
 k = 0;
 ram(1:row, 1:N_bank) = zeros;
 test_signal(1:N) = zeros;
-
+  
 for i = 1:N_bank
     for j = 1:row
         k = k + 1;
@@ -220,8 +203,43 @@ if(strcmp(test, 'signal'))
     clear file_signal;
 end
 
+% normalize signal in FPGA bit width (if needed)
+    if(normalize_input == 'Y')
+        fprintf('\n\tNormalize input signal\n');
+        
+        max_amp = max(test_signal);
+        
+        if(max_amp < abs(min(test_signal)))
+            max_amp = abs(min(test_signal));
+        end
+        
+        norm_coef_p = (adc_amp - 1)/max_amp;
+        norm_coef_n = adc_amp/max_amp;
+        
+        if(max_amp >= adc_amp)
+            for i = 1:N_bank
+                for j = 1:row
+                    if(ram(j, i) < 0)
+                        ram(j, i) = round(ram(j, i)*norm_coef_n);
+                    else
+                        ram(j, i) = round(ram(j, i)*norm_coef_p);
+                    end
+                end
+            end
+            
+            for i = 1:N
+                if(test_signal(i) < 0)
+                    test_signal(i) = round(test_signal(i)*norm_coef_n);
+                else
+                    test_signal(i) = round(test_signal(i)*norm_coef_p);
+                end
+            end
+        end
+    end
+
 clear max_freq; clear max_amp; clear max_phase; clear bias_freq;
 clear line; clear k; clear signal;
+clear norm_coef_p; clear norm_coef_n; clear max_amp;
 
 %% fft (for check):
 fprintf('\nStart reference FFT for check correctness of the FHT...');
@@ -457,8 +475,8 @@ end
             end
         end
 
-        reg_ram_p = F_SAVE_REG_RAM(ram_p, imp_bit - 1, dir_init_imp_p); % minus bit expansion for imp
-        reg_ram_n = F_SAVE_REG_RAM(ram_n, imp_bit - 1, dir_init_imp_n);
+        reg_ram_p = F_SAVE_REG_RAM(ram_p, imp_bit, dir_init_imp_p); % minus bit expansion for imp
+        reg_ram_n = F_SAVE_REG_RAM(ram_n, imp_bit, dir_init_imp_n);
     end
 
 clear temp; clear file_ram; clear file_fft_cp;

@@ -384,8 +384,13 @@
 							tran_ram[i][j] = $signed(temp_data); // update internal RAM imitation, signed cast
 						end
 					
-					if(fixed_point & from_file)	out_data = {tran_ram[i][j], {(D_BIT - INT_BIT){1'b0}}};
-					else						out_data = tran_ram[i][j];
+					if(fixed_point & from_file)
+						begin
+							out_data = {tran_ram[i][j], {(D_BIT - INT_BIT){1'b0}}};
+							tran_ram[i][j] = {tran_ram[i][j], {(D_BIT - INT_BIT){1'b0}}};
+						end
+					else
+						out_data = tran_ram[i][j];
 							
 					out_addr = i; // row choose, unsigned cast
 					
