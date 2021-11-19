@@ -3,6 +3,9 @@ clc;
 
 close all;
 
+diary LOG_MATLAB.txt
+fprintf('\n\t%s\n', datestr(datetime));
+
 fprintf('\n\tCompare math model and RTL\n');
 
 %% input (from main matlab file):
@@ -50,7 +53,7 @@ fprintf('\nLoad input data and calc accuracy...');
 fprintf('\nPrint graphics...\n');
 
 % errors:
-    figure;
+    fig_err = figure;
     subplot(2,1,1);
         histogram(err_ind, 16);
     xlim([0 N]);
@@ -66,7 +69,7 @@ fprintf('\nPrint graphics...\n');
     grid on;
 
 % FHT compare:
-    figure;
+    fig_comp = figure;
     subplot(2,1,1);
         plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);
     hold on;
@@ -87,7 +90,7 @@ fprintf('\nPrint graphics...\n');
     grid on;
 
 % zoom x8 times:
-    figure; 
+    fig_comp_zoom = figure; 
     subplot(2,1,1);
         plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);
     hold on;
@@ -106,3 +109,11 @@ fprintf('\nPrint graphics...\n');
     xlabel('Num of point');
     ylabel('Precent');
     grid on;
+    
+saveas(fig_err, 'screen/fht_err_ind', 'png'); 
+saveas(fig_comp, 'screen/fht_math_cmp_fpga', 'png'); 
+%saveas(fig_comp_zoom, 'screen/fht_math_cmp_fpga_zoom', 'png'); 
+
+%close(fig_err);
+%close(fig_comp);
+%close(fig_comp_zoom);

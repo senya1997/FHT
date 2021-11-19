@@ -121,10 +121,10 @@ end
 				if(rd_wr)	cnt_er_wr = cnt_er_wr + 1;
 				else		cnt_er_rd = cnt_er_rd + 1;
 				
-				$display(" ***\tREF:\tr/w: %1d,\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d, time: %t", 
-							rd_wr, temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3], $time);
-				$display(" ***\t\t\taddr_0: %4d, addr_1: %4d, addr_2: %4d, addr_3: %4d", 
-							iADDR_0, iADDR_1, iADDR_2, iADDR_3);
+				$display(" ***\tREF:\tr/w: %1d,\taddr[0]: %4d, addr[1]: %4d, addr[2]: %4d, addr[3]: %4d, time: %t", 
+									rd_wr, temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3], $time);
+				$display(" ***\t\t\taddr[0]: %4d, addr[1]: %4d, addr[2]: %4d, addr[3]: %4d", 
+									iADDR_0, iADDR_1, iADDR_2, iADDR_3);
 			end
 	endtask
 `endif

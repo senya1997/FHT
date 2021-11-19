@@ -34,13 +34,15 @@
 	`define INIT_IMP_N_RAM	"../../fht_conv/matlab/init_imp_n_ram.txt"
 
 // output MATH files for compare in real type (for data):
-	`define MATH_FHT_RAM	"../../fht/matlab/math_fht_ram.txt"			// math model FHT out RAM for compare
-	
-	`define MATH_ADDR_RD	"../../fht/matlab/math_addr_rd.txt"			// addr of math model RAM on different stages FHT for compare
-	`define MATH_ADDR_WR	"../../fht/matlab/math_addr_wr.txt"
-	
-	`define MATH_CONV_RAM	"../../fht_conv/matlab/math_conv_ram.txt"	// math model CONV by DHT out RAM for compare
-	`define MATH_CONV_ADDR	"../../fht_conv/matlab/math_conv_addr.txt"
+ 	// math model FHT out RAM for compare
+		`define MATH_FHT_RAM	"../../fht/matlab/math_fht_ram.txt"			
+		`define MATH_ADDR_RD	"../../fht/matlab/math_addr_rd.txt" // addr of math model RAM on different stages FHT for compare
+		`define MATH_ADDR_WR	"../../fht/matlab/math_addr_wr.txt"
+ 	
+ 	// math model CONV for compare:
+		`define MATH_CONV_RAM		"../../fht_conv/matlab/math_conv_ram.txt"
+		`define MATH_CONV_ADDR_RD	"../../fht_conv/matlab/math_conv_addr_rd.txt"
+	 	`define MATH_CONV_ADDR_WR	"../../fht_conv/matlab/math_conv_addr_wr.txt"
 	
 // output FPGA file for compare in real and reg type (save 'reg' version of RAM - prescript 'reg' is added to the entered name automatic):
 	`define FPGA_FHT_RAM	"fpga_fht_ram.txt"	// FHT output from tb save in current dir of modelsim project

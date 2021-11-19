@@ -3,6 +3,9 @@ clc;
 
 close all;
 
+diary LOG_MATLAB.txt
+fprintf('\n\t%s\n', datestr(datetime));
+
 fprintf('\n===================================================\n');
 fprintf('=              Fast Hartley transform             =\n');
 fprintf('===================================================\n');
@@ -246,15 +249,10 @@ fprintf('\nStart reference FFT for check correctness of the FHT...');
 
 temp_fft = fft(test_signal, N)/N;
 
-ram_fft(1:row, 1:N_bank) = zeros;
-for i = 1:row
-    ram_fft(i, 1:4) = real(temp_fft((1 + (i-1)*4) : (4*i))) - imag(temp_fft((1 + (i-1)*4) : (4*i)));
-end
-  
 fft_line = real(temp_fft) - imag(temp_fft);
 
 %% fht:
-fprintf('\nStart FHT...\n');
+fprintf('\nStart FPGA model of FHT...\n');
 
 sin_x = load('sin.txt');
 cos_x = load('cos.txt');
@@ -426,7 +424,7 @@ fclose(file_addr_wr);
 clear file_addr_rd; clear file_addr_wr;
 
 %% save final RAM data in files:
-fprintf('\nSave output RAM after transform...');
+fprintf('\nSave output RAM after transform for tb...');
 
 file_ram = fopen(dir_math_fht_ram, 'w');
 if(file_ram ~= -1)
@@ -544,9 +542,9 @@ end
 fclose('all');
     
 %% graphics:
-fprintf('\nPrint graphics...\n');
+fprintf('\nPrint and save graphics...\n');
 
-figure;
+fig_test = figure;
     plot(time, test_signal);
 title('Test signal:');
 xlabel('Time, sec');
@@ -554,7 +552,7 @@ ylabel('Amp');
 grid on;
 clear time;
 
-figure;
+fig_fht = figure;
 subplot(2,1,1);
     plot((0 : N - 1), fft_line, '+-', 'MarkerSize', 2);
 hold on;
@@ -574,7 +572,7 @@ xlabel('Num of point');
 ylabel('Precent');
 grid on;
 
-figure; % zoom x8 times
+fig_fht_zoom = figure; % zoom x8 times
 subplot(2,1,1);
     plot((0 : N - 1), fft_line, '+-', 'MarkerSize', 2);
 hold on;
@@ -593,6 +591,14 @@ title('Error:');
 xlabel('Num of point');
 ylabel('Precent');
 grid on;
+
+saveas(fig_test, 'screen/fht_test_signal', 'png'); 
+saveas(fig_fht, 'screen/fht_cmp_fft', 'png'); 
+%saveas(fig_fht_zoom, 'screen/fht_cmp_fft_zoom', 'png'); 
+
+%close(fig_test);
+%close(fig_fht);
+%close(fig_fht_zoom);
 
 fprintf('\n===================================================\n');
 fprintf('=                    Complete                     =\n');

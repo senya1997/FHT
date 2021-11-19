@@ -244,11 +244,10 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 // coef:
-function [A_BIT - 3 : 0] F_BIT_REV(input [A_BIT - 3 : 0] iDATA);
+function [A_BIT - 3 : 0] F_ADDR_REV(input [A_BIT - 3 : 0] iADDR); // bit reverse addr of coef
 integer i;
-	begin
-		for (i = 0; i < A_BIT - 2; i = i + 1) F_BIT_REV[A_BIT - 3 - i] = iDATA[i];
-	end
+	for (i = 0; i < A_BIT - 2; i = i + 1)
+		F_ADDR_REV[A_BIT - 3 - i] = iADDR[i];
 endfunction
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -260,7 +259,7 @@ end
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_coef <= 0;
 	else if(RESET_CNT_COEF) addr_coef <= 0;
-	else if(COEF_EN | LAST_STAGE) addr_coef <= F_BIT_REV(addr_coef_cnt);
+	else if(COEF_EN | LAST_STAGE) addr_coef <= F_ADDR_REV(addr_coef_cnt);
 end
 
 // ************** others: ************** //
