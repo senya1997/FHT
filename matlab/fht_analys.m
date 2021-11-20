@@ -5,6 +5,7 @@ close all;
 
 diary LOG_MATLAB.txt
 fprintf('\n\t%s\n', datestr(datetime));
+glob_path;
 
 fprintf('\n\tCompare math model and RTL\n');
 
@@ -16,12 +17,7 @@ fprintf('\n\tCompare math model and RTL\n');
 
     global dir_math_fft_line;
     global dir_math_err_ind;
-   
-if(isempty(dir_def) || isempty(dir_math_fht_ram) || isempty(dir_fpga_fht_ram) ||...
-   isempty(dir_math_fft_line) || isempty(dir_math_err_ind))
-   error('Before run this - require run main script with define global vars!'); 
-end
-    
+
     N = F_READ_DEFINE(dir_def, 'N');
     
 fprintf('\nInput data:\n');
@@ -53,7 +49,7 @@ fprintf('\nLoad input data and calc accuracy...');
 fprintf('\nPrint graphics...\n');
 
 % errors:
-    fig_err = figure;
+    fig_err = figure('Units', 'normalized', 'OuterPosition', [0 0 1 1]);
     subplot(2,1,1);
         histogram(err_ind, 16);
     xlim([0 N]);
@@ -69,7 +65,7 @@ fprintf('\nPrint graphics...\n');
     grid on;
 
 % FHT compare:
-    fig_comp = figure;
+    fig_comp = figure('Units', 'normalized', 'OuterPosition', [0 0 1 1]);
     subplot(2,1,1);
         plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);
     hold on;
@@ -90,7 +86,7 @@ fprintf('\nPrint graphics...\n');
     grid on;
 
 % zoom x8 times:
-    fig_comp_zoom = figure; 
+    fig_comp_zoom = figure('Units', 'normalized', 'OuterPosition', [0 0 1 1]); 
     subplot(2,1,1);
         plot((0 : N - 1), fht_math_line, '+-', 'MarkerSize', 2);
     hold on;
@@ -112,7 +108,7 @@ fprintf('\nPrint graphics...\n');
     
 saveas(fig_err, 'screen/fht_err_ind', 'png'); 
 saveas(fig_comp, 'screen/fht_math_cmp_fpga', 'png'); 
-%saveas(fig_comp_zoom, 'screen/fht_math_cmp_fpga_zoom', 'png'); 
+saveas(fig_comp_zoom, 'screen/fht_math_cmp_fpga_zoom', 'png'); 
 
 %close(fig_err);
 %close(fig_comp);
