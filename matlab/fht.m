@@ -202,11 +202,7 @@ end
     if(normalize_input == 'Y')
         fprintf('\n\tNormalize input signal\n');
         
-        max_amp = max(test_signal);
-        
-        if(max_amp < abs(min(test_signal)))
-            max_amp = abs(min(test_signal));
-        end
+        max_amp = max(abs(test_signal));
         
         norm_coef_p = (adc_amp - 1)/max_amp;
         norm_coef_n = adc_amp/max_amp;
@@ -475,32 +471,7 @@ clear temp; clear file_ram; clear file_fft_cp;
 %% get norm order in RAM for compare FFT and FHT:
 fprintf('\nCalc error between FFT and FHT for compare...');
 
-% from matrix to line:
-    cnt = 1;
-    clear ram_buf;
-    ram_buf(1:N) = 0;
-
-    for i = 1:row
-        ram_buf((1 + (i-1)*4) : (4*i)) = ram(i, 1:4);
-        cnt = cnt + 1;
-    end
-
-% change index order (bit reverse):
-    cnt = 1;
-    ram_fht(1:row, 1:N_bank) = 0;
-    
-    fht_line(1:N) = 0;
-    for i = 1:row
-        ram_fht(i, 1:4) = [ram_buf(bin2dec(fliplr(dec2bin(cnt-1, last_stage+1))) + 1),... % cnt+0-1
-                           ram_buf(bin2dec(fliplr(dec2bin(cnt,	 last_stage+1))) + 1),... % cnt+1-1
-                           ram_buf(bin2dec(fliplr(dec2bin(cnt+1, last_stage+1))) + 1),... % cnt+2-1
-                           ram_buf(bin2dec(fliplr(dec2bin(cnt+2, last_stage+1))) + 1)];   % cnt+3-1
-                           
-        fht_line((1 + (i-1)*4) : (4*i)) = ram_fht(i, :);
-        cnt = cnt + 4;
-    end
-
-    clear cnt;
+fht_line = F_FHT_RAM_TO_LINE(ram);
 
 err_line = F_ABS_ERR_LINE(fft_line, fht_line);  % in precent
 err_line_buf = err_line;

@@ -46,7 +46,7 @@ fprintf('\nLoad input data and calc accuracy...');
     fclose('all');
     
 %% graphics:
-fprintf('\nPrint graphics...\n');
+fprintf('\nPrint and save graphics...\n');
 
 % errors:
     fig_err = figure('Units', 'normalized', 'OuterPosition', [0 0 1 1]);

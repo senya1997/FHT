@@ -1,5 +1,5 @@
-PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
-#PATH_QUARTUS := C:/altera/14.1/quartus
+#PATH_QUARTUS := D:/Program Files/altera/14.1/quartus
+PATH_QUARTUS := C:/altera/14.1/quartus
 
 LIB_LPM	:= lpm_ver
 LIB_MF	:= altera_mf_ver
