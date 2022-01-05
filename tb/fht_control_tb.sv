@@ -90,12 +90,10 @@ end
 	end
 
 	always@(CONTROL.cnt_stage)begin
-		`ifdef COMPARE_WITH_MATLAB
-			$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
-			$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
-				cnt_er_rd = 0;
-				cnt_er_wr = 0;
-		`endif
+		$display("\n\t\tNumber of errors in addr_rd this stage: %d", cnt_er_rd);
+		$display("\t\tNumber of errors in addr_wr this stage: %d\n", cnt_er_wr);
+			cnt_er_rd = 0;
+			cnt_er_wr = 0;
 		
 		$display("\t%2d stage FHT, time: %t", CONTROL.cnt_stage, $time);
 	end
