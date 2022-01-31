@@ -41,15 +41,15 @@ load_package flow
 # ADC bit resolution
 	set ADC_BIT 16
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
-	set A_BIT 8
+	set A_BIT 9
 # twiddle coefficient data bit width
-	set W_BIT 12
+	set W_BIT 15
 # impulses coefficient data bit width
 	set IMP_BIT 16
 # number of signal point going on FHT, must be large then 'Nh' and 'N/2' (full RAM FHT - N point)
 	#set Nx 34
 	#set Nx 1026
-	set Nx 514
+	set Nx 64
 	
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER
@@ -67,14 +67,13 @@ load_package flow
 # ================================================================================= #
 
 # add expansion bit (for avoid overflow from 'max_negative_num*(-1)' and for use shift operating on division)
-	#set D_BIT 27
+	set D_BIT 24
 	#set D_BIT [expr $D_BIT + 1]
 	#set D_BIT [expr $A_BIT + 18]
 	
-	set D_BIT [expr $A_BIT + 12]
+	#set D_BIT [expr $A_BIT + 12]
 	set W_BIT [expr $W_BIT + 1]
 	set CONV_BIT [expr $D_BIT + 4]
-	#set IMP_BIT [expr $IMP_BIT + 1]
 	
 # read input keys from cmd
 	set flag_compile	[lindex $argv 0]
@@ -84,14 +83,13 @@ load_package flow
 	set MAX_D [expr round(pow(2, $D_BIT - 1))]
 	set MAX_W [expr round(pow(2, $W_BIT - 2))]
 	set MAX_CONV [expr round(pow(2, $CONV_BIT - 1))]
-	#set MAX_IMP [expr round(pow(2, $IMP_BIT - 2))]
 	set MAX_IMP [expr round(pow(2, $IMP_BIT - 1))]
 
 	set N [expr round(4*pow(2, $A_BIT))] 
 	set BANK_SIZE [expr $N/4]
 	
 	# number of impulse point
-		set Nh [expr $N - $Nx + 1]
+		set Nh [expr $N - $Nx]
 	# module from +/- max number
 		set MAX_ADC_D [expr round(pow(2, $ADC_BIT - 1))]
 		
@@ -111,8 +109,7 @@ puts " "
 puts "writing defines..."
 set f_def [open $path_def r+]
 
-if {($A_BIT > 3) && ($A_BIT < 11) &&\
-	 ($Nx > $Nh) && ($Nx > [expr $N/2]) && ($Nx < $N)} {
+if {($A_BIT > 3) && ($A_BIT < 11) && ($Nx < $N)} {
 	puts $f_def "/*****************************************************************************************************************/"
 	puts $f_def "/*												auto generated defines (do not modify):												  */"
 	puts $f_def "/*****************************************************************************************************************/"

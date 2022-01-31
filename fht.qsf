@@ -256,11 +256,11 @@ set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
 
 # end ENTITY(fht_top)
 # -------------------
+set_global_assignment -name TCL_SCRIPT_FILE script/src.tcl
+set_global_assignment -name TCL_SCRIPT_FILE script/lib_setup.tcl
+set_global_assignment -name TCL_SCRIPT_FILE script/fht.tcl
 set_global_assignment -name MIF_FILE sin.mif
 set_global_assignment -name MIF_FILE cos.mif
-set_global_assignment -name TCL_SCRIPT_FILE scripts/lib_setup.tcl
-set_global_assignment -name TCL_SCRIPT_FILE scripts/src.tcl
-set_global_assignment -name TCL_SCRIPT_FILE scripts/fht.tcl
 set_global_assignment -name VERILOG_FILE fht_rom.v
 set_global_assignment -name SDC_FILE fht.out.sdc
 set_global_assignment -name VERILOG_FILE fht_ram.v
