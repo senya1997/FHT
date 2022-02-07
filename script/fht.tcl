@@ -43,12 +43,10 @@ load_package flow
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
 	set A_BIT 9
 # twiddle coefficient data bit width
-	set W_BIT 15
+	set W_BIT 14
 # impulses coefficient data bit width
 	set IMP_BIT 16
 # number of signal point going on FHT, must be large then 'Nh' and 'N/2' (full RAM FHT - N point)
-	#set Nx 34
-	#set Nx 1026
 	set Nx 64
 	
 # name of define which turn off part of RTL
@@ -67,13 +65,14 @@ load_package flow
 # ================================================================================= #
 
 # add expansion bit (for avoid overflow from 'max_negative_num*(-1)' and for use shift operating on division)
-	set D_BIT 24
+	set D_BIT 22
 	#set D_BIT [expr $D_BIT + 1]
 	#set D_BIT [expr $A_BIT + 18]
-	
 	#set D_BIT [expr $A_BIT + 12]
-	set W_BIT [expr $W_BIT + 1]
+	
 	set CONV_BIT [expr $D_BIT + 4]
+	
+	set W_BIT [expr $W_BIT + 1]
 	
 # read input keys from cmd
 	set flag_compile	[lindex $argv 0]
@@ -93,10 +92,12 @@ load_package flow
 	# module from +/- max number
 		set MAX_ADC_D [expr round(pow(2, $ADC_BIT - 1))]
 		
-	set WIDTH_RAM			[expr round(log($N)/log(2))]
-	set DEPTH_ROM			[expr round(pow(2, $A_BIT - 2))]
+	set WIDTH_RAM	[expr round(log($N)/log(2))]
+	set WIDTH_BUF	[expr round(log($Nx)/log(2))]
 	
-	set LAST_STAGE			[expr round(log($N)/log(2) - 1)] 
+	set DEPTH_ROM	[expr round(pow(2, $A_BIT - 2))]
+	
+	set LAST_STAGE	[expr round(log($N)/log(2) - 1)] 
 
 puts " "
 puts "\tSTART"
@@ -110,6 +111,9 @@ puts "writing defines..."
 set f_def [open $path_def r+]
 
 if {($A_BIT > 3) && ($A_BIT < 11) && ($Nx < $N)} {
+	puts $f_def	"`ifndef FHT_DEFINES_H"
+	puts $f_def	"`define FHT_DEFINES_H"
+	puts $f_def	" "
 	puts $f_def "/*****************************************************************************************************************/"
 	puts $f_def "/*												auto generated defines (do not modify):												  */"
 	puts $f_def "/*****************************************************************************************************************/"
@@ -119,6 +123,7 @@ if {($A_BIT > 3) && ($A_BIT < 11) && ($Nx < $N)} {
 	puts $f_def "`define Nh $Nh"
 	puts $f_def "`define BANK_SIZE $BANK_SIZE"
 	puts $f_def "`define WIDTH_RAM $WIDTH_RAM"
+	puts $f_def "`define WIDTH_BUF $WIDTH_BUF"
 	puts $f_def "`define DEPTH_ROM $DEPTH_ROM"
 	puts $f_def "`define LAST_STAGE $LAST_STAGE"
 	
