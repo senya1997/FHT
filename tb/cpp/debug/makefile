@@ -11,7 +11,7 @@
     DBG_LVL := -g3
 	
 	# compile info '-Wall' or nothing:
-    	CMPL_INF := 
+    	CMPL_INF := -Wall
 
 # verilator:
 	VERILATOR := verilator_bin
@@ -25,9 +25,11 @@
 		VSRC := verilated.cpp verilated_vcd_c.cpp
 	
 	#PATH_MF := "C:/intelFPGA_lite/18.1/quartus/eda/fv_lib/verilog"
-	PATH_MF := "D:/Program Files/altera/14.1/quartus/eda/fv_lib/verilog"
-	#PATH_VINC := C:/msys64/mingw64/share/verilator/include/
-	PATH_VINC := C:/msys64/usr/share/verilator/include/
+	#PATH_MF := "D:/Program Files/altera/14.1/quartus/eda/fv_lib/verilog"
+	PATH_MF := "C:/altera/14.1/quartus/eda/fv_lib/verilog"
+	
+	PATH_VINC := C:/msys64/mingw64/share/verilator/include/
+	#PATH_VINC := C:/msys64/usr/share/verilator/include/
 	
 	# auto forming:
 	    VH := ../../../obj_dir/V$(TOP_MODULE).h
