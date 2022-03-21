@@ -65,12 +65,11 @@ load_package flow
 # ================================================================================= #
 
 # add expansion bit (for avoid overflow from 'max_negative_num*(-1)' and for use shift operating on division)
-	set D_BIT 22
-	#set D_BIT [expr $D_BIT + 1]
+	set D_BIT [expr $ADC_BIT + 5]
 	#set D_BIT [expr $A_BIT + 18]
 	#set D_BIT [expr $A_BIT + 12]
 	
-	set CONV_BIT [expr $D_BIT + 4]
+	set CONV_BIT [expr $D_BIT + 5]
 	
 	set W_BIT [expr $W_BIT + 1]
 	
