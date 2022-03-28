@@ -57,8 +57,13 @@
 	`define FPGA_CONV_RAM	"fpga_conv_ram.txt"	// CONV output (ready for IFHT RAM) from tb save in current dir of modelsim project
 
 `ifdef MODEL_TECH
-	`define MIF_SIN "../../fht/sin.mif"
-	`define MIF_COS "../../fht/cos.mif"
+	`ifdef TOP_TB
+		`define MIF_SIN "../../core/fht/sin.mif"
+		`define MIF_COS "../../core/fht/cos.mif"
+	`else
+		`define MIF_SIN "../../fht/sin.mif"
+		`define MIF_COS "../../fht/cos.mif"
+	`endif
 `else
 	`define MIF_SIN "./sin.mif"
 	`define MIF_COS "./cos.mif"
