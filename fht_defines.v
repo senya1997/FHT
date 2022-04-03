@@ -79,6 +79,8 @@
 `define ROUND_FHT		// enable round in FHT butterfly
 //`define ROUND_FHT_CONV	// enable round in conv calc
 	
+//`define EN_BREAKPOINT
+	
 `timescale 1ns/1ns
 
 	`ifdef MODEL_TECH

@@ -157,6 +157,14 @@ always@(FHT.CONTROL.cnt_stage)begin
 			else		UpdClassRAM_A;
 				
 			ram_imit.SaveRAMdata(str_temp);
+			
+			min_data = ram_imit.GetMinDataRam();
+			max_data = ram_imit.GetMaxDataRam();
+			mean_data = ram_imit.GetMeanDataRam();
+	
+			$display("\tData range in stage is: %6.6f ... %6.6f", min_data, max_data);
+			$display("\tMean data: %6.6f\n", mean_data);
+	
 			ram_sel = ~ram_sel;
 			
 			`ifdef COMPARE_WITH_MATLAB

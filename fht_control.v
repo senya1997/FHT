@@ -9,6 +9,8 @@ module fht_control #(parameter A_BIT = 8)(
 	output oST_ZERO, // "0" stage - without multipliers
 	output oST_LAST, // on last stage output bank mixer save data in direct order
 	output o2ND_PART_SUBSEC, // on 1st and 2nd part of subsector point save in different bank order on output bank mixer
+	//output oNEW_STAGE,
+	
 	output [A_BIT - 1 : 0] oSECTOR, // defines read order of input data in input bank mixer
 	
 	output [A_BIT - 1 : 0] oADDR_RD_0,
@@ -47,6 +49,8 @@ end
 reg [3 : 0] cnt_stage;	// max = log(N)/log(2) - 1, max addr of one bank = 9 => max cnt_stage = 11
 reg [A_BIT : 0] cnt_stage_time;			// length of bank + reserve (for wait time end of writing in RAM)
 
+//reg new_stage; // for change rounding bits in calculate block
+
 reg [A_BIT : 0] div;	// this 'div' = '2*div' from matlab model
 reg [3 : 0] div_2;	// replacement mult on 'div' in calc bias by shift on 'div_2', max addr of one bank = 9 => max div_2 = 9
 
@@ -82,36 +86,46 @@ reg rdy, rdy_d;
 /*                            wires                           */
 /**************************************************************/
 
-wire ZERO_STAGE =	(cnt_stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
-wire LAST_STAGE =	(cnt_stage == `LAST_STAGE);
+wire ZERO_STAGE = (cnt_stage == 4'd0 & !rdy); // to aviod "1" on output when FHT is not started
+wire LAST_STAGE = (cnt_stage == `LAST_STAGE);
 
-wire WE_EN =			(cnt_stage_time >= 2);
-wire COEF_EN =			(cnt_stage_time >= 1);
+wire WE_EN		= (cnt_stage_time >= 2);
+wire COEF_EN	= (cnt_stage_time >= 1);
 
-wire EOF_READ =		(cnt_stage_time >= `BANK_SIZE - 1);
-wire EOF_COEF =		(cnt_stage_time >= `BANK_SIZE);
+wire EOF_READ = (cnt_stage_time >= `BANK_SIZE - 1);
+wire EOF_COEF = (cnt_stage_time >= `BANK_SIZE);
 
-wire EOF_STAGE =		(cnt_stage_time == `BANK_SIZE + 2);
-wire EOF_STAGE_1 =	(cnt_stage_time == `BANK_SIZE + 1); // behind 'EOF_STAGE'
+wire EOF_STAGE		= (cnt_stage_time == `BANK_SIZE + 2);
+wire EOF_STAGE_1	= (cnt_stage_time == `BANK_SIZE + 1); // behind 'EOF_STAGE'
 
-wire EOF_SECTOR =		(cnt_sector_time == div - 1);
-wire EOF_SECTOR_1 =	(cnt_sector_time == div - 2); // behind 'EOF_SECTOR'
+wire EOF_SECTOR		= (cnt_sector_time == div - 1);
+wire EOF_SECTOR_1	= (cnt_sector_time == div - 2); // behind 'EOF_SECTOR'
 
-wire SEC_PART_SUBSEC =		(cnt_sector_time >= (div >> 1));
-wire SEC_PART_SUBSEC_D =	(sec_part_subsec_d[3]); // delayed
+wire SEC_PART_SUBSEC	= (cnt_sector_time >= (div >> 1));
+wire SEC_PART_SUBSEC_D	= (sec_part_subsec_d[3]); // delayed
 
-wire RESET_CNT_RD = 	 (rdy | EOF_READ);
-wire RESET_CNT_WR = 	 (rdy | EOF_STAGE);
+wire NEW_STAGE	= (EOF_STAGE & clk_2);
+
+wire RESET_CNT_RD	= (rdy | EOF_READ);
+wire RESET_CNT_WR	= (rdy | EOF_STAGE);
 wire RESET_CNT_COEF = (rdy | EOF_COEF);
+
+wire RDY = (rdy_d & rdy);
 
 // *********** stage counters: *********** //
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_stage <= 4'd0;
 	else if(rdy) cnt_stage <= 4'd0;
-	else if(EOF_STAGE & clk_2) cnt_stage <= cnt_stage + 1'b1;
+	else if(NEW_STAGE) cnt_stage <= cnt_stage + 1'b1;
 end
-
+/*
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET) new_stage <= 4'd0;
+	else if(NEW_STAGE) new_stage <= 1'b1;
+	else new_stage <= 4'd0;
+end
+*/
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) cnt_stage_time <= 0;
 	else if((rdy | EOF_STAGE) & clk_2) cnt_stage_time <= 0;
@@ -313,6 +327,7 @@ assign oSOURCE_CONT = source_cont;
 assign oWE_A = we_a;
 assign oWE_B = we_b;
 
-assign oRDY = rdy_d & rdy;
+//assign oNEW_STAGE = new_stage;
+assign oRDY = RDY;
 
 endmodule 

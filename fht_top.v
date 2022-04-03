@@ -51,37 +51,35 @@ wire [A_BIT - 1 : 0] ADDR_WR [0 : 3];
 	wire signed [D_BIT - 1 : 0] DATA_RAM_B_BUT [0 : 3];
 	wire signed [D_BIT - 1 : 0] DATA_BUT_RAM [0 : 3];
 
-assign DATA_BUT[0] =		SOURCE_DATA ? DATA_RAM_B_BUT[0] : DATA_RAM_A_BUT[0];
-assign DATA_BUT[1] =		SOURCE_DATA ? DATA_RAM_B_BUT[1] : DATA_RAM_A_BUT[1];
-assign DATA_BUT[2] =		SOURCE_DATA ? DATA_RAM_B_BUT[2] : DATA_RAM_A_BUT[2];
-assign DATA_BUT[3] =		SOURCE_DATA ? DATA_RAM_B_BUT[3] : DATA_RAM_A_BUT[3];
+assign DATA_BUT[0] =	SOURCE_DATA ? DATA_RAM_B_BUT[0] : DATA_RAM_A_BUT[0];
+assign DATA_BUT[1] =	SOURCE_DATA ? DATA_RAM_B_BUT[1] : DATA_RAM_A_BUT[1];
+assign DATA_BUT[2] =	SOURCE_DATA ? DATA_RAM_B_BUT[2] : DATA_RAM_A_BUT[2];
+assign DATA_BUT[3] =	SOURCE_DATA ? DATA_RAM_B_BUT[3] : DATA_RAM_A_BUT[3];
 
 assign DATA_RAM_A[0] =	SOURCE_CONT ? iDATA_0 : DATA_BUT_RAM[0];
 assign DATA_RAM_A[1] =	SOURCE_CONT ? iDATA_1 : DATA_BUT_RAM[1];
 assign DATA_RAM_A[2] =	SOURCE_CONT ? iDATA_2 : DATA_BUT_RAM[2];
 assign DATA_RAM_A[3] =	SOURCE_CONT ? iDATA_3 : DATA_BUT_RAM[3];
 
-assign ADDR_WR[0] = 		SOURCE_CONT ? iADDR_WR_0 : ADDR_WR_CTRL[0];
-assign ADDR_WR[1] = 		SOURCE_CONT ? iADDR_WR_1 : ADDR_WR_CTRL[1];
-assign ADDR_WR[2] = 		SOURCE_CONT ? iADDR_WR_2 : ADDR_WR_CTRL[2];
-assign ADDR_WR[3] = 		SOURCE_CONT ? iADDR_WR_3 : ADDR_WR_CTRL[3];
-
-wire WE_A, WE_B;
-wire [3 : 0] WE;
-	assign WE[0] = SOURCE_CONT ? iWE[0] : WE_A;
-	assign WE[1] = SOURCE_CONT ? iWE[1] : WE_A;
-	assign WE[2] = SOURCE_CONT ? iWE[2] : WE_A;
-	assign WE[3] = SOURCE_CONT ? iWE[3] : WE_A;
+assign ADDR_WR[0] = SOURCE_CONT ? iADDR_WR_0 : ADDR_WR_CTRL[0];
+assign ADDR_WR[1] = SOURCE_CONT ? iADDR_WR_1 : ADDR_WR_CTRL[1];
+assign ADDR_WR[2] = SOURCE_CONT ? iADDR_WR_2 : ADDR_WR_CTRL[2];
+assign ADDR_WR[3] = SOURCE_CONT ? iADDR_WR_3 : ADDR_WR_CTRL[3];
 	
 assign ADDR_RD[0] = SOURCE_CONT ? iADDR_RD_0 : ADDR_RD_CTRL[0];
 assign ADDR_RD[1] = SOURCE_CONT ? iADDR_RD_1 : ADDR_RD_CTRL[1];
 assign ADDR_RD[2] = SOURCE_CONT ? iADDR_RD_2 : ADDR_RD_CTRL[2];
 assign ADDR_RD[3] = SOURCE_CONT ? iADDR_RD_3 : ADDR_RD_CTRL[3];
 
+wire WE_A, WE_B;
+wire [3 : 0] WE;
+	assign WE = SOURCE_CONT ? iWE : {4{WE_A}};
+	
 // ======================= control: =========================== //
 
 wire ST_ZERO, ST_LAST;
 wire SEC_PART_SUBSEC;
+//wire NEW_STAGE;
 
 wire [A_BIT - 1 : 0] SECTOR;
 wire [A_BIT - 3 : 0] ADDR_COEF;
@@ -95,6 +93,8 @@ fht_control #(.A_BIT(A_BIT)) CONTROL(
 	.oST_ZERO(ST_ZERO),
 	.oST_LAST(ST_LAST), 
 	.o2ND_PART_SUBSEC(SEC_PART_SUBSEC),
+	//.oNEW_STAGE(NEW_STAGE),
+	
 	.oSECTOR(SECTOR), 
 	
 	.oADDR_RD_0(ADDR_RD_CTRL[0]),
@@ -130,6 +130,8 @@ fht_but_block #(.A_BIT(A_BIT), .D_BIT(D_BIT), .W_BIT(W_BIT)) BUT_BLOCK(
 	.iST_ZERO(ST_ZERO),
 	.iST_LAST(ST_LAST),
 	.i2ND_PART_SUBSEC(SEC_PART_SUBSEC),
+	//.iNEW_STAGE(NEW_STAGE),
+	//.iRDY(RDY),
 	.iSECTOR(SECTOR),
 	
 	.iBANK_0(DATA_BUT[0]), 
