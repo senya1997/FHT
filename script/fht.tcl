@@ -47,7 +47,7 @@ load_package flow
 # impulses coefficient data bit width
 	set IMP_BIT 16
 # number of signal point going on FHT, must be large then 'Nh' and 'N/2' (full RAM FHT - N point)
-	set Nx 64
+	set Nx 32
 	
 # name of define which turn off part of RTL
 	set name_def TEST_MIXER

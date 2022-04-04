@@ -6,11 +6,11 @@
 /*****************************************************************************************************************/
  
 `define N 2048
-`define Nx 64
-`define Nh 1984
+`define Nx 32
+`define Nh 2016
 `define BANK_SIZE 512
 `define WIDTH_RAM 11
-`define WIDTH_BUF 6
+`define WIDTH_BUF 5
 `define DEPTH_ROM 128
 `define LAST_STAGE 10
 `define LAST_STAGE_EVEN

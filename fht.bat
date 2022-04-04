@@ -24,9 +24,9 @@ matlab -nosplash -nodesktop -r "fht('imp'); quit;"
 cd..
 cd debug
 echo.
-make -f makefile run_but
-make -f makefile run_control
-make -f makefile run_fht
+make -f makefile.mk run_but
+make -f makefile.mk run_control
+make -f makefile.mk run_fht
 
 cd..
 cd matlab
@@ -43,7 +43,7 @@ matlab -nosplash -nodesktop -r "fht('signal'); quit;"
 cd..
 cd debug
 echo.
-make -f makefile run_fht
+make -f makefile.mk run_fht
 
 cd..
 cd matlab
