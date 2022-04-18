@@ -90,7 +90,7 @@ module fht_rom #(parameter A_BIT = 6, DEPTH = 64, W_BIT = 12, MIF = "./matlab/si
 		altsyncram_component.numwords_a = DEPTH,
 		altsyncram_component.operation_mode = "ROM",
 		altsyncram_component.outdata_aclr_a = "NONE",
-		altsyncram_component.outdata_reg_a = "UNREGISTERED",
+		altsyncram_component.outdata_reg_a = "CLOCK0",
 		altsyncram_component.widthad_a = A_BIT,
 		altsyncram_component.width_a = W_BIT,
 		altsyncram_component.width_byteena_a = 1;

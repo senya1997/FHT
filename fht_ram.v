@@ -99,7 +99,7 @@ module fht_ram #(parameter D_BIT = 17, A_BIT = 8, DEPTH = 256)(
 		altsyncram_component.numwords_b = DEPTH,
 		altsyncram_component.operation_mode = "DUAL_PORT",
 		altsyncram_component.outdata_aclr_b = "NONE",
-		altsyncram_component.outdata_reg_b = "UNREGISTERED",
+		altsyncram_component.outdata_reg_b = "CLOCK0",
 		altsyncram_component.power_up_uninitialized = "FALSE",
 		altsyncram_component.read_during_write_mode_mixed_ports = "OLD_DATA",
 		altsyncram_component.widthad_a = A_BIT,
