@@ -55,7 +55,7 @@ reg [A_BIT : 0] div;	// this 'div' = '2*div' from matlab model
 reg [3 : 0] div_2;	// replacement mult on 'div' in calc bias by shift on 'div_2', max addr of one bank = 9 => max div_2 = 9
 
 reg [A_BIT - 1 : 0] cnt_sector;			// number of rows in bank
-reg [A_BIT - 1 : 0] cnt_sector_d;
+reg [A_BIT - 1 : 0] cnt_sector_d [0 : 1];
 reg [A_BIT - 1 : 0] cnt_sector_time;
 
 reg [A_BIT : 0] size_bias_rd;
@@ -65,8 +65,8 @@ reg [A_BIT - 1 : 0] addr_rd_cnt;			// addr_rd never swap, this reg is always 0-2
 reg [A_BIT - 1 : 0] addr_rd_bias;		// 0-255 on 0,1 sector, after - is added bias
 
 reg [A_BIT - 1 : 0] addr_wr_cnt;			// analog 'addr_rd_cnt'
-reg [A_BIT - 1 : 0] addr_wr_cnt_d; 
-reg [A_BIT - 1 : 0] addr_wr_bias;		// bias on write addr swap every half subsector from this reg on another
+reg [A_BIT - 1 : 0] addr_wr_cnt_d [0 : 1]; 
+reg [A_BIT - 1 : 0] addr_wr_bias, addr_wr_bias_d;	// bias on write addr swap every half subsector from this reg on another
 
 reg [A_BIT - 3 : 0] addr_coef_cnt;
 reg [A_BIT - 3 : 0] addr_coef;
@@ -111,6 +111,13 @@ wire RESET_CNT_WR	= (rdy | EOF_STAGE);
 wire RESET_CNT_COEF = (rdy | EOF_COEF);
 
 wire RDY = (rdy_d & rdy);
+
+function [A_BIT - 3 : 0] F_ADDR_REV(input [A_BIT - 3 : 0] iADDR); // bit reverse addr of coef
+	integer i;
+	
+	for (i = 0; i < A_BIT - 2; i = i + 1)
+		F_ADDR_REV[A_BIT - 3 - i] = iADDR[i];
+endfunction
 
 // *********** stage counters: *********** //
 
@@ -159,8 +166,16 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) cnt_sector_d <= 0;
-	else cnt_sector_d <= cnt_sector;
+	if(!iRESET)
+		begin
+			cnt_sector_d[0] <= 0;
+			cnt_sector_d[1] <= 0;
+		end
+	else 
+		begin
+			cnt_sector_d[0] <= cnt_sector;
+			cnt_sector_d[1] <= cnt_sector_d[0];
+		end
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -231,8 +246,20 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) addr_wr_cnt_d <= 0;
-	else addr_wr_cnt_d <= addr_wr_cnt;
+	if(!iRESET)
+		begin
+			addr_wr_bias_d <= 0;
+		
+			addr_wr_cnt_d[0] <= 0;
+			addr_wr_cnt_d[1] <= 0;
+		end
+	else
+		begin
+			addr_wr_bias_d <= addr_wr_bias;
+			
+			addr_wr_cnt_d[0] <= addr_wr_cnt;
+			addr_wr_cnt_d[1] <= addr_wr_cnt_d[0];
+		end
 end
 
 always@(posedge iCLK or negedge iRESET)begin
@@ -258,12 +285,6 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 // coef:
-function [A_BIT - 3 : 0] F_ADDR_REV(input [A_BIT - 3 : 0] iADDR); // bit reverse addr of coef
-integer i;
-	for (i = 0; i < A_BIT - 2; i = i + 1)
-		F_ADDR_REV[A_BIT - 3 - i] = iADDR[i];
-endfunction
-
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET) addr_coef_cnt <= 0;
 	else if(RESET_CNT_COEF) addr_coef_cnt <= 0;
@@ -303,29 +324,53 @@ end
 
 // ************ output ports: ************ //
 
-assign oST_ZERO =				ZERO_STAGE; // mb required reg
-assign oST_LAST = 			LAST_STAGE;
-assign o2ND_PART_SUBSEC =	SEC_PART_SUBSEC_D & !ZERO_STAGE;
+reg zero_st, last_st, sec_part_subsec;
+reg we_a_d, we_b_d;
 
-assign oSECTOR = cnt_sector_d;
+always@(posedge iCLK or negedge iRESET)begin
+	if(!iRESET)
+		begin
+			zero_st <= 1'b0;
+			last_st <= 1'b0;
+			sec_part_subsec <= 1'b0;
+			
+			we_a_d <= 1'b0;
+			we_b_d <= 1'b0;
+		end
+	else
+		begin
+			zero_st <= ZERO_STAGE;
+			last_st <= LAST_STAGE;
+			sec_part_subsec <= SEC_PART_SUBSEC_D & !ZERO_STAGE;
+			
+			we_a_d <= we_a;
+			we_b_d <= we_b;
+		end
+end
+
+assign oST_ZERO =				zero_st; // mb required reg
+assign oST_LAST = 			last_st;
+assign o2ND_PART_SUBSEC =	sec_part_subsec;
+
+assign oSECTOR = cnt_sector_d[1];
 
 assign oADDR_RD_0 = EN_BIAS_EVEN ?	addr_rd_bias : addr_rd_cnt;
 assign oADDR_RD_1 = EN_BIAS_ODD ?	addr_rd_bias : addr_rd_cnt;
 assign oADDR_RD_2 = EN_BIAS_EVEN ?	addr_rd_bias : addr_rd_cnt;
 assign oADDR_RD_3 = EN_BIAS_ODD ?	addr_rd_bias : addr_rd_cnt;
 
-assign oADDR_WR_0 = addr_wr_cnt_d;
-assign oADDR_WR_1 = addr_wr_bias;
-assign oADDR_WR_2 = addr_wr_cnt_d;
-assign oADDR_WR_3 = addr_wr_bias;
+assign oADDR_WR_0 = addr_wr_cnt_d[1];
+assign oADDR_WR_1 = addr_wr_bias_d;
+assign oADDR_WR_2 = addr_wr_cnt_d[1];
+assign oADDR_WR_3 = addr_wr_bias_d;
 
 assign oADDR_COEF = addr_coef;
 
 assign oSOURCE_DATA = source_data;
 assign oSOURCE_CONT = source_cont;
 
-assign oWE_A = we_a;
-assign oWE_B = we_b;
+assign oWE_A = we_a_d;
+assign oWE_B = we_b_d;
 
 //assign oNEW_STAGE = new_stage;
 assign oRDY = RDY;
