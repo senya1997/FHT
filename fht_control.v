@@ -65,8 +65,10 @@ reg [A_BIT - 1 : 0] addr_rd_cnt;			// addr_rd never swap, this reg is always 0-2
 reg [A_BIT - 1 : 0] addr_rd_bias;		// 0-255 on 0,1 sector, after - is added bias
 
 reg [A_BIT - 1 : 0] addr_wr_cnt;			// analog 'addr_rd_cnt'
-reg [A_BIT - 1 : 0] addr_wr_cnt_d [0 : 1]; 
-reg [A_BIT - 1 : 0] addr_wr_bias, addr_wr_bias_d;	// bias on write addr swap every half subsector from this reg on another
+reg [A_BIT - 1 : 0] addr_wr_bias;	// bias on write addr swap every half subsector from this reg on another
+
+reg [A_BIT - 1 : 0] addr_wr_cnt_d [0 : 2]; 
+reg [A_BIT - 1 : 0] addr_wr_bias_d [0 : 1];
 
 reg [A_BIT - 3 : 0] addr_coef_cnt;
 reg [A_BIT - 3 : 0] addr_coef;
@@ -80,7 +82,8 @@ reg we_b;
 reg source_data;
 reg source_cont;
 
-reg rdy, rdy_d;
+reg rdy;
+reg [2 : 0] rdy_d;
 
 /**************************************************************/
 /*                            wires                           */
@@ -110,7 +113,7 @@ wire RESET_CNT_RD	= (rdy | EOF_READ);
 wire RESET_CNT_WR	= (rdy | EOF_STAGE);
 wire RESET_CNT_COEF = (rdy | EOF_COEF);
 
-wire RDY = (rdy_d & rdy);
+wire RDY = (rdy_d[0] & rdy);
 
 function [A_BIT - 3 : 0] F_ADDR_REV(input [A_BIT - 3 : 0] iADDR); // bit reverse addr of coef
 	integer i;
@@ -248,17 +251,21 @@ end
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET)
 		begin
-			addr_wr_bias_d <= 0;
+			addr_wr_bias_d[0] <= {(A_BIT){1'b0}};
+			addr_wr_bias_d[1] <= {(A_BIT){1'b0}};
 		
-			addr_wr_cnt_d[0] <= 0;
-			addr_wr_cnt_d[1] <= 0;
+			addr_wr_cnt_d[0] <= {(A_BIT){1'b0}};
+			addr_wr_cnt_d[1] <= {(A_BIT){1'b0}};
+			addr_wr_cnt_d[2] <= {(A_BIT){1'b0}};
 		end
 	else
 		begin
-			addr_wr_bias_d <= addr_wr_bias;
+			addr_wr_bias_d[0] <= addr_wr_bias;
+			addr_wr_bias_d[1] <= addr_wr_bias_d[0];
 			
 			addr_wr_cnt_d[0] <= addr_wr_cnt;
 			addr_wr_cnt_d[1] <= addr_wr_cnt_d[0];
+			addr_wr_cnt_d[2] <= addr_wr_cnt_d[1];
 		end
 end
 
@@ -306,8 +313,8 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) rdy_d <= 1'b1;
-	else rdy_d <= rdy;
+	if(!iRESET) rdy_d <= 3'b111;
+	else rdy_d <= {rdy_d[1 : 0], rdy};
 end
 
 always@(posedge iCLK or negedge iRESET) begin
@@ -324,33 +331,34 @@ end
 
 // ************ output ports: ************ //
 
-reg zero_st, last_st, sec_part_subsec;
-reg we_a_d, we_b_d;
+reg zero_st;
+reg [1 : 0] last_st, sec_part_subsec;
+reg [1 : 0] we_a_d, we_b_d;
 
 always@(posedge iCLK or negedge iRESET)begin
 	if(!iRESET)
 		begin
 			zero_st <= 1'b0;
-			last_st <= 1'b0;
-			sec_part_subsec <= 1'b0;
+			last_st <= 2'd0;
+			sec_part_subsec <= 2'd0;
 			
-			we_a_d <= 1'b0;
-			we_b_d <= 1'b0;
+			we_a_d <= 2'd0;
+			we_b_d <= 2'd0;
 		end
 	else
 		begin
-			zero_st <= ZERO_STAGE;
-			last_st <= LAST_STAGE;
-			sec_part_subsec <= SEC_PART_SUBSEC_D & !ZERO_STAGE;
+			zero_st			<= ZERO_STAGE;
+			last_st			<= {last_st[0], LAST_STAGE};
+			sec_part_subsec	<= {sec_part_subsec[0], SEC_PART_SUBSEC_D & !ZERO_STAGE};
 			
-			we_a_d <= we_a;
-			we_b_d <= we_b;
+			we_a_d <= {we_a_d[0], we_a};
+			we_b_d <= {we_b_d[0], we_b};
 		end
 end
 
-assign oST_ZERO =				zero_st; // mb required reg
-assign oST_LAST = 			last_st;
-assign o2ND_PART_SUBSEC =	sec_part_subsec;
+assign oST_ZERO =				zero_st;
+assign oST_LAST = 			last_st[1];
+assign o2ND_PART_SUBSEC =	sec_part_subsec[1];
 
 assign oSECTOR = cnt_sector_d[1];
 
@@ -359,20 +367,20 @@ assign oADDR_RD_1 = EN_BIAS_ODD ?	addr_rd_bias : addr_rd_cnt;
 assign oADDR_RD_2 = EN_BIAS_EVEN ?	addr_rd_bias : addr_rd_cnt;
 assign oADDR_RD_3 = EN_BIAS_ODD ?	addr_rd_bias : addr_rd_cnt;
 
-assign oADDR_WR_0 = addr_wr_cnt_d[1];
-assign oADDR_WR_1 = addr_wr_bias_d;
-assign oADDR_WR_2 = addr_wr_cnt_d[1];
-assign oADDR_WR_3 = addr_wr_bias_d;
+assign oADDR_WR_0 = addr_wr_cnt_d[2];
+assign oADDR_WR_1 = addr_wr_bias_d[1];
+assign oADDR_WR_2 = addr_wr_cnt_d[2];
+assign oADDR_WR_3 = addr_wr_bias_d[1];
 
 assign oADDR_COEF = addr_coef;
 
 assign oSOURCE_DATA = source_data;
 assign oSOURCE_CONT = source_cont;
 
-assign oWE_A = we_a_d;
-assign oWE_B = we_b_d;
+assign oWE_A = we_a_d[1];
+assign oWE_B = we_b_d[1];
 
 //assign oNEW_STAGE = new_stage;
-assign oRDY = RDY;
+assign oRDY = rdy_d[2];
 
 endmodule 

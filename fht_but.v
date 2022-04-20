@@ -20,6 +20,11 @@ module fht_but #(parameter D_BIT = 17, W_BIT = 12)(
 //wire signed [D_BIT - 1 : 0] MUX_SUM = iSEL ? (iX_1) : (mul_cos_buf + mul_sin_buf); // for '0' stage
 //wire signed [D_BIT - 1 : 0] MUX_SUB = iSEL ? (iX_1) : (mul_cos_buf - mul_sin_buf);
 
+reg signed [D_BIT + W_BIT : 0] ext_x0;
+
+reg signed [D_BIT + W_BIT - 1 : 0] mul_0;
+reg signed [D_BIT + W_BIT - 1 : 0] mul_1;
+
 reg signed [D_BIT + W_BIT : 0] sum_mul;
 
 reg signed [D_BIT - 1 : 0] sum_buf;
@@ -53,10 +58,10 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 `else
 	wire signed [D_BIT + W_BIT : 0] EXT_X0 = {{3{iX_0[D_BIT - 1]}}, iX_0, {(W_BIT - 2){1'b0}}};
 
-	wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN;
+	//wire signed [D_BIT + W_BIT : 0] EXT_SUM_MUL = iX_1 * iCOS + iX_2 * iSIN;
 
- 	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUM = EXT_X0 + sum_mul;
- 	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUB = EXT_X0 - sum_mul;
+ 	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUM = ext_x0 + sum_mul;
+ 	wire signed [D_BIT + W_BIT + 1 : 0] EXT_SUB = ext_x0 - sum_mul;
  	
 	`ifdef ROUND_FHT
 		wire POS_LHALF_SUM = (~EXT_SUM[D_BIT + W_BIT - 2] & EXT_SUM[W_BIT - 2]); // ????? '+' & '>= 0.5'
@@ -75,18 +80,27 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 	`endif
 	
 	always@(posedge iCLK or negedge iRESET)begin
-		if(!iRESET) sum_mul <= 0;
-		else sum_mul <= EXT_SUM_MUL;
-	end
-
-	always@(posedge iCLK or negedge iRESET)begin
 		if(!iRESET)
 			begin
-				sum_buf <= 0;
-				sub_buf <= 0;
+				ext_x0 <= {(D_BIT + W_BIT + 1){1'b0}};
+				
+				mul_0 <= {(D_BIT + W_BIT){1'b0}};
+				mul_1 <= {(D_BIT + W_BIT){1'b0}};
+				
+				sum_mul <= {(D_BIT + W_BIT + 1){1'b0}};
+				
+				sum_buf <= {(D_BIT + W_BIT + 2){1'b0}};
+				sub_buf <= {(D_BIT + W_BIT + 2){1'b0}};
 			end
 		else
 			begin
+				ext_x0 <= EXT_X0;
+				
+				mul_0 <= iX_1 * iCOS;
+				mul_1 <= iX_2 * iSIN;
+			
+				sum_mul <= mul_0 + mul_1;
+				
 				sum_buf <= ROUND_SUM;
 				sub_buf <= ROUND_SUB;
 			end

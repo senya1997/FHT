@@ -118,7 +118,7 @@ initial begin
 			dut_pack.data[0] = #(`TACT) but_rand.data[0];
 
 			DispInput;
-			#(`TACT);
+			#(2*`TACT);
 			DispResult;
 		end
 	
@@ -145,7 +145,7 @@ initial begin
 					dut_pack.cos = cos_buf;
 					
 					#(`TACT) DispInput;
-					#(`TACT) DispResult;
+					#(2*`TACT) DispResult;
 				end
 				
 			cnt = cnt + 1;

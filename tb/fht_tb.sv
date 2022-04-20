@@ -80,7 +80,7 @@ initial begin
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
-		#(`TACT);
+		#(10*`TACT);
 	wait(RDY_FHT);
 		#(`TACT);
 	
@@ -117,7 +117,7 @@ initial begin
 	start = 1'b1;
 		#(`TACT);
 	start = 1'b0;
-		#(`TACT);
+		#(10*`TACT);
 	wait(RDY_FHT);
 		#(`TACT);
 	
