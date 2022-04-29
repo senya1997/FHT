@@ -43,7 +43,7 @@ load_package flow
 # depth of one bank RAM, it is defines number of point transform 'N = 4*2^A_BIT'
 	set A_BIT 9
 # twiddle coefficient data bit width
-	set W_BIT 14
+	set W_BIT 17
 # impulses coefficient data bit width
 	set IMP_BIT 16
 # number of signal point going on FHT, must be large then 'Nh' and 'N/2' (full RAM FHT - N point)
@@ -69,7 +69,7 @@ load_package flow
 	#set D_BIT [expr $A_BIT + 18]
 	#set D_BIT [expr $A_BIT + 12]
 	
-	set CONV_BIT [expr $D_BIT + 5]
+	set CONV_BIT [expr $D_BIT + 6]
 	
 	set W_BIT [expr $W_BIT + 1]
 	

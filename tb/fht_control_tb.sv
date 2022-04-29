@@ -82,10 +82,10 @@ end
 
 `ifdef COMPARE_WITH_MATLAB
 	always@(posedge clk)begin
-		if(!RDY & (CONTROL.cnt_stage_time < `BANK_SIZE))
+		if(~CONTROL.rdy & (CONTROL.cnt_stage_time < `BANK_SIZE))
 			CompareMatlabAddr(f_addr_rd, 0, ADDR_RD[0], ADDR_RD[1], ADDR_RD[2], ADDR_RD[3]);
 		
-		if(!RDY & (WE_A | WE_B))
+		if(WE_A | WE_B)
 			CompareMatlabAddr(f_addr_wr, 1, ADDR_WR[0], ADDR_WR[1], ADDR_WR[2], ADDR_WR[3]);
 	end
 
@@ -110,7 +110,7 @@ end
 		int temp_ref [4];
 	
 		void'($fscanf(file, "%d\t%d\t%d\t%d\n", temp_ref[0], temp_ref[1], temp_ref[2], temp_ref[3]));
-				
+
 		if((temp_ref[0] != iADDR_0) | (temp_ref[1] != iADDR_1) | 
 		   (temp_ref[2] != iADDR_2) | (temp_ref[3] != iADDR_3))
 			begin

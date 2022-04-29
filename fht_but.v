@@ -89,8 +89,8 @@ reg signed [D_BIT - 1 : 0] sub_buf;
 				
 				sum_mul <= {(D_BIT + W_BIT + 1){1'b0}};
 				
-				sum_buf <= {(D_BIT + W_BIT + 2){1'b0}};
-				sub_buf <= {(D_BIT + W_BIT + 2){1'b0}};
+				sum_buf <= {(D_BIT){1'b0}};
+				sub_buf <= {(D_BIT){1'b0}};
 			end
 		else
 			begin

@@ -18,14 +18,14 @@
 `define ADC_WIDTH 16
 `define D_BIT 21
 `define A_BIT 9
-`define W_BIT 15
-`define CONV_BIT 26
+`define W_BIT 18
+`define CONV_BIT 27
 `define IMP_BIT 16
  
 `define MAX_ADC_D 32768
 `define MAX_D 1048576
-`define MAX_W 8192
-`define MAX_CONV 33554432
+`define MAX_W 65536
+`define MAX_CONV 67108864
 `define MAX_IMP 32768
  
 /*****************************************************************************************************************/

@@ -113,7 +113,7 @@ wire RESET_CNT_RD	= (rdy | EOF_READ);
 wire RESET_CNT_WR	= (rdy | EOF_STAGE);
 wire RESET_CNT_COEF = (rdy | EOF_COEF);
 
-wire RDY = (rdy_d[0] & rdy);
+// wire RDY = (rdy_d[0] & rdy);
 
 function [A_BIT - 3 : 0] F_ADDR_REV(input [A_BIT - 3 : 0] iADDR); // bit reverse addr of coef
 	integer i;
@@ -195,7 +195,9 @@ wire STAGE_EVEN = (cnt_stage[0] == 1'b0);
 wire [A_BIT - 1 : 0] INC_ADDR_RD = (addr_rd_cnt + 1'b1);
 
 wire signed [A_BIT + 1 : 0] BIAS_RD = INC_ADDR_RD + (cnt_bias_rd << div_2);
-wire signed [A_BIT - 1 : 0] BIAS_WR = SEC_PART_SUBSEC_D ? (addr_wr_cnt - (div >> 1)) : (addr_wr_cnt + (div >> 1));
+
+// wire signed [A_BIT - 1 : 0] BIAS_WR = SEC_PART_SUBSEC_D ? (addr_wr_cnt - (div >> 1)) : (addr_wr_cnt + (div >> 1));
+wire signed [A_BIT - 1 : 0] BIAS_WR = SEC_PART_SUBSEC_D ? (addr_wr_cnt - div[A_BIT : 1]) : (addr_wr_cnt + div[A_BIT : 1]);
 
 wire NEW_BIAS_RD = ((cnt_bias_rd == -(size_bias_rd - 1'b1)) & (LAST_STAGE ? 1'b1 : (cnt_sector >= 1)));
 wire CHOOSE_EN_NEW_BIAS_RD = (LAST_STAGE ? 1'b1 : EOF_SECTOR_1);
@@ -215,12 +217,12 @@ always@(posedge iCLK or negedge iRESET)begin
 end
 
 always@(posedge iCLK or negedge iRESET)begin
-	if(!iRESET) cnt_bias_rd <= 0;
+	if(!iRESET) cnt_bias_rd <= {(A_BIT + 1){1'b0}};
 	else if(EOF_STAGE_1) cnt_bias_rd <= 2;
 	else if(CHOOSE_EN_NEW_BIAS_RD & clk_2)
 		begin
-			if(NEW_BIAS_RD) cnt_bias_rd <= SIZE_BIAS_RD_MUL_2 - 1'b1;
-			else cnt_bias_rd <= cnt_bias_rd - 2;
+			if(NEW_BIAS_RD) cnt_bias_rd <= SIZE_BIAS_RD_MUL_2 - {{(A_BIT){1'b0}}, 1'b1};
+			else cnt_bias_rd <= cnt_bias_rd - {{(A_BIT - 1){1'b0}}, 2'b10}; // 'cnt_bias_rd - 2'
 		end
 end
 
