@@ -74,26 +74,32 @@
 /*****************************************************************************************************************/
 
 //`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
-`define COMPARE_WITH_MATLAB
 
 `define ROUND_FHT		// enable round in FHT butterfly
 //`define ROUND_FHT_CONV	// enable round in conv calc
-	
-//`define EN_BREAKPOINT
+
+`ifdef MODEL_TECH
+	`ifdef TOP_TB
+		`define CONV_BIT_BIAS 3
+	`else
+		`define CONV_BIT_BIAS 0
+	`endif
+`else
+	`define CONV_BIT_BIAS 3
+`endif
 	
 `timescale 1ns/1ns
 
 	`ifdef MODEL_TECH
+	
+		`define COMPARE_WITH_MATLAB
+		//`define EN_BREAKPOINT
+		
 		// if modelsim issue error 'Unresolved reference to...' try to switch this define:
 			//`define RAM_ACCESS_TB altsyncram_component.mem_data
 			//`define RAM_ACCESS_TB altsyncram_component.m_default.altsyncram_inst.mem_data
 			`define RAM_ACCESS_TB altsyncram_component.m_non_arria10.altsyncram_inst.mem_data
-		/*
-		`define CLK_FREQ 100 // MHz
-
-		`define TACT		$ceil(1000/`CLK_FREQ) // ns
-		`define HALF_TACT	$ceil(`TACT/2)
-		 */
+		
 		`define TACT 10ns // already boosted clock (attention on test with RAM controller and imit!)
 		`define HALF_TACT 5ns
 
