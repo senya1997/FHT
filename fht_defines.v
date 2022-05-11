@@ -80,12 +80,12 @@
 
 `ifdef MODEL_TECH
 	`ifdef TOP_TB
-		`define CONV_BIT_BIAS 3
+		`define CONV_BIT_BIAS 4
 	`else
 		`define CONV_BIT_BIAS 0
 	`endif
 `else
-	`define CONV_BIT_BIAS 3
+	`define CONV_BIT_BIAS 4
 `endif
 	
 `timescale 1ns/1ns
