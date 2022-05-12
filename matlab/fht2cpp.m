@@ -42,14 +42,14 @@ N_bank = 4; % defines by architecture of transform in FPGA (don't change for thi
     adc_amp	= 32768;
 
 fprintf('\nInput data:\n');
-fprintf('\tNum of point transform (N)\t\t\t= %d\n',     N(int16));
-fprintf('\tNum of point signal in RAM (Nx)\t\t= %d\n',	Nx(int16));
-fprintf('\tNum of point impulses in RAM (Nh)\t= %d\n',	Nh(int16));
-fprintf('\tRAM bank size\t= %d\n',          row(int16));
-fprintf('\tData width\t\t= %d\n',           d_bit(int16));
-fprintf('\tImpulse coef width\t\t= %d\n',   imp_bit(int32));
-fprintf('\tAmp of Sin/Cos coef\t\t= %d\n',  w_amp(int32));
-fprintf('\tAmp of input signal on ADC\t\t= %d\n',  adc_amp(int32));
+fprintf('\tNum of point transform (N)\t\t\t= %d\n',     int16(N));
+fprintf('\tNum of point signal in RAM (Nx)\t\t= %d\n',	int16(Nx));
+fprintf('\tNum of point impulses in RAM (Nh)\t= %d\n',	int16(Nh));
+fprintf('\tRAM bank size\t= %d\n',          int16(row));
+fprintf('\tData width\t\t= %d\n',           int16(d_bit));
+fprintf('\tImpulse coef width\t\t= %d\n',   int32(imp_bit));
+fprintf('\tAmp of Sin/Cos coef\t\t= %d\n',  int32(w_amp));
+fprintf('\tAmp of input signal on ADC\t\t= %d\n',  int32(adc_amp));
 
 %% get input data:
 fprintf('\nGet input data...\n');
@@ -75,7 +75,7 @@ ide = find(idy>0)-1;
 test_signal = zeros(N,1);
 
 for i = 1:N
-    test_signal(i) = str2double(str_imp(idb(i):ide(i)));
+    test_signal(i) = real(str2double(str_imp(idb(i):ide(i))));
 end
 
 fprintf('\nForming input RAM for FHT...');
@@ -139,7 +139,7 @@ file_ram = fopen(dir_init_fht, 'w');
 
 if(file_ram ~= -1)
 	for i = 1 : row
-        fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
+        fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, 1), ram(i, 2), ram(i, 3), ram(i, 4));
 	end
 else
     error('Error: file name is wrong "%s"', dir_init_fht);
@@ -167,7 +167,7 @@ for i = 1:row % 0 stage (only butterfly)
 end
 
 last_stage = log(N)/log(2) - 1; % numbers start from zero
-fprintf('\n\tTotal num of stages transform: %d\n', last_stage);
+fprintf('\n\tTotal num of stages transform: %d\n', int16(last_stage));
 
 % init coef for 1st stage:
     bit_depth = log(row)/log(2) - 2; % bit depth of ROM data: [A_BIT - 3 : 0]	
@@ -175,7 +175,7 @@ fprintf('\n\tTotal num of stages transform: %d\n', last_stage);
     sector = 1;
     
 for stage = 1:last_stage % without 0 stage
-    fprintf('\t\tCurrent stage transform: %d\n', stage);
+    fprintf('\t\tCurrent stage transform: %d\n', int16(stage));
     
     ram_buf = zeros(row, N_bank);
 
@@ -294,21 +294,11 @@ fprintf('\nSave output RAM after transform for tb...');
 file_ram = fopen(dir_math_fht_ram, 'w');
 if(file_ram ~= -1)
     for i = 1 : row
-        fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, :));
+        fprintf(file_ram, '%6.6f\t%6.6f\t%6.6f\t%6.6f\n', ram(i, 1), ram(i, 2), ram(i, 3), ram(i, 4));
     end
     fclose(file_ram); 
 else
     error('Error: file name is wrong "%s"', dir_math_fht_ram); 
-end
-
-file_fft_cp = fopen(dir_math_fft_line, 'w'); % for compare in analys
-if(file_fft_cp ~= -1)
-    for i = 1 : N
-        fprintf(file_fft_cp, '%6.6f\n', fft_line(i)); 
-    end
-    fclose(file_fft_cp);
-else
-    error('Error: file name is wrong "%s"', dir_math_fft_line); 
 end
 
 %% save fixed point version of IMP RAM POS/NEG FHT for conv:
@@ -366,7 +356,7 @@ end
         end
 
         for i = 1 : row
-            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
+            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', int16(reg_ram(i, 1)), int16(reg_ram(i, 2)), int16(reg_ram(i, 3)), int16(reg_ram(i, 4)));
         end
 
         fclose(file_reg);
@@ -404,7 +394,7 @@ end
         end
 
         for i = 1 : row
-            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', reg_ram(i, :));
+            fprintf(file_reg, '%6d\t%6d\t%6d\t%6d\n', int16(reg_ram(i, 1)), int16(reg_ram(i, 2)), int16(reg_ram(i, 3)), int16(reg_ram(i, 4)));
         end
 
         fclose(file_reg);
