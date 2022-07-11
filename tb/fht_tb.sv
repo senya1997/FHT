@@ -62,8 +62,7 @@ initial begin
 	ram_sel = 1'b1;
 	start	= 1'b0;
 	
-	ram_imit = new();
-	ram_imit.SetPeriod(`TACT);
+	ram_imit = new(`TACT);
 
 // init DUT by ADC data:
 	#(10*`TACT);

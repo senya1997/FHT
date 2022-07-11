@@ -73,6 +73,12 @@
 /*													variable defines RTL:																  */
 /*****************************************************************************************************************/
 
+`define DVKIT
+	
+`ifdef DVKIT
+	`define MODEL_TECH
+`endif
+	
 //`define TEST_MIXER // check only 'top' + 'control', RAM data (0..N) "avoid" butterfly and multipliers
 
 `define ROUND_FHT		// enable round in FHT butterfly

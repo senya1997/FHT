@@ -19,7 +19,7 @@ typedef bit	[N_BANK - 1 : 0]	webit_t;
 	local dbit_t tran_ram [0 : BANK_SIZE - 1][0 : N_BANK - 1]; // RAM imitation
 	
 // static vars:
-	local static time		tact = 20ns; // in ns
+	local const static time tact; // in ns
 	local static uint32_t	cnt_all_er = 0;
 	local static float32_t	max_er = 0;
 	local static float32_t	sum_er = 0;
@@ -46,9 +46,9 @@ typedef bit	[N_BANK - 1 : 0]	webit_t;
 	endfunction
 	
 // public:
-	extern function new();
+	extern function new(time tact);
 	
-	extern function void SetPeriod(time tact);
+	//extern function void SetPeriod(time tact);
 	
 	extern function uint32_t	GetAllErr();
 	extern function float32_t	GetMaxErr();

@@ -1,15 +1,17 @@
 `include "TransformRAM.svh"
 
- 	function TransformRAM::new();
+ 	function TransformRAM::new(time tact);
+ 		this.tact = tact * 1000; // ns
+ 		
  		for(uint16_t cnt_data = 0; cnt_data < BANK_SIZE; cnt_data++)
  			for(uint16_t cnt_bank = 0; cnt_bank < N_BANK; cnt_bank++)
  				tran_ram[cnt_data][cnt_bank] = 0;
  	endfunction
-
+/*
 	function void TransformRAM::SetPeriod(time tact);
 		this.tact = tact*1000; // ???
 	endfunction
-	
+*/	
 	function uint32_t TransformRAM::GetAllErr();
 		GetAllErr = cnt_all_er;
 	endfunction
