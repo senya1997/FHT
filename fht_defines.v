@@ -73,7 +73,7 @@
 /*													variable defines RTL:																  */
 /*****************************************************************************************************************/
 
-`define DVKIT
+//`define DVKIT
 	
 `ifdef DVKIT
 	`define MODEL_TECH
@@ -96,21 +96,21 @@
 	
 `timescale 1ns/1ns
 
-	`ifdef MODEL_TECH
+`ifdef MODEL_TECH
+
+	`define COMPARE_WITH_MATLAB
+	//`define EN_BREAKPOINT
 	
-		`define COMPARE_WITH_MATLAB
-		//`define EN_BREAKPOINT
-		
-		// if modelsim issue error 'Unresolved reference to...' try to switch this define:
-			//`define RAM_ACCESS_TB altsyncram_component.mem_data
-			//`define RAM_ACCESS_TB altsyncram_component.m_default.altsyncram_inst.mem_data
-			`define RAM_ACCESS_TB altsyncram_component.m_non_arria10.altsyncram_inst.mem_data
-		
-		`define TACT 10ns // already boosted clock (attention on test with RAM controller and imit!)
-		`define HALF_TACT 5ns
+	// if modelsim issue error 'Unresolved reference to...' try to switch this define:
+		//`define RAM_ACCESS_TB altsyncram_component.mem_data
+		//`define RAM_ACCESS_TB altsyncram_component.m_default.altsyncram_inst.mem_data
+		`define RAM_ACCESS_TB altsyncram_component.m_non_arria10.altsyncram_inst.mem_data
+	
+	`define TACT 10ns // already boosted clock (attention on test with RAM controller and imit!)
+	`define HALF_TACT 5ns
 
-		`define NUM_OF_RPT 100	// number of repeat butterfly test
-		`define ACCURACY 0.001	// for all tests (butterfly, FHT)
-	`endif
-
+	`define NUM_OF_RPT 100	// number of repeat butterfly test
+	`define ACCURACY 0.001	// for all tests (butterfly, FHT)
 `endif
+
+`endif // FHT_DEFINES_H
