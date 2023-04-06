@@ -20,16 +20,16 @@ For now project using altera's IP blocks: FIFO, RAM, ROM, etc.
    i.e. by changing the bit addressing of one RAM bank, the number of conversion points changes in accordance with the table:
 
    ```
-   |------------------------|
-   | A_BIT | N(FHT)| D_BIT  |
-   |------------------------|
-   |	5	| 128	|	23   |
-   | 	6	| 256	|	24   |
-   | 	7	| 512	|	25   |
-   | 	8	| 1024	|	26   |
-   | 	9	| 2048	|	27   |
-   | 	10	| 4096	|	28   |
-   |------------------------|
+   |----------------------|
+   |A_BIT | N(FHT)| D_BIT |
+   |----------------------|
+   |  5   | 128	|	23   |
+   |  6   | 256	|	24   |
+   | 	7   | 512	|	25   |
+   | 	8   | 1024	|	26   |
+   | 	9   | 2048	|	27   |
+   | 	10  | 4096	|	28   |
+   |----------------------|
    ```
 
    
